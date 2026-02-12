@@ -1,1 +1,58 @@
 @import 'tailwindcss';
+@theme {
+	--text-step--2: clamp(0.7813rem, 0.7736rem + 0.0341vw, 0.8rem);
+	--text-step--1: clamp(0.9375rem, 0.9119rem + 0.1136vw, 1rem);
+	--text-step-0: clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem);
+	--text-step-1: clamp(1.35rem, 1.2631rem + 0.3864vw, 1.5625rem);
+	--text-step-2: clamp(1.62rem, 1.4837rem + 0.6057vw, 1.9531rem);
+	--text-step-3: clamp(1.944rem, 1.7405rem + 0.9044vw, 2.4414rem);
+	--text-step-4: clamp(2.3328rem, 2.0387rem + 1.3072vw, 3.0518rem);
+	--text-step-5: clamp(2.7994rem, 2.384rem + 1.8461vw, 3.8147rem);
+
+	--color-primary: #404e4f;
+	--color-secondary: #eb9244;
+	--color-foreground: #212121;
+	--color-background: #f1f3f4;
+
+	--spacing-3xs: clamp(0.3125rem, 0.3125rem + 0vw, 0.3125rem);
+	--spacing-2xs: clamp(0.5625rem, 0.5369rem + 0.1136vw, 0.625rem);
+	--spacing-xs: clamp(0.875rem, 0.8494rem + 0.1136vw, 0.9375rem);
+	--spacing-s: clamp(1.125rem, 1.0739rem + 0.2273vw, 1.25rem);
+	--spacing-m: clamp(1.6875rem, 1.6108rem + 0.3409vw, 1.875rem);
+	--spacing-l: clamp(2.25rem, 2.1477rem + 0.4545vw, 2.5rem);
+	--spacing-xl: clamp(3.375rem, 3.2216rem + 0.6818vw, 3.75rem);
+	--spacing-2xl: clamp(4.5rem, 4.2955rem + 0.9091vw, 5rem);
+	--spacing-3xl: clamp(6.75rem, 6.4432rem + 1.3636vw, 7.5rem);
+}
+
+body {
+	@apply bg-background text-foreground;
+}
+
+h1 {
+	@apply text-step-5;
+}
+
+h2 {
+	@apply text-step-4;
+}
+h3 {
+	@apply text-step-3;
+}
+h4 {
+	@apply text-step-2;
+}
+h5 {
+	@apply text-step-1;
+}
+h6 {
+	@apply text-step-0;
+}
+p {
+	@apply text-step--1;
+}
+
+small,
+.text-small {
+	@apply text-step--2;
+}

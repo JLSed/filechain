@@ -3,11 +3,11 @@
 
 	// `data.session` and `data.user` are automatically passed down
 	// from your root +layout.server.ts
-	let { user } = data;
+	const user = $derived(data.user);
 </script>
 
 <div class="mx-auto max-w-4xl p-8">
-	<h1 class="mb-6 text-3xl font-bold">Dashboard</h1>
+	<h1 class="">Dashboard 3</h1>
 
 	<div class="rounded-lg border border-zinc-800 bg-zinc-900 p-6 shadow-xl">
 		<h2 class="mb-4 text-xl font-semibold text-emerald-400">Secure Session Active</h2>
