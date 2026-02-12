@@ -1,6 +1,6 @@
 <script lang="ts">
 	import './layout.css';
-	import logo from '$lib/assets/logo.svg';
+	import dmvLogo from '$lib/assets/dmv-logo.svg';
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import { createBrowserClient } from '$lib/services/supabase/client';
@@ -28,5 +28,5 @@
 	});
 </script>
 
-<svelte:head><link rel="icon" href={logo} /></svelte:head>
+<svelte:head><link rel="icon" href={dmvLogo} /></svelte:head>
 {@render children()}

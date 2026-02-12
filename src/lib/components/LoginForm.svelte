@@ -26,7 +26,8 @@
 </script>
 
 <div class="">
-	<form onsubmit={handleLogin}>
+	<h3 class="font-bold">Login</h3>
+	<form class="flex flex-col gap-2xs" onsubmit={handleLogin}>
 		<div>
 			<label>
 				<input type="email" id="email" bind:value={email} placeholder="you@example.com" />

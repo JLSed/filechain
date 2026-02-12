@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Onest:wght@100..900&display=swap');
 @import 'tailwindcss';
 @theme {
 	--text-step--2: clamp(0.7813rem, 0.7736rem + 0.0341vw, 0.8rem);
@@ -8,6 +9,9 @@
 	--text-step-3: clamp(1.944rem, 1.7405rem + 0.9044vw, 2.4414rem);
 	--text-step-4: clamp(2.3328rem, 2.0387rem + 1.3072vw, 3.0518rem);
 	--text-step-5: clamp(2.7994rem, 2.384rem + 1.8461vw, 3.8147rem);
+
+	--font-onest: 'Onest';
+	--font-dm-sans: 'DM Sans';
 
 	--color-primary: #404e4f;
 	--color-secondary: #eb9244;
@@ -30,29 +34,42 @@ body {
 }
 
 h1 {
-	@apply text-step-5;
+	@apply font-onest text-step-5 font-black;
 }
 
 h2 {
-	@apply text-step-4;
+	@apply font-onest text-step-4 font-bold;
 }
 h3 {
-	@apply text-step-3;
+	@apply font-onest text-step-3;
 }
 h4 {
-	@apply text-step-2;
+	@apply font-onest text-step-2;
 }
 h5 {
-	@apply text-step-1;
+	@apply font-onest text-step-1;
 }
 h6 {
-	@apply text-step-0;
+	@apply font-onest text-step-0;
 }
-p {
-	@apply text-step--1;
+p,
+button,
+span,
+a {
+	@apply font-dm-sans text-step--1 font-medium;
 }
 
 small,
 .text-small {
 	@apply text-step--2;
+}
+form input {
+	@apply rounded-xl bg-primary/10 p-2xs text-primary focus:ring-2 focus:ring-primary focus:outline-none;
+}
+
+form button {
+	@apply cursor-pointer rounded-xl bg-primary p-2xs text-background;
+}
+
+@layers components {
 }
