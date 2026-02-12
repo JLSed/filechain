@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import dmvLogo from '$lib/assets/dmv-logo.svg';
+	import LandingNavBar from '$lib/components/LandingNavBar.svelte';
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import { createBrowserClient } from '$lib/services/supabase/client';
@@ -29,4 +30,9 @@
 </script>
 
 <svelte:head><link rel="icon" href={dmvLogo} /></svelte:head>
+
+{#if !data.session}
+	<LandingNavBar />
+{/if}
+
 {@render children()}

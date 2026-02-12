@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import init, { greet } from '../lib/pkg/rust';
+	import dmvLogo from '$lib/assets/dmv-logo.svg';
 
 	let { data } = $props();
 	let wasmReady = $state(false);
@@ -12,11 +13,13 @@
 </script>
 
 <div class="mx-auto max-w-4xl py-20 text-center">
-	<h1
-		class="mb-6 bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-6xl font-bold text-transparent"
-	>
-		Filechain
-	</h1>
+	<!-- Logo -->
+	<div class="flex items-center gap-3">
+		<div class="flex h-14 w-14 items-center justify-center">
+			<img src={dmvLogo} alt="Logo" class="h-full w-full object-contain" />
+		</div>
+		<span class="text-xl font-bold tracking-tight text-slate-800">DMV IP Consultancy</span>
+	</div>
 
 	<p class="mx-auto mb-12 max-w-2xl text-xl text-zinc-400">
 		Secure cloud storage with zero-knowledge encryption powered by Rust & WebAssembly.

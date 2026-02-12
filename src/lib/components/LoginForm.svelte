@@ -25,23 +25,27 @@
 	}
 </script>
 
-<div class="">
-	<h3 class="font-bold">Login</h3>
-	<form class="flex flex-col gap-2xs" onsubmit={handleLogin}>
+<div class="mx-auto w-full max-w-sm">
+	<h3 class="mb-4 font-bold text-primary">Log In</h3>
+	<form class="flex flex-col gap-4" onsubmit={handleLogin}>
 		<div>
-			<label>
-				<input type="email" id="email" bind:value={email} placeholder="you@example.com" />
-			</label>
+			<input type="email" id="email" bind:value={email} placeholder="Email" required />
 		</div>
 
 		<div>
-			<label>
-				<input type="password" id="password" bind:value={password} placeholder="••••••••" />
-			</label>
+			<input type="password" id="password" bind:value={password} placeholder="Password" required />
 		</div>
 
-		<button type="submit" disabled={loading}>
-			{loading ? 'Signing in...' : 'Sign In'}
+		<div class="flex items-center justify-between text-xs text-gray-500">
+			<label class="flex cursor-pointer items-center gap-2"> Forgot password? </label>
+		</div>
+
+		<button
+			type="submit"
+			disabled={loading}
+			class="mt-2 w-full rounded-md bg-slate-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black disabled:opacity-70"
+		>
+			{loading ? 'Logging in...' : 'Log In'}
 		</button>
 	</form>
 </div>
