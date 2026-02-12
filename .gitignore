@@ -26,3 +26,6 @@ test-results
 
 #Wasm
 rust/target/
+
+#Trash
+*.Identifier
