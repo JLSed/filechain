@@ -29,3 +29,6 @@ rust/target/
 
 #Trash
 *.Identifier
+
+# Environement
+/.stfolder
