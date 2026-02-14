@@ -10,7 +10,6 @@
 	const isSidebarOpen = getContext<Writable<boolean>>('isSidebarOpen');
 	const isMobileOpen = getContext<Writable<boolean>>('isMobileOpen');
 
-	let isCollapsed = $derived(!$isSidebarOpen);
 	// Track expanded state for items with children, keyed by href where true = expanded
 	let expandedItems = $state<Record<string, boolean>>({});
 
@@ -34,7 +33,7 @@
 	}
 
 	function toggleExpanded(href: string, hasChildren: boolean, e: MouseEvent) {
-		if (hasChildren && !isCollapsed) {
+		if (hasChildren && $isSidebarOpen) {
 			e.preventDefault();
 			const current = expandedItems[href];
 			expandedItems[href] = !current;
@@ -58,13 +57,13 @@
 			childActive
 				? 'bg-background/30 text-background'
 				: 'text-background/80 hover:bg-background/10 hover:text-background'}"
-			title={isCollapsed ? item.label : undefined}
+			title={!$isSidebarOpen ? item.label : undefined}
 		>
 			<span class="shrink-0">
 				<item.icon size={20} />
 			</span>
 			<span
-				class="flex-1 overflow-hidden text-sm whitespace-nowrap transition-all duration-300 {isCollapsed
+				class="flex-1 overflow-hidden text-sm whitespace-nowrap transition-all duration-300 {!$isSidebarOpen
 					? 'w-auto opacity-100 md:w-0 md:opacity-0'
 					: 'w-auto opacity-100'}"
 			>
@@ -72,7 +71,7 @@
 			</span>
 			{#if hasChildren}
 				<span
-					class="hidden shrink-0 transition-opacity duration-300 md:block {isCollapsed
+					class="hidden shrink-0 transition-opacity duration-300 md:block {!$isSidebarOpen
 						? 'w-0 opacity-0'
 						: 'opacity-100'}"
 				>
@@ -86,7 +85,7 @@
 		</a>
 
 		<!-- Sub-items -->
-		{#if hasChildren && isExpanded && !isCollapsed}
+		{#if hasChildren && isExpanded && $isSidebarOpen}
 			<div class="mt-1 ml-6 hidden space-y-1 md:block" transition:slide>
 				{#each item.children! as child (child.href)}
 					<a
@@ -139,7 +138,7 @@
       text-background transition-all duration-300 md:relative
       {$isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
       md:translate-x-0
-      {isCollapsed ? 'md:w-16' : 'md:w-64'}
+      {!$isSidebarOpen ? 'md:w-16' : 'md:w-64'}
       w-64"
 >
 	<!-- Logo Section -->
@@ -150,11 +149,11 @@
 	</div>
 
 	<!-- Navigation Groups -->
-	<div class="flex-1 overflow-y-auto">
+	<div class="flex-1 overflow-hidden overflow-y-auto">
 		{#each navGroups as group (group.label)}
 			<div class="py-4">
 				<span
-					class="block overflow-hidden px-4 text-xs tracking-wider whitespace-nowrap text-background/30 uppercase transition-all duration-300 {isCollapsed
+					class="block overflow-hidden px-4 text-xs tracking-wider whitespace-nowrap text-background/30 uppercase transition-all duration-300 {!$isSidebarOpen
 						? 'h-auto opacity-100 md:h-0 md:opacity-0'
 						: 'h-auto opacity-100'}"
 				>

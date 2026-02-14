@@ -1,21 +1,32 @@
 import {
 	LayoutDashboard,
-	BarChart3,
-	Link2,
-	HardDrive,
-	ScrollText,
 	Users,
-	FileText
+	FileText,
+	BookA,
+	Building2,
+	FileUser,
+	FolderOpen,
+	ChartArea
 } from 'lucide-svelte';
 
 export const pageTitles: Record<string, string> = {
 	'/dashboard': 'Dashboard',
-	'/dashboard/files': 'Files'
+	'/dashboard/forms': 'Filling Forms',
+	'/dashboard/reports': 'Reports',
+	'/dashboard/audit-logs': 'Audit Logs',
+	'/dashboard/patenting/client': 'Patenting of Client',
+	'/dashboard/patenting/ipophil': 'Patenting of IPOPHL',
+	'/dashboard/files': 'File Management',
+	'/dashboard/user': 'User Management'
 };
 
 // ── 3. Route protection ──
 export const protectedRoutes = ['/dashboard', '/files', '/settings', '/account'];
-export const authRoutes = ['/login', '/register', '/auth'];
+export const authRoutes = ['/login', '/register', '/dashboard/files'];
+
+export const ICON_SIZE_SMALL = 18;
+export const ICON_SIZE_MEDIUM = 22;
+export const ICON_SIZE_LARGE = 28;
 
 // for sidebar navigation groups
 export const navGroups: Sidebar.NavGroup[] = [
@@ -25,7 +36,7 @@ export const navGroups: Sidebar.NavGroup[] = [
 			{
 				label: 'Dashboard',
 				href: '/dashboard',
-				icon: LayoutDashboard // <LayoutDashboard size={20} />
+				icon: LayoutDashboard
 			},
 			{
 				label: 'Filling Forms',
@@ -33,19 +44,29 @@ export const navGroups: Sidebar.NavGroup[] = [
 				icon: FileText
 			},
 			{
-				label: 'Analytics',
-				href: '/dashboard/analytics',
-				icon: BarChart3
-			},
-			{
-				label: 'File Chain',
-				href: '/dashboard/file-chain',
-				icon: Link2
+				label: 'Reports',
+				href: '/dashboard/reports',
+				icon: ChartArea
 			},
 			{
 				label: 'Audit Logs',
 				href: '/dashboard/audit-logs',
-				icon: ScrollText
+				icon: BookA
+			}
+		]
+	},
+	{
+		label: 'Patenting',
+		items: [
+			{
+				label: 'Patenting of Client',
+				href: '/dashboard/patenting/client',
+				icon: FileUser
+			},
+			{
+				label: 'Patenting of IPOPHL',
+				href: '/dashboard/patenting/ipophil',
+				icon: Building2
 			}
 		]
 	},
@@ -53,18 +74,14 @@ export const navGroups: Sidebar.NavGroup[] = [
 		label: 'Management',
 		items: [
 			{
-				label: 'Storage',
-				href: '/dashboard/storage',
-				icon: HardDrive
+				label: 'File Management',
+				href: '/dashboard/files',
+				icon: FolderOpen
 			},
 			{
 				label: 'User Management',
 				href: '/dashboard/user',
-				icon: Users,
-				children: [
-					{ label: 'Trademark', href: '/dashboard/user/trademark' },
-					{ label: 'User Roles', href: '/dashboard/user/roles' }
-				]
+				icon: Users
 			}
 		]
 	}
