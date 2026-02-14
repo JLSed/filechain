@@ -54,16 +54,19 @@ h6 {
 }
 p,
 button,
-span,
 label,
 a {
 	@apply font-dm-sans text-step--1 font-medium;
 }
 
-small,
-.text-small {
+span {
 	@apply text-step--2;
 }
+
+button {
+	@apply cursor-pointer;
+}
+
 form input {
 	@apply w-full rounded-xl bg-primary/10 p-2xs text-primary focus:ring-2 focus:ring-primary focus:outline-none;
 }

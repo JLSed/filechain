@@ -4,8 +4,8 @@
 
 	const { children } = $props();
 
-	const isCollapsed = writable(false);
-	setContext('isCollapsed', isCollapsed);
+	const isSidebarOpen = writable(false);
+	setContext('isSidebarOpen', isSidebarOpen);
 	const isMobileOpen = writable(false);
 	setContext('isMobileOpen', isMobileOpen);
 </script>

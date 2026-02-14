@@ -1,3 +1,4 @@
+import { authRoutes, protectedRoutes } from '$lib/constants/constant';
 import { createServerClient } from '$lib/services/supabase/server';
 import { type Handle, redirect } from '@sveltejs/kit';
 
@@ -23,33 +24,37 @@ export const handle: Handle = async ({ event, resolve }) => {
 	 * a round-trip to the Supabase Auth server so the session is verified.
 	 */
 	event.locals.safeGetSession = async () => {
+		const UNAUTHENTICATED = { session: null, user_metadata: null, profile: null };
 		const {
 			data: { session }
 		} = await supabase.auth.getSession();
 
-		if (!session) {
-			return { session: null, user: null };
-		}
-
+		if (!session) return UNAUTHENTICATED;
 		const {
 			data: { user },
 			error
 		} = await supabase.auth.getUser();
 
-		if (error) {
-			// JWT expired or invalid – treat as logged-out
-			return { session: null, user: null };
-		}
+		// JWT expired or invalid – treat as logged-out
+		if (!user || error) return UNAUTHENTICATED;
 
-		return { session, user };
+		const { data: profile, error: profileError } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('*')
+			.eq('user_id', user.id)
+			.single();
+
+		if (!profile || profileError) return UNAUTHENTICATED;
+
+		const currentDate = new Date();
+
+		console.log('Fetch ran at', { currentDate });
+		return { session, user_metadata: user, profile: profile as User.Profile };
 	};
 
 	// ── 2. Trigger token refresh (the "getUser()" side-effect) ──
 	const { session } = await event.locals.safeGetSession();
-
-	// ── 3. Route protection ──
-	const protectedRoutes = ['/dashboard', '/files', '/settings', '/account'];
-	const authRoutes = ['/login', '/register', '/auth'];
 
 	const { pathname } = event.url;
 

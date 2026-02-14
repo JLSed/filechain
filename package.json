@@ -50,7 +50,8 @@
 	},
 	"dependencies": {
 		"@supabase/ssr": "^0.8.0",
-		"@supabase/supabase-js": "^2.95.3"
+		"@supabase/supabase-js": "^2.95.3",
+		"lucide-svelte": "^0.564.0"
 	},
 	"overrides": {
 		"cookie": "^0.7.0"
