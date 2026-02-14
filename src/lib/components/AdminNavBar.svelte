@@ -1,7 +1,7 @@
 <script module lang="ts">
 	import { page } from '$app/state';
 	import { pageTitles } from '$lib/constants/constant';
-	import { ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-svelte';
+	import { ChevronDown, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-svelte';
 	import { getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 </script>
@@ -10,6 +10,7 @@
 	let { user }: { user: User.Profile } = $props();
 
 	const isSidebarOpen = getContext<Writable<boolean>>('isSidebarOpen');
+	const isMobileOpen = getContext<Writable<boolean>>('isMobileOpen');
 
 	const formattedName = $derived(
 		`${user.first_name.charAt(0).toUpperCase()}. ${user.middle_name ? user.middle_name.charAt(0).toUpperCase() + '. ' : ''} ${user.last_name}`
@@ -18,7 +19,14 @@
 
 <nav class="flex border-b border-primary/50 text-primary">
 	<div class="flex items-center px-3 py-2">
-		<button onclick={() => ($isSidebarOpen = !$isSidebarOpen)}>
+		<button
+			onclick={() => ($isMobileOpen = !$isMobileOpen)}
+			class=" md:hidden"
+			aria-label="Open menu"
+		>
+			<Menu />
+		</button>
+		<button onclick={() => ($isSidebarOpen = !$isSidebarOpen)} class="hidden md:block">
 			{#if $isSidebarOpen}
 				<PanelLeftClose />
 			{:else}
