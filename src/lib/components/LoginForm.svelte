@@ -1,43 +1,50 @@
 <script lang="ts">
-	import { createBrowserClient } from '$lib/services/supabase/client';
-	import { goto } from '$app/navigation';
+	import { enhance } from '$app/forms';
 
-	const supabase = createBrowserClient();
 	let loading = $state(false);
-	let email = $state('');
-	let password = $state('');
+	let errorMessage = $state('');
 
-	async function handleLogin(e: Event) {
-		e.preventDefault();
-		loading = true;
-
-		const { error } = await supabase.auth.signInWithPassword({
-			email,
-			password
-		});
-
-		if (!error) {
-			goto('/dashboard');
-		} else {
-			console.error(error);
-		}
-		loading = false;
+	interface LoginFormProps {
+		form: { message?: string; email?: string } | null;
 	}
+	let { form = null }: LoginFormProps = $props();
 </script>
 
 <div class="mx-auto w-full max-w-sm">
 	<h3 class="mb-4 font-bold text-primary">Log In</h3>
-	<form class="flex flex-col gap-4" onsubmit={handleLogin}>
+	{#if form?.message || errorMessage}
+		<p class="mb-3 text-sm text-red-600">{form?.message ?? errorMessage}</p>
+	{/if}
+	<form
+		method="POST"
+		action="/login?/login"
+		class="flex flex-col gap-4"
+		use:enhance={() => {
+			loading = true;
+			errorMessage = '';
+			return async ({ update }) => {
+				loading = false;
+				await update();
+			};
+		}}
+	>
 		<div>
-			<input type="email" id="email" bind:value={email} placeholder="Email" required />
+			<input
+				type="email"
+				name="email"
+				id="email"
+				value={form?.email ?? ''}
+				placeholder="Email"
+				required
+			/>
 		</div>
 
 		<div>
-			<input type="password" id="password" bind:value={password} placeholder="Password" required />
+			<input type="password" name="password" id="password" placeholder="Password" required />
 		</div>
 
 		<div class="flex items-center justify-between text-xs text-gray-500">
-			<label class="flex cursor-pointer items-center gap-2"> Forgot password? </label>
+			<span class="flex cursor-pointer items-center gap-2"> Forgot password? </span>
 		</div>
 
 		<button

@@ -19,7 +19,12 @@
 	onMount(() => {
 		const {
 			data: { subscription }
-		} = supabase.auth.onAuthStateChange((_event, newSession) => {
+		} = supabase.auth.onAuthStateChange((event, newSession) => {
+			// Only invalidate on token refreshes or sign-outs.
+			// SIGNED_IN and INITIAL_SESSION are already handled server-side
+			// via form actions, so re-invalidating would cause redundant requests.
+			if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') return;
+
 			if (newSession?.expires_at !== data.session?.expires_at) {
 				invalidate('supabase:auth');
 			}

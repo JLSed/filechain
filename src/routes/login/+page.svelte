@@ -2,6 +2,8 @@
 	import LoginForm from '$lib/components/LoginForm.svelte';
 	import copyrightPana from '$lib/assets/copyright-pana.svg';
 	import layeredWaves from '$lib/assets/layered-waves.svg';
+
+	let { form } = $props();
 </script>
 
 <div class="relative flex min-h-screen w-full items-center justify-center bg-gray-50 p-4">
@@ -24,7 +26,7 @@
 
 		<!-- Right Side -->
 		<div class="flex w-full flex-col justify-center bg-white p-8 lg:w-1/2 lg:p-16">
-			<LoginForm />
+			<LoginForm {form} />
 		</div>
 	</div>
 </div>

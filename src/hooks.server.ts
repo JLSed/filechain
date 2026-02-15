@@ -1,5 +1,6 @@
 import { authRoutes, protectedRoutes } from '$lib/constants/constant';
 import { createServerClient } from '$lib/services/supabase/server';
+import type { Session } from '@supabase/supabase-js';
 import { type Handle, redirect } from '@sveltejs/kit';
 
 /**
@@ -27,11 +28,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.supabase = supabase;
 
 	/**
-	 * A convenience helper that wraps `supabase.auth.getSession()` but only
-	 * exposes the data – never trusts the JWT on its own.  `getUser()` makes
-	 * a round-trip to the Supabase Auth server so the session is verified.
+	 * A convenience helper that wraps `supabase.auth.getUser()` + `getSession()`.
+	 * The result is cached per request so multiple callers (handle hook,
+	 * layout loaders, page loaders) only trigger **one** round-trip to the
+	 * Supabase Auth server instead of one per call.
 	 */
+	let cachedSession: { session: Session | null; user_metadata: User.Metadata | null } | null = null;
+
 	event.locals.safeGetSession = async () => {
+		// Return the cached result if we already verified this request
+		if (cachedSession) return cachedSession;
+
 		const UNAUTHENTICATED = { session: null, user_metadata: null };
 		// Verify the token with the Auth server first
 		const {
@@ -39,18 +46,27 @@ export const handle: Handle = async ({ event, resolve }) => {
 			error
 		} = await supabase.auth.getUser();
 
-		if (error || !user) return UNAUTHENTICATED;
+		if (error || !user) {
+			cachedSession = UNAUTHENTICATED;
+			return UNAUTHENTICATED;
+		}
+
 		// Only if valid, retrieve the session (which contains the tokens)
 		const {
 			data: { session }
 		} = await supabase.auth.getSession();
 
 		// JWT expired or invalid – treat as logged-out
-		if (!session) return UNAUTHENTICATED;
+		if (!session) {
+			cachedSession = UNAUTHENTICATED;
+			return UNAUTHENTICATED;
+		}
 
-		console.log('Hook ran at', new Date().toISOString());
+		console.log('auth ran at', { cachedSession });
+		const result = { session, user_metadata: user };
+		cachedSession = result;
 		event.locals.session = session;
-		return { session, user_metadata: user };
+		return result;
 	};
 
 	// ── 2. Trigger token refresh (the "getUser()" side-effect) ──
