@@ -10,7 +10,7 @@ export const load: LayoutServerLoad = async ({ locals: { safeGetSession }, depen
 	// Re-run this loader whenever the Supabase auth state changes
 	depends('supabase:auth');
 
-	const { session, user_metadata, profile } = await safeGetSession();
+	const { session, user_metadata } = await safeGetSession();
 
-	return { session, user_metadata, profile };
+	return { session, user_metadata };
 };

@@ -14,6 +14,14 @@ import { type Handle, redirect } from '@sveltejs/kit';
  *    are redirected to `/login`.
  */
 export const handle: Handle = async ({ event, resolve }) => {
+	// Don't run auth logic for static assets, favicons, or SvelteKit internal paths
+	if (
+		event.url.pathname.startsWith('/_app') ||
+		event.url.pathname.includes('.') || // cheap way to skip files with extensions (css, png, ico)
+		event.url.pathname === '/favicon.ico'
+	) {
+		return resolve(event);
+	}
 	// ── 1. Build the server client (reads & writes cookies) ──
 	const supabase = createServerClient(event);
 	event.locals.supabase = supabase;
@@ -24,33 +32,25 @@ export const handle: Handle = async ({ event, resolve }) => {
 	 * a round-trip to the Supabase Auth server so the session is verified.
 	 */
 	event.locals.safeGetSession = async () => {
-		const UNAUTHENTICATED = { session: null, user_metadata: null, profile: null };
-		const {
-			data: { session }
-		} = await supabase.auth.getSession();
-
-		if (!session) return UNAUTHENTICATED;
+		const UNAUTHENTICATED = { session: null, user_metadata: null };
+		// Verify the token with the Auth server first
 		const {
 			data: { user },
 			error
 		} = await supabase.auth.getUser();
 
+		if (error || !user) return UNAUTHENTICATED;
+		// Only if valid, retrieve the session (which contains the tokens)
+		const {
+			data: { session }
+		} = await supabase.auth.getSession();
+
 		// JWT expired or invalid – treat as logged-out
-		if (!user || error) return UNAUTHENTICATED;
+		if (!session) return UNAUTHENTICATED;
 
-		const { data: profile, error: profileError } = await supabase
-			.schema('api')
-			.from('user_profiles')
-			.select('*')
-			.eq('user_id', user.id)
-			.single();
-
-		if (!profile || profileError) return UNAUTHENTICATED;
-
-		const currentDate = new Date();
-
-		console.log('Fetch ran at', { currentDate });
-		return { session, user_metadata: user, profile: profile as User.Profile };
+		console.log('Hook ran at', new Date().toISOString());
+		event.locals.session = session;
+		return { session, user_metadata: user };
 	};
 
 	// ── 2. Trigger token refresh (the "getUser()" side-effect) ──
