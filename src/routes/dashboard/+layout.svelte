@@ -1,15 +1,15 @@
 <script>
 	import AdminNavBar from '$lib/components/AdminNavBar.svelte';
-	import SidebarProvider from '$lib/components/providers/SidebarProvider.svelte';
-	import Sidebar from '$lib/components/Sidebar.svelte';
+	import AppSidebar from '$lib/components/shadcn/app-sidebar.svelte';
 	let { children, data } = $props();
 	const user = $derived(data.profile);
+	import * as Sidebar from '$lib/components/shadcn/ui/sidebar/index.js';
 </script>
 
 <div>
-	<SidebarProvider>
+	<Sidebar.Provider>
+		<AppSidebar />
 		<div class="flex h-screen w-full">
-			<Sidebar />
 			<div class="flex flex-1 flex-col">
 				<AdminNavBar {user} />
 				<main>
@@ -17,5 +17,5 @@
 				</main>
 			</div>
 		</div>
-	</SidebarProvider>
+	</Sidebar.Provider>
 </div>

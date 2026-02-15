@@ -33,6 +33,11 @@ declare global {
 		};
 	}
 	namespace Sidebar {
+		interface Item {
+			title: string;
+			url: string;
+			icon: LucideIcon;
+		}
 		/** Represents a sub-item within a navigation item */
 		interface NavSubItem {
 			label: string;

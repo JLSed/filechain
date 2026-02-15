@@ -1,3 +1,4 @@
+import type Sidebar from '$lib/components/shadcn/ui/sidebar/sidebar.svelte';
 import {
 	LayoutDashboard,
 	Users,
@@ -22,67 +23,57 @@ export const pageTitles: Record<string, string> = {
 
 // ── 3. Route protection ──
 export const protectedRoutes = ['/dashboard', '/files', '/settings', '/account'];
-export const authRoutes = ['/login', '/register', '/dashboard/files'];
+export const authRoutes = ['/login', '/register'];
 
 export const ICON_SIZE_SMALL = 18;
 export const ICON_SIZE_MEDIUM = 22;
 export const ICON_SIZE_LARGE = 28;
 
-// for sidebar navigation groups
-export const navGroups: Sidebar.NavGroup[] = [
+export const overviewGroup: Sidebar.Item[] = [
 	{
-		label: 'Overview',
-		items: [
-			{
-				label: 'Dashboard',
-				href: '/dashboard',
-				icon: LayoutDashboard
-			},
-			{
-				label: 'Filling Forms',
-				href: '/dashboard/forms',
-				icon: FileText
-			},
-			{
-				label: 'Reports',
-				href: '/dashboard/reports',
-				icon: ChartArea
-			},
-			{
-				label: 'Audit Logs',
-				href: '/dashboard/audit-logs',
-				icon: BookA
-			}
-		]
+		title: 'Dashboard',
+		url: '/dashboard',
+		icon: LayoutDashboard
 	},
 	{
-		label: 'Patenting',
-		items: [
-			{
-				label: 'Patenting of Client',
-				href: '/dashboard/patenting/client',
-				icon: FileUser
-			},
-			{
-				label: 'Patenting of IPOPHL',
-				href: '/dashboard/patenting/ipophil',
-				icon: Building2
-			}
-		]
+		title: 'Filling Forms',
+		url: '/dashboard/forms',
+		icon: FileText
 	},
 	{
-		label: 'Management',
-		items: [
-			{
-				label: 'File Management',
-				href: '/dashboard/files',
-				icon: FolderOpen
-			},
-			{
-				label: 'User Management',
-				href: '/dashboard/user',
-				icon: Users
-			}
-		]
+		title: 'Reports',
+		url: '/dashboard/reports',
+		icon: ChartArea
+	},
+	{
+		title: 'Audit Logs',
+		url: '/dashboard/audit-logs',
+		icon: BookA
+	}
+];
+
+export const patentingGroups: Sidebar.Item[] = [
+	{
+		title: 'Patenting of Client',
+		url: '/dashboard/patenting/client',
+		icon: FileUser
+	},
+	{
+		title: 'Patenting of IPOPHL',
+		url: '/dashboard/patenting/ipophil',
+		icon: Building2
+	}
+];
+
+export const managementGroups: Sidebar.Item[] = [
+	{
+		title: 'File Management',
+		url: '/dashboard/files',
+		icon: FolderOpen
+	},
+	{
+		title: 'User Management',
+		url: '/dashboard/user',
+		icon: Users
 	}
 ];
