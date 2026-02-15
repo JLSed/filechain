@@ -1,10 +1,14 @@
 <script lang="ts">
-	// `data.session` and `data.user` are automatically passed down
-	// from your root +layout.server.ts
+	import LatestUploadsTable from '$lib/components/LatestUploadsTable.svelte';
+
+	let { data } = $props();
 </script>
 
-<div>
-	<h1 class="">Dashboard</h1>
+<div class="space-y-6 p-6">
+	<div>
+		<h1 class="text-3xl font-bold text-foreground">Dashboard</h1>
+		<p class="mt-2 text-muted-foreground">Overview of your recent file uploads</p>
+	</div>
 
-	<div></div>
+	<LatestUploadsTable files={data.files} profile={data.profile} />
 </div>
