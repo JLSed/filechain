@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import init, { greet } from '../lib/pkg/rust';
+	import init, { greet } from '../../lib/pkg/rust.js';
 	import dmvLogo from '$lib/assets/dmv-logo.svg';
 
 	let { data } = $props();

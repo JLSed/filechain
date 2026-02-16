@@ -11,18 +11,28 @@ import {
 
 export const pageTitles: Record<string, string> = {
 	'/dashboard': 'Dashboard',
-	'/dashboard/forms': 'Filling Forms',
-	'/dashboard/reports': 'Reports',
-	'/dashboard/audit-logs': 'Audit Logs',
-	'/dashboard/patenting/client': 'Patenting of Client',
-	'/dashboard/patenting/ipophil': 'Patenting of IPOPHL',
-	'/dashboard/files': 'File Management',
-	'/dashboard/user': 'User Management'
+	'/forms': 'Filling Forms',
+	'/reports': 'Reports',
+	'/audit-logs': 'Audit Logs',
+	'/patenting/client': 'Patenting of Client',
+	'/patenting/ipophil': 'Patenting of IPOPHL',
+	'/files': 'File Management',
+	'/user': 'User Management'
 };
 
 // ── 3. Route protection ──
-export const protectedRoutes = ['/dashboard', '/files', '/settings', '/account'];
-export const authRoutes = ['/login', '/register', '/dashboard/files'];
+export const protectedRoutes = [
+	'/dashboard',
+	'/files',
+	'/settings',
+	'/users',
+	'/forms',
+	'/reports',
+	'/audit-logs',
+	'/patenting/client',
+	'/patenting/ipophil'
+];
+export const authRoutes = ['/login', '/register'];
 
 export const ICON_SIZE_SMALL = 18;
 export const ICON_SIZE_MEDIUM = 22;
@@ -40,17 +50,17 @@ export const navGroups: Sidebar.NavGroup[] = [
 			},
 			{
 				label: 'Filling Forms',
-				href: '/dashboard/forms',
+				href: '/forms',
 				icon: FileText
 			},
 			{
 				label: 'Reports',
-				href: '/dashboard/reports',
+				href: '/reports',
 				icon: ChartArea
 			},
 			{
 				label: 'Audit Logs',
-				href: '/dashboard/audit-logs',
+				href: '/audit-logs',
 				icon: BookA
 			}
 		]
@@ -60,12 +70,12 @@ export const navGroups: Sidebar.NavGroup[] = [
 		items: [
 			{
 				label: 'Patenting of Client',
-				href: '/dashboard/patenting/client',
+				href: '/patenting/client',
 				icon: FileUser
 			},
 			{
 				label: 'Patenting of IPOPHL',
-				href: '/dashboard/patenting/ipophil',
+				href: '/patenting/ipophil',
 				icon: Building2
 			}
 		]
@@ -75,12 +85,12 @@ export const navGroups: Sidebar.NavGroup[] = [
 		items: [
 			{
 				label: 'File Management',
-				href: '/dashboard/files',
+				href: '/files',
 				icon: FolderOpen
 			},
 			{
 				label: 'User Management',
-				href: '/dashboard/user',
+				href: '/user',
 				icon: Users
 			}
 		]
