@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { Button } from '$lib/shadcn/components/ui/button';
+	import { Input } from '$lib/shadcn/components/ui/input';
 
 	let loading = $state(false);
 	let errorMessage = $state('');
@@ -13,7 +15,11 @@
 <div class="mx-auto w-full max-w-sm">
 	<h3 class="mb-4 font-bold text-primary">Log In</h3>
 	{#if form?.message || errorMessage}
-		<p class="mb-3 text-sm text-red-600">{form?.message ?? errorMessage}</p>
+		<div
+			class="mb-4 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+		>
+			{form?.message ?? errorMessage}
+		</div>
 	{/if}
 	<form
 		method="POST"
@@ -28,31 +34,37 @@
 			};
 		}}
 	>
-		<div>
-			<input
+		<div class="space-y-2">
+			<label for="email" class="text-sm leading-none font-medium text-foreground"> Email </label>
+			<Input
 				type="email"
 				name="email"
 				id="email"
 				value={form?.email ?? ''}
-				placeholder="Email"
+				placeholder="Enter your email"
 				required
 			/>
 		</div>
 
-		<div>
-			<input type="password" name="password" id="password" placeholder="Password" required />
+		<div class="space-y-2">
+			<label for="password" class="text-sm leading-none font-medium text-foreground">
+				Password
+			</label>
+			<Input
+				type="password"
+				name="password"
+				id="password"
+				placeholder="Enter your password"
+				required
+			/>
 		</div>
 
-		<div class="flex items-center justify-between text-xs text-gray-500">
-			<span class="flex cursor-pointer items-center gap-2"> Forgot password? </span>
+		<div class="flex items-center justify-end text-sm">
+			<a href="/forgot-password" class="text-primary hover:underline"> Forgot password? </a>
 		</div>
 
-		<button
-			type="submit"
-			disabled={loading}
-			class="mt-2 w-full rounded-md bg-slate-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black disabled:opacity-70"
-		>
+		<Button type="submit" disabled={loading} class="w-full" size="lg">
 			{loading ? 'Logging in...' : 'Log In'}
-		</button>
+		</Button>
 	</form>
 </div>
