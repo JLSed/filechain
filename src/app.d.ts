@@ -1,5 +1,5 @@
 import type { Session, SupabaseClient, User as UserMetadata } from '@supabase/supabase-js';
-import type { LucideIcon } from 'lucide-svelte';
+import type { LucideIcon } from '@lucide/svelte';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
@@ -33,6 +33,18 @@ declare global {
 		};
 	}
 	namespace Sidebar {
+		interface Item {
+			title: string;
+			url: string;
+			icon: LucideIcon;
+		}
+
+		/** Represents a group of sidebar items */
+		interface Group {
+			label: string;
+			items: Item[];
+		}
+
 		/** Represents a sub-item within a navigation item */
 		interface NavSubItem {
 			label: string;

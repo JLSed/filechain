@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { navGroups } from '$lib/constants/constant';
-	import { ChevronDown, ChevronRight } from 'lucide-svelte';
+	import { ChevronDown, ChevronRight } from '@lucide/svelte';
 	import { getContext } from 'svelte';
 	import { slide, fade } from 'svelte/transition';
 	import type { Writable } from 'svelte/store';

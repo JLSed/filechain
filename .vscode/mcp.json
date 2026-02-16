@@ -1,0 +1,14 @@
+{
+	"servers": {
+		"shadcn-ui-mcp-server": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"@jpisnice/shadcn-ui-mcp-server",
+				"--framework",
+				"svelte"
+			]
+		}
+	},
+	"inputs": []
+}

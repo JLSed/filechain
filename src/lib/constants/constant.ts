@@ -7,7 +7,7 @@ import {
 	FileUser,
 	FolderOpen,
 	ChartArea
-} from 'lucide-svelte';
+} from '@lucide/svelte';
 
 export const pageTitles: Record<string, string> = {
 	'/dashboard': 'Dashboard',
@@ -38,61 +38,66 @@ export const ICON_SIZE_SMALL = 18;
 export const ICON_SIZE_MEDIUM = 22;
 export const ICON_SIZE_LARGE = 28;
 
-// for sidebar navigation groups
-export const navGroups: Sidebar.NavGroup[] = [
+export const overviewGroup: Sidebar.Item[] = [
+	{
+		title: 'Dashboard',
+		url: '/dashboard',
+		icon: LayoutDashboard
+	},
+	{
+		title: 'Filling Forms',
+		url: '/forms',
+		icon: FileText
+	},
+	{
+		title: 'Reports',
+		url: '/reports',
+		icon: ChartArea
+	},
+	{
+		title: 'Audit Logs',
+		url: '/audit-logs',
+		icon: BookA
+	}
+];
+
+export const patentingGroups: Sidebar.Item[] = [
+	{
+		title: 'Patenting of Client',
+		url: '/patenting/client',
+		icon: FileUser
+	},
+	{
+		title: 'Patenting of IPOPHL',
+		url: '/patenting/ipophil',
+		icon: Building2
+	}
+];
+
+export const managementGroups: Sidebar.Item[] = [
+	{
+		title: 'File Management',
+		url: '/files',
+		icon: FolderOpen
+	},
+	{
+		title: 'User Management',
+		url: '/user',
+		icon: Users
+	}
+];
+
+export const sidebarGroups: Sidebar.Group[] = [
 	{
 		label: 'Overview',
-		items: [
-			{
-				label: 'Dashboard',
-				href: '/dashboard',
-				icon: LayoutDashboard
-			},
-			{
-				label: 'Filling Forms',
-				href: '/forms',
-				icon: FileText
-			},
-			{
-				label: 'Reports',
-				href: '/reports',
-				icon: ChartArea
-			},
-			{
-				label: 'Audit Logs',
-				href: '/audit-logs',
-				icon: BookA
-			}
-		]
+		items: overviewGroup
 	},
 	{
 		label: 'Patenting',
-		items: [
-			{
-				label: 'Patenting of Client',
-				href: '/patenting/client',
-				icon: FileUser
-			},
-			{
-				label: 'Patenting of IPOPHL',
-				href: '/patenting/ipophil',
-				icon: Building2
-			}
-		]
+		items: patentingGroups
 	},
 	{
 		label: 'Management',
-		items: [
-			{
-				label: 'File Management',
-				href: '/files',
-				icon: FolderOpen
-			},
-			{
-				label: 'User Management',
-				href: '/user',
-				icon: Users
-			}
-		]
+		items: managementGroups
 	}
 ];
