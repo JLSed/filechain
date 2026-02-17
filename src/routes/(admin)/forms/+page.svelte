@@ -1,2 +1,2 @@
-<h1 class="text-2xl font-bold">Filling Forms</h1>
-<p class="text-muted-foreground mt-2">Manage your forms here.</p>
+<h1 class="text-2xl font-bold">Filing Forms</h1>
+<p class="mt-2 text-muted-foreground">Manage your forms here.</p>
