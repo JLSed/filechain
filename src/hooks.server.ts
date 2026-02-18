@@ -16,11 +16,7 @@ import { type Handle, redirect } from '@sveltejs/kit';
  */
 export const handle: Handle = async ({ event, resolve }) => {
 	// Don't run auth logic for static assets, favicons, or SvelteKit internal paths
-	if (
-		event.url.pathname.startsWith('/_app') ||
-		event.url.pathname.includes('.') || // cheap way to skip files with extensions (css, png, ico)
-		event.url.pathname === '/favicon.ico'
-	) {
+	if (event.url.pathname.startsWith('/_app') || event.url.pathname === '/favicon.ico') {
 		return resolve(event);
 	}
 	// ── 1. Build the server client (reads & writes cookies) ──
