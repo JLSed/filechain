@@ -30,7 +30,7 @@
 		const year = now.getFullYear();
 		const day = now.getDate();
 		const month = now.getMonth() + 1;
-		const random = Math.floor(10000000 + Math.random() * 90000000); // 8 digits
+		const random = Math.floor(1000 + Math.random() * 9000); // 4 digits
 		return `${year}${day}${month}00${random}`;
 	}
 

@@ -16,7 +16,7 @@
 	);
 </script>
 
-<nav class="relative flex border-b border-primary/20">
+<nav class="sticky flex border-b border-primary/20">
 	<div class="flex items-center border-r border-primary/20 px-3 py-2">
 		<button onclick={() => sidebar.toggle()} class="md:hidden" aria-label="Open menu">
 			<Menu />

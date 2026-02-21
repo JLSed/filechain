@@ -6,6 +6,8 @@ export interface IpApplicationRow extends IpApplication {
 	client_last_name: string | null;
 	client_email: string | null;
 	type_of_invention_name: string | null;
+	pre_protection_status_name: string | null;
+	type_of_office_action_name: string | null;
 }
 
 export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
@@ -44,6 +46,12 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 				email
 			),
 			type_of_invention!left (
+				name
+			),
+			pre_protection_status!left (
+				name
+			),
+			type_of_office_action!left (
 				name
 			)
 		`,
@@ -92,6 +100,8 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 	const applications: IpApplicationRow[] = (data ?? []).map((row: Record<string, unknown>) => {
 		const client = row.client_profiles as Record<string, unknown> | null;
 		const invention = row.type_of_invention as Record<string, unknown> | null;
+		const protection = row.pre_protection_status as Record<string, unknown> | null;
+		const officeAction = row.type_of_office_action as Record<string, unknown> | null;
 		return {
 			application_number: row.application_number as string,
 			client_id: row.client_id as string | null,
@@ -113,7 +123,9 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 			client_first_name: client ? (client.first_name as string | null) : null,
 			client_last_name: client ? (client.last_name as string | null) : null,
 			client_email: client ? (client.email as string | null) : null,
-			type_of_invention_name: invention ? (invention.name as string | null) : null
+			type_of_invention_name: invention ? (invention.name as string | null) : null,
+			pre_protection_status_name: protection ? (protection.name as string | null) : null,
+			type_of_office_action_name: officeAction ? (officeAction.name as string | null) : null
 		};
 	});
 
