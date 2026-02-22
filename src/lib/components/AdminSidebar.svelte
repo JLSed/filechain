@@ -25,7 +25,7 @@
 							<img src={Logo} alt="DMV Logo" class="size-8 shrink-0" />
 							<div class="flex flex-col items-start">
 								<span class="font-semibold">DMV IP Consultancy</span>
-								<span class="text-xs text-sidebar-foreground/70">Services</span>
+								<span class="text-xs text-sidebar-foreground/70">Admin Panel</span>
 							</div>
 						</a>
 					{/snippet}

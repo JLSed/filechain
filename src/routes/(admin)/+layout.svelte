@@ -13,7 +13,7 @@
 			<AdminSidebar {user} />
 			<div class="flex flex-1 flex-col">
 				<AdminNavBar {user} />
-				<main>
+				<main class="flex-1 overflow-auto">
 					{@render children()}
 				</main>
 			</div>

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { IpApplicationFormData } from '$lib/types/ip-application';
-import { encrypt_file } from '$lib/pkg/rust';
+import initWasm, { encrypt_file } from '$lib/pkg/rust';
 
 /**
  * Submits an IP application:
@@ -17,6 +17,9 @@ export async function submitIpApplication(
 	if (!appNumber) {
 		throw new Error('Application number is required.');
 	}
+
+	// ── 0. Ensure WASM module is initialised ──
+	await initWasm();
 
 	// ── 1. Resolve the user's public key for encryption ──
 	const {

@@ -29,7 +29,7 @@ Filechain is a secure cloud storage solution with zero-knowledge encryption buil
 ### Functions & Utilities
 
 4. **Reusable Logic:** Place utility functions in `src/lib/utils/`.
-5. **Server-Side Logic:** 
+5. **Server-Side Logic:**
    - Use `+page.server.ts` or `+layout.server.ts` for data loaders and form actions.
    - Use `+server.ts` for API endpoints.
    - **Do not** create separate `actions.ts` files; use standard SvelteKit form actions.
@@ -98,12 +98,33 @@ e2e/              # Playwright end-to-end tests
 21. **Svelte 5 Runes:** Use `$props()` for component props, `$state()` for reactive state.
     ```svelte
     <script lang="ts">
-      let { count = 0 } = $props();
-      let double = $derived(count * 2);
+    	let { count = 0 } = $props();
+    	let double = $derived(count * 2);
     </script>
     ```
 22. **Performance:** Use `{@render ...}` for snippets.
 23. **Security:** Never expose secret keys in client-side code.
-24. **Testing:** 
+24. **Testing:**
     - Unit tests: `*.test.ts` (Vitest).
     - E2E tests: `e2e/*.test.ts` (Playwright).
+
+---
+
+## shadcn/ui Component Usage
+
+### Always Check shadcn/ui Before Building Custom Components
+
+**Instructions for Copilot:**
+
+- Before implementing any UI component from scratch, **always** query the shadcn/ui MCP server to check whether a shadcn/ui implementation already exists for that component.
+- If a shadcn/ui component exists, use or adapt it rather than writing a custom solution.
+- shadcn/ui components live in `src/lib/shadcn/components/` and are imported via the `$lib/shadcn/components/` path.
+- Use the MCP tool `mcp_shadcn-ui-mcp_get_component` to retrieve the component source, and `mcp_shadcn-ui-mcp_get_component_demo` to see usage examples before implementing.
+- If a relevant block (composite UI pattern) is available via `mcp_shadcn-ui-mcp_get_block`, prefer it over assembling individual components manually.
+
+**Example workflow when adding a new component:**
+
+1. Check available components: `mcp_shadcn-ui-mcp_list_components`.
+2. Retrieve its source: `mcp_shadcn-ui-mcp_get_component("button")`.
+3. Review the demo: `mcp_shadcn-ui-mcp_get_component_demo("button")`.
+4. Place it in `src/lib/shadcn/components/` if not already present, then import from `$lib/shadcn/components/ui/button`.
