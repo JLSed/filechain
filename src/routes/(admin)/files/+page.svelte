@@ -7,6 +7,7 @@
 	import ApplicationDetail from '$lib/components/client-patenting/ApplicationDetail.svelte';
 	import FileDecryptionDialog from '$lib/components/files/FileDecryptionDialog.svelte';
 	import FileViewer from '$lib/components/files/FileViewer.svelte';
+	import RevisionHistory from '$lib/components/files/RevisionHistory.svelte';
 	import type { ClientApplicationRow } from './+page.server';
 	import type { StorageFile } from '../patenting/client/files/+server';
 	import type { IpApplicationStatus } from '$lib/types/ip-application';
@@ -30,6 +31,11 @@
 
 	// ── File viewer state ──
 	let activeFileView = $state<DecryptedFileView | null>(null);
+
+	// ── Revision history drawer state ──
+	let revisionDrawerOpen = $state(false);
+	let revisionFileName = $state('');
+	let revisionFolderPath = $state('');
 
 	$effect(() => {
 		searchValue = data.search;
@@ -97,6 +103,12 @@
 			URL.revokeObjectURL(activeFileView.blobUrl);
 		}
 		activeFileView = null;
+	}
+
+	function openRevisionHistory(fileName: string, folderPath: string) {
+		revisionFileName = fileName;
+		revisionFolderPath = folderPath;
+		revisionDrawerOpen = true;
 	}
 
 	function formatDate(dateString: string | null): string {
@@ -183,7 +195,12 @@
 		{:else}
 			<div class="flex flex-col gap-3">
 				{#each data.clientFolders as folder (folder.clientId)}
-					<ClientFolder {folder} onViewDetails={openDetails} onViewFile={openFileDecrypt} />
+					<ClientFolder
+						{folder}
+						onViewDetails={openDetails}
+						onViewFile={openFileDecrypt}
+						onViewHistory={openRevisionHistory}
+					/>
 				{/each}
 			</div>
 		{/if}
@@ -209,4 +226,11 @@
 	bind:open={decryptDialogOpen}
 	onclose={() => (decryptDialogOpen = false)}
 	onDecrypted={handleDecrypted}
+/>
+
+<!-- ── Revision History Drawer ── -->
+<RevisionHistory
+	bind:open={revisionDrawerOpen}
+	fileName={revisionFileName}
+	folderPath={revisionFolderPath}
 />

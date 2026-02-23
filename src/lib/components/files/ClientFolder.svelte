@@ -9,6 +9,7 @@
 		File,
 		FileJson,
 		FileLock,
+		FileStack,
 		FolderClosed,
 		FolderOpen,
 		Loader2,
@@ -21,11 +22,13 @@
 	let {
 		folder,
 		onViewDetails,
-		onViewFile
+		onViewFile,
+		onViewHistory
 	}: {
 		folder: ClientFolder;
 		onViewDetails: (app: ClientFolder['applications'][0]) => void;
 		onViewFile: (fileName: string, folderPath: string) => void;
+		onViewHistory: (fileName: string, folderPath: string) => void;
 	} = $props();
 
 	let expanded = $state(false);
@@ -224,6 +227,12 @@
 												>
 													<Eye class="mr-2 size-4" />
 													View File
+												</ContextMenu.Item>
+												<ContextMenu.Item
+													onclick={() => onViewHistory(file.name, app.link_to_folder ?? '')}
+												>
+													<FileStack class="mr-2 size-4" />
+													Revision History
 												</ContextMenu.Item>
 											</ContextMenu.Content>
 										</ContextMenu.Root>
