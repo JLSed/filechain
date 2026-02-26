@@ -3,7 +3,7 @@ import type {
 	PreProtectionStatus,
 	TypeOfInvention,
 	TypeOfOfficeAction
-} from '$lib/types/ip-application';
+} from '$lib/types/filing-forms/ip-application';
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	const [inventionTypes, protectionStatuses, officeActions] = await Promise.all([

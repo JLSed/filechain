@@ -6,7 +6,7 @@
 		TypeOfInvention,
 		PreProtectionStatus,
 		TypeOfOfficeAction
-	} from '$lib/types/ip-application';
+	} from '$lib/types/filing-forms/ip-application';
 
 	let {
 		formData,

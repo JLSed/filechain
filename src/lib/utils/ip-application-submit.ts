@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { IpApplicationFormData } from '$lib/types/ip-application';
+import type { IpApplicationFormData } from '$lib/types/filing-forms/ip-application';
 import initWasm, { encrypt_file } from '$lib/pkg/rust';
 
 /**

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Textarea } from '$lib/shadcn/components/ui/textarea';
 	import { Label } from '$lib/shadcn/components/ui/label';
-	import type { IpApplicationFormData } from '$lib/types/ip-application';
+	import type { IpApplicationFormData } from '$lib/types/filing-forms/ip-application';
 
 	let { formData = $bindable() }: { formData: IpApplicationFormData } = $props();
 </script>

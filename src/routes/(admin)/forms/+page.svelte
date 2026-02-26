@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Tabs, TabsList, TabsTrigger, TabsContent } from '$lib/shadcn/components/ui/tabs';
 	import { FileText, Shield } from '@lucide/svelte';
-	import IPApplicationForm from '$lib/components/ip-application/IPApplicationForm.svelte';
+	import IPApplicationForm from '$lib/components/filing-forms/ip-application/IPApplicationForm.svelte';
 
 	let { data } = $props();
 </script>

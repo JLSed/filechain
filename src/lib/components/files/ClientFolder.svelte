@@ -17,7 +17,7 @@
 	} from '@lucide/svelte';
 	import type { ClientFolder } from '../../../routes/(admin)/files/+page.server';
 	import type { StorageFile } from '../../../routes/(admin)/patenting/client/files/+server';
-	import type { IpApplicationStatus } from '$lib/types/ip-application';
+	import type { IpApplicationStatus } from '$lib/types/filing-forms/ip-application';
 
 	let {
 		folder,

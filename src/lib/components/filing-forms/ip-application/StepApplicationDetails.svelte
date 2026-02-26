@@ -3,13 +3,13 @@
 	import { Label } from '$lib/shadcn/components/ui/label';
 	import { Textarea } from '$lib/shadcn/components/ui/textarea';
 	import * as Select from '$lib/shadcn/components/ui/select';
-	import DatePicker from '$lib/components/ip-application/DatePicker.svelte';
+	import DatePicker from '$lib/components/DatePicker.svelte';
 	import type {
 		IpApplicationFormData,
 		TypeOfInvention,
 		PreProtectionStatus,
 		TypeOfOfficeAction
-	} from '$lib/types/ip-application';
+	} from '$lib/types/filing-forms/ip-application';
 
 	let {
 		formData = $bindable(),

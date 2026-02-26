@@ -10,7 +10,7 @@
 	import RevisionHistory from '$lib/components/files/RevisionHistory.svelte';
 	import type { ClientApplicationRow } from './+page.server';
 	import type { StorageFile } from '../patenting/client/files/+server';
-	import type { IpApplicationStatus } from '$lib/types/ip-application';
+	import type { IpApplicationStatus } from '$lib/types/filing-forms/ip-application.js';
 	import type { DecryptedFileView } from '$lib/types/file';
 
 	let { data } = $props();

@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import type { IpApplication } from '$lib/types/ip-application';
+import type { IpApplication } from '$lib/types/filing-forms/ip-application';
 
 export interface IpApplicationRow extends IpApplication {
 	client_first_name: string | null;

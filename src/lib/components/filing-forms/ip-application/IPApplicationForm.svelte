@@ -14,13 +14,14 @@
 	import StepDocumentUpload from './StepDocumentUpload.svelte';
 	import StepInternalNotes from './StepInternalNotes.svelte';
 	import StepFinalReview from './StepFinalReview.svelte';
+	import StepperNav from './StepperNav.svelte';
 	import {
 		STEP_LABELS,
 		type IpApplicationFormData,
 		type TypeOfInvention,
 		type PreProtectionStatus,
 		type TypeOfOfficeAction
-	} from '$lib/types/ip-application';
+	} from '$lib/types/filing-forms/ip-application';
 	import { submitIpApplication } from '$lib/utils/ip-application-submit';
 	import { createBrowserClient } from '$lib/services/supabase/client';
 
@@ -49,36 +50,40 @@
 	let submitError = $state<string | null>(null);
 	let submitSuccess = $state(false);
 
-	let formData: IpApplicationFormData = $state({
-		clientFirstName: '',
-		clientMiddleName: '',
-		clientLastName: '',
-		clientEmail: '',
-		clientMobileNumber: '',
-		clientDialCode: '+63',
-		clientNationality: '',
-		clientCompany: '',
-		clientCompanyAddress: '',
-		titleOfInvention: '',
-		typeOfInventionId: null,
-		preProtectionStatusId: null,
-		typeOfOfficeActionId: null,
-		applicationNumber: generateApplicationNumber(),
-		fillingDate: '',
-		paperDocumentNo: '',
-		fees: '',
-		deadline: '',
-		mailingDate: '',
-		publicationDate: '',
-		inventorNames: '',
-		contactDetails: '',
-		files: [],
-		remarks: ''
-	});
+	let formData: IpApplicationFormData = $state(createEmptyFormData());
 
 	const totalSteps = STEP_LABELS.length;
 	const isFirstStep = $derived(currentStep === 0);
 	const isLastStep = $derived(currentStep === totalSteps - 1);
+
+	function createEmptyFormData(): IpApplicationFormData {
+		return {
+			clientFirstName: '',
+			clientMiddleName: '',
+			clientLastName: '',
+			clientEmail: '',
+			clientMobileNumber: '',
+			clientDialCode: '+63',
+			clientNationality: '',
+			clientCompany: '',
+			clientCompanyAddress: '',
+			titleOfInvention: '',
+			typeOfInventionId: null,
+			preProtectionStatusId: null,
+			typeOfOfficeActionId: null,
+			applicationNumber: generateApplicationNumber(),
+			fillingDate: '',
+			paperDocumentNo: '',
+			fees: '',
+			deadline: '',
+			mailingDate: '',
+			publicationDate: '',
+			inventorNames: '',
+			contactDetails: '',
+			files: [],
+			remarks: ''
+		};
+	}
 
 	/** Basic per-step validation */
 	function canProceed(): boolean {
@@ -146,32 +151,7 @@
 				onclick={() => {
 					submitSuccess = false;
 					currentStep = 0;
-					formData = {
-						clientFirstName: '',
-						clientMiddleName: '',
-						clientLastName: '',
-						clientEmail: '',
-						clientMobileNumber: '',
-						clientDialCode: '+63',
-						clientNationality: '',
-						clientCompany: '',
-						clientCompanyAddress: '',
-						titleOfInvention: '',
-						typeOfInventionId: null,
-						preProtectionStatusId: null,
-						typeOfOfficeActionId: null,
-						applicationNumber: generateApplicationNumber(),
-						fillingDate: '',
-						paperDocumentNo: '',
-						fees: '',
-						deadline: '',
-						mailingDate: '',
-						publicationDate: '',
-						inventorNames: '',
-						contactDetails: '',
-						files: [],
-						remarks: ''
-					};
+					formData = createEmptyFormData();
 				}}
 			>
 				File Another Application
@@ -181,41 +161,7 @@
 {:else}
 	<div class="flex flex-col gap-6 lg:flex-row">
 		<!-- Stepper sidebar -->
-		<nav class=" lg:w-60 lg:shrink-0" aria-label="Form steps">
-			<ol class="flex gap-2 overflow-x-auto lg:flex-col lg:gap-0">
-				{#each STEP_LABELS as label, idx (label)}
-					{@const visited = idx < currentStep}
-					{@const active = idx === currentStep}
-					<li class="flex items-center lg:py-0">
-						<button
-							type="button"
-							onclick={() => goToStep(idx)}
-							disabled={idx > currentStep}
-							class="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-colors
-								{active ? 'bg-primary/10 font-semibold text-primary' : ''}
-								{visited ? 'cursor-pointer text-foreground hover:bg-secondary/10' : ''}
-								{!active && !visited ? 'cursor-not-allowed text-muted-foreground' : ''}"
-						>
-							<span
-								class="flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold
-									{active ? 'bg-primary text-primary-foreground' : ''}
-									{visited ? 'bg-secondary/20 text-secondary' : ''}
-									{!active && !visited ? 'bg-muted text-muted-foreground' : ''}"
-							>
-								{#if visited}
-									<Check class="size-3.5" />
-								{:else}
-									{idx + 1}
-								{/if}
-							</span>
-							<span class="hidden whitespace-nowrap lg:inline {visited ? 'text-secondary' : ''}"
-								>{label}</span
-							>
-						</button>
-					</li>
-				{/each}
-			</ol>
-		</nav>
+		<StepperNav {STEP_LABELS} bind:currentStep {goToStep} />
 
 		<!-- Form card -->
 		<Card class="flex-1 border-0 shadow-none">

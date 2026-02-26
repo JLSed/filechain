@@ -26,7 +26,7 @@
 		Search
 	} from '@lucide/svelte';
 	import type { IpApplicationRow } from './+page.server';
-	import type { IpApplicationStatus } from '$lib/types/ip-application';
+	import type { IpApplicationStatus } from '$lib/types/filing-forms/ip-application.js';
 	import type { StorageFile } from './files/+server';
 	import TableRow from '$lib/components/client-patenting/TableRow.svelte';
 	import ApplicationDetail from '$lib/components/client-patenting/ApplicationDetail.svelte';
@@ -220,7 +220,7 @@
 	</div>
 
 	<!-- Table -->
-	<div class="rounded-lg border">
+	<div class="overflow-x-auto rounded-lg border">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>

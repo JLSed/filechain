@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Input } from '$lib/shadcn/components/ui/input';
 	import { Label } from '$lib/shadcn/components/ui/label';
-	import PhoneInput from '$lib/components/ip-application/PhoneInput.svelte';
-	import type { IpApplicationFormData } from '$lib/types/ip-application';
+	import PhoneInput from '$lib/components/PhoneInput.svelte';
+	import type { IpApplicationFormData } from '$lib/types/filing-forms/ip-application';
 
 	let { formData = $bindable() }: { formData: IpApplicationFormData } = $props();
 </script>

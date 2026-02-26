@@ -9,7 +9,7 @@
 		type DocumentCategory,
 		type IpApplicationFormData,
 		type StagedFile
-	} from '$lib/types/ip-application';
+	} from '$lib/types/filing-forms/ip-application';
 
 	let { formData = $bindable() }: { formData: IpApplicationFormData } = $props();
 
