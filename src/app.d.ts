@@ -1,4 +1,4 @@
-import type { Session, SupabaseClient, User as UserMetadata } from '@supabase/supabase-js';
+import type { Session, SupabaseClient } from '@supabase/supabase-js';
 import type { LucideIcon } from '@lucide/svelte';
 
 // See https://svelte.dev/docs/kit/types#app.d.ts
@@ -21,17 +21,7 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
-	namespace User {
-		type Metadata = UserMetadata;
-		type Profile = {
-			user_id: string;
-			role: string;
-			first_name: string;
-			last_name: string;
-			middle_name?: string;
-			is_active: boolean;
-		};
-	}
+
 	namespace Sidebar {
 		interface Item {
 			title: string;
