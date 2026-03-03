@@ -1,5 +1,6 @@
-import { authRoutes, protectedRoutes } from '$lib/constants/constant';
+import { authRoutes, protectedRoutes } from '$lib/constants/LinkData';
 import { createServerClient } from '$lib/services/supabase/server';
+import type { UserMetadata } from '$lib/types/DatabaseTypes';
 import type { Session } from '@supabase/supabase-js';
 import { type Handle, redirect } from '@sveltejs/kit';
 
@@ -29,7 +30,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	 * layout loaders, page loaders) only trigger **one** round-trip to the
 	 * Supabase Auth server instead of one per call.
 	 */
-	let cachedSession: { session: Session | null; user_metadata: User.Metadata | null } | null = null;
+	let cachedSession: { session: Session | null; user_metadata: UserMetadata | null } | null = null;
 
 	event.locals.safeGetSession = async () => {
 		// Return the cached result if we already verified this request

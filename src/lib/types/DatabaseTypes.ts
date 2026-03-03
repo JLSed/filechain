@@ -1,4 +1,4 @@
-import type {User  } from '@supabase/supabase-js';
+import type {User } from '@supabase/supabase-js';
 import * as z from "zod";
 
 export const UserProfileSchema = z.object({

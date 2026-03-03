@@ -1,10 +1,10 @@
 <script lang="ts">
 	import './layout.css';
 	import dmvLogo from '$lib/assets/dmv-logo-light.svg';
-	import LandingNavBar from '$lib/components/LandingNavBar.svelte';
 	import { onMount } from 'svelte';
 	import { invalidate } from '$app/navigation';
 	import { createBrowserClient } from '$lib/services/supabase/client';
+	import LandingNavBar from '$lib/components/landing/LandingNavBar.svelte';
 
 	let { data, children } = $props();
 
