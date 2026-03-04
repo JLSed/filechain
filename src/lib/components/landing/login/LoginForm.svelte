@@ -2,10 +2,8 @@
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
 	import { superForm } from 'sveltekit-superforms';
-	let loading = $state(false);
 	let { data } = $props();
 	const { form, errors, enhance, submitting, message } = superForm(data.form);
-	console.log(data);
 </script>
 
 <div class="mx-auto w-full max-w-sm">
