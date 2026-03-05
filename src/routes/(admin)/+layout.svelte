@@ -1,6 +1,6 @@
 <script>
-	import AdminNavBar from '$lib/components/AdminNavBar.svelte';
-	import AdminSidebar from '$lib/components/AdminSidebar.svelte';
+	import AdminNavBar from '$lib/components/admin/AdminNavBar.svelte';
+	import AdminSidebar from '$lib/components/admin/AdminSidebar.svelte';
 	let { children, data } = $props();
 	const user = $derived(data.profile);
 	import * as Sidebar from '$lib/shadcn/components/ui/sidebar/index.js';
