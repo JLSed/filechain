@@ -38,15 +38,10 @@ export class TableState {
 }
 
 export class ApplicationTableState extends TableState {
-	readonly applications = $state<IpApplication[]>([]);
+	readonly rows: IpApplication[] = $state([]);
 
-	constructor(applications: IpApplication[]) {
-		super(applications.length);
-		this.applications = applications;
-	}
-
-	getClientName(app: IpApplicationTableRow): string {
-		const parts = [app.client_profile.first_name, app.client_profile.last_name].filter(Boolean);
-		return parts.length > 0 ? parts.join(' ') : '—';
+	constructor(rows: IpApplication[]) {
+		super(rows.length);
+		this.rows = rows;
 	}
 }

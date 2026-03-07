@@ -88,7 +88,12 @@ export const IpApplicationSchema = z.object({
 	updated_at: z.string(),
 	type_of_invention: TypeOfInventionSchema,
 	pre_protection_status: PreProtectionStatusSchema,
-	type_of_office_action: TypeOfOfficeActionSchema
+	type_of_office_action: TypeOfOfficeActionSchema,
+	client_profiles: z.object({
+		first_name: z.string(),
+		last_name: z.string(),
+		email: z.string()
+	})
 });
 
 export type IpApplication = z.infer<typeof IpApplicationSchema>;

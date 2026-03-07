@@ -24,7 +24,9 @@ export const load = (async ({ locals: { supabase } }) => {
 		console.error('Database error:', dbError);
 		throw error(500, 'Failed to fetch IP Applications');
 	}
+
 	const cleanData = z.array(IpApplicationSchema).safeParse(data);
+	console.log(cleanData);
 	if (!cleanData.success) throw error(500, 'Failed to fetch IP Applications');
 
 	return { applications: cleanData.data };

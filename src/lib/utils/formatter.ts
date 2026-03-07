@@ -1,3 +1,5 @@
+import type { IpApplication } from '$lib/types/DatabaseTypes';
+
 export function formatDate(dateString: string | null): string {
 	if (!dateString) return '—';
 	return new Date(dateString).toLocaleDateString('en-US', {
@@ -5,4 +7,9 @@ export function formatDate(dateString: string | null): string {
 		day: 'numeric',
 		year: 'numeric'
 	});
+}
+
+export function getClientName(app: IpApplication): string {
+	const parts = [app.client_profiles.first_name, app.client_profiles.last_name].filter(Boolean);
+	return parts.length > 0 ? parts.join(' ') : '—';
 }

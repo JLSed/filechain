@@ -8,7 +8,7 @@
 </script>
 
 <div class="relative flex min-h-screen w-full items-center justify-center bg-gray-50 p-4">
-	<img src={layeredWaves} alt="" class="absolute inset-0 h-full w-full object-cover" />
+	<!-- <img src={layeredWaves} alt="" class="absolute inset-0 h-full w-full object-cover" /> -->
 	<div class="z-10 flex w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-xl">
 		<!-- Left Side -->
 		<div class="hidden w-1/2 flex-col justify-between bg-white p-12 lg:flex">
