@@ -27,8 +27,11 @@
 							No applications found.
 						</Table.Cell>
 					</Table.Row>
+				{:else}
+					{#each table.rows as row}
+						<ApplicationTableRow data={row} />
+					{/each}
 				{/if}
-				<ApplicationTableRow data={table} />
 			</Table.Body>
 		</Table.Root>
 	</div>
