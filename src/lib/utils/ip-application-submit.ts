@@ -45,9 +45,20 @@ export async function submitIpApplication(
 	}
 
 	const publicKeyBytes = hexToBytes(secret.public_key);
-	console.log('Public key bytes length:', publicKeyBytes.length);
+
 	// ── 2. Encrypt and upload each file ──
 	const storagePath = `files/${appNumber}`;
+
+	// Fetch the current max sequence in file_ledger to continue from
+	const { data: maxSeqRow } = await supabase
+		.schema('api')
+		.from('file_ledger')
+		.select('sequence')
+		.order('sequence', { ascending: false })
+		.limit(1)
+		.single();
+
+	let nextSequence = maxSeqRow ? maxSeqRow.sequence + 1 : 0;
 
 	for (const staged of formData.files) {
 		const fileBytes = new Uint8Array(await staged.file.arrayBuffer());
@@ -58,20 +69,8 @@ export async function submitIpApplication(
 			throw new Error(`Encryption failed for ${staged.file.name}: ${result.error_message}`);
 		}
 
-		// Build a metadata JSON blob to store alongside the encrypted data
-		const meta = JSON.stringify({
-			original_name: staged.file.name,
-			category: staged.category,
-			file_nonce_hex: result.file_nonce_hex,
-			encrypted_dek_hex: result.encrypted_dek_hex,
-			dek_nonce_hex: result.dek_nonce_hex,
-			ephemeral_public_key_hex: result.ephemeral_public_key_hex,
-			original_hash_hex: result.original_hash_hex
-		});
-
 		const encryptedBlob = new Blob([result.encrypted_data as BlobPart]);
 		const filePath = `${storagePath}/${staged.file.name}.enc`;
-		const metaPath = `${storagePath}/${staged.file.name}.meta.json`;
 
 		// Upload encrypted file to the 'storage' bucket
 		const { error: uploadErr } = await supabase.storage
@@ -85,17 +84,50 @@ export async function submitIpApplication(
 			throw new Error(`Upload failed for ${staged.file.name}: ${uploadErr.message}`);
 		}
 
-		// Upload metadata sidecar
-		const { error: metaErr } = await supabase.storage
-			.from('storage')
-			.upload(metaPath, new Blob([meta], { type: 'application/json' }), {
-				contentType: 'application/json',
-				upsert: true
-			});
+		// Insert file metadata into the database
+		const { data: fileMeta, error: metaErr } = await supabase
+			.schema('api')
+			.from('file_metadata')
+			.insert({
+				uploader_id: user.id,
+				file_name: staged.file.name,
+				file_path: filePath,
+				file_hash: result.original_hash_hex,
+				file_nonce: result.file_nonce_hex,
+				size: staged.file.size,
+				category: staged.category
+			})
+			.select('file_id')
+			.single();
 
-		if (metaErr) {
-			throw new Error(`Metadata upload failed for ${staged.file.name}: ${metaErr.message}`);
+		if (metaErr || !fileMeta) {
+			throw new Error(`Metadata insert failed for ${staged.file.name}: ${metaErr?.message}`);
 		}
+
+		// Insert the encrypted DEK into file_dek
+		const { error: dekErr } = await supabase.schema('api').from('file_dek').insert({
+			file_id: fileMeta.file_id,
+			owner_id: user.id,
+			encrypted_dek: result.encrypted_dek_hex,
+			dek_nonce: result.dek_nonce_hex,
+			ephemeral_public_key: result.ephemeral_public_key_hex
+		});
+
+		if (dekErr) {
+			throw new Error(`DEK insert failed for ${staged.file.name}: ${dekErr.message}`);
+		}
+
+		// Insert a ledger entry for the file
+		const { error: ledgerErr } = await supabase.schema('api').from('file_ledger').insert({
+			file_id: fileMeta.file_id,
+			sequence: nextSequence
+		});
+
+		if (ledgerErr) {
+			throw new Error(`Ledger insert failed for ${staged.file.name}: ${ledgerErr.message}`);
+		}
+
+		nextSequence++;
 
 		// Free WASM memory
 		result.free();

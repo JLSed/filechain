@@ -8,7 +8,7 @@
 		CardTitle
 	} from '$lib/shadcn/components/ui/card';
 	import { Separator } from '$lib/shadcn/components/ui/separator';
-	import { Check, ChevronLeft, ChevronRight, Loader2, FileCheck } from '@lucide/svelte';
+	import { ChevronLeft, ChevronRight, Loader2, FileCheck } from '@lucide/svelte';
 	import StepClientInfo from './StepClientInfo.svelte';
 	import StepApplicationDetails from './StepApplicationDetails.svelte';
 	import StepDocumentUpload from './StepDocumentUpload.svelte';

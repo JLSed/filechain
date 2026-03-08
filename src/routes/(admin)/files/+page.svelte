@@ -37,6 +37,9 @@
 	let revisionFileName = $state('');
 	let revisionFolderPath = $state('');
 
+	// ── Folder invalidation (triggers ClientFolder file refresh) ──
+	let invalidateFolderPath = $state<string | null>(null);
+
 	$effect(() => {
 		searchValue = data.search;
 	});
@@ -109,6 +112,28 @@
 		revisionFileName = fileName;
 		revisionFolderPath = folderPath;
 		revisionDrawerOpen = true;
+	}
+
+	async function handleVersionUploaded() {
+		// Trigger a refresh of the ClientFolder that contains this folder path
+		invalidateFolderPath = null; // reset first to ensure reactivity
+		await new Promise((r) => setTimeout(r, 0));
+		invalidateFolderPath = revisionFolderPath;
+
+		// Also update the detail sheet files if the same app is open
+		if (selectedApp?.link_to_folder === revisionFolderPath) {
+			try {
+				const res = await fetch(
+					`/patenting/client/files?path=${encodeURIComponent(revisionFolderPath)}`
+				);
+				if (res.ok) {
+					const json = await res.json();
+					files = json.files as StorageFile[];
+				}
+			} catch {
+				// Silently ignore refresh errors
+			}
+		}
 	}
 
 	function formatDate(dateString: string | null): string {
@@ -200,6 +225,7 @@
 						onViewDetails={openDetails}
 						onViewFile={openFileDecrypt}
 						onViewHistory={openRevisionHistory}
+						invalidatePath={invalidateFolderPath}
 					/>
 				{/each}
 			</div>
@@ -233,4 +259,5 @@
 	bind:open={revisionDrawerOpen}
 	fileName={revisionFileName}
 	folderPath={revisionFolderPath}
+	onVersionUploaded={handleVersionUploaded}
 />

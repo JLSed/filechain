@@ -21,8 +21,21 @@
 		UserPlus
 	} from '@lucide/svelte';
 	import type { AdminUser } from './+page.server';
+	import AddUserDialog from '$lib/components/users/AddUserDialog.svelte';
 
-	let { data } = $props();
+	let { data, form } = $props();
+	let addUserOpen = $state(false);
+
+	const formResult = $derived(
+		form as { message?: string; success?: boolean; email?: string } | null
+	);
+
+	// Close dialog on successful creation
+	$effect(() => {
+		if (formResult?.success) {
+			addUserOpen = false;
+		}
+	});
 
 	let searchValue = $state('');
 
@@ -132,7 +145,7 @@
 				<Download class="size-4" />
 				Export as
 			</Button>
-			<Button class="gap-2">
+			<Button class="gap-2" onclick={() => (addUserOpen = true)}>
 				<Plus class="size-4" />
 				Add user
 			</Button>
@@ -318,3 +331,5 @@
 		</div>
 	{/if}
 </div>
+
+<AddUserDialog bind:open={addUserOpen} form={formResult} />

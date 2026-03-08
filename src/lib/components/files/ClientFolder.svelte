@@ -23,12 +23,14 @@
 		folder,
 		onViewDetails,
 		onViewFile,
-		onViewHistory
+		onViewHistory,
+		invalidatePath = null
 	}: {
 		folder: ClientFolder;
 		onViewDetails: (app: ClientFolder['applications'][0]) => void;
 		onViewFile: (fileName: string, folderPath: string) => void;
 		onViewHistory: (fileName: string, folderPath: string) => void;
+		invalidatePath?: string | null;
 	} = $props();
 
 	let expanded = $state(false);
@@ -38,6 +40,31 @@
 	let appFilesLoading = $state<Record<string, boolean>>({});
 	let appFilesError = $state<Record<string, string | null>>({});
 	let appExpanded = $state<Record<string, boolean>>({});
+
+	// When invalidatePath changes, refresh the cached file list for the matching app
+	$effect(() => {
+		if (!invalidatePath) return;
+		const app = folder.applications.find((a) => a.link_to_folder === invalidatePath);
+		if (!app) return;
+		const appNum = app.application_number;
+		if (!appFiles[appNum]) return; // not loaded yet, nothing to refresh
+		refreshAppFiles(appNum, invalidatePath);
+	});
+
+	async function refreshAppFiles(appNumber: string, linkToFolder: string) {
+		appFilesLoading[appNumber] = true;
+		appFilesError[appNumber] = null;
+		try {
+			const res = await fetch(`/patenting/client/files?path=${encodeURIComponent(linkToFolder)}`);
+			if (!res.ok) throw new Error('Failed to load files');
+			const json = await res.json();
+			appFiles[appNumber] = json.files as StorageFile[];
+		} catch (err) {
+			appFilesError[appNumber] = err instanceof Error ? err.message : 'Unknown error';
+		} finally {
+			appFilesLoading[appNumber] = false;
+		}
+	}
 
 	async function toggleAppFolder(appNumber: string, linkToFolder: string | null) {
 		const wasExpanded = appExpanded[appNumber] ?? false;
@@ -61,11 +88,20 @@
 		}
 	}
 
-	function formatFileSize(bytes: number): string {
-		if (bytes === 0) return '—';
+	function formatFileSize(bytes: number | null): string {
+		if (!bytes || bytes === 0) return '—';
 		if (bytes < 1024) return `${bytes} B`;
 		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
 		return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+	}
+
+	function formatDate(dateString: string | null): string {
+		if (!dateString) return '';
+		return new Date(dateString).toLocaleDateString('en-US', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric'
+		});
 	}
 
 	function getFileIcon(name: string) {
@@ -216,8 +252,18 @@
 												>
 													<Icon class="size-3.5 shrink-0 text-muted-foreground" />
 													<span class="truncate text-xs">{file.name}</span>
+													{#if file.latestVersion != null}
+														<Badge variant="outline" class="gap-0.5 px-1 py-0 font-sans text-[9px]">
+															v{file.latestVersion}
+														</Badge>
+													{/if}
+													{#if file.uploadedAt}
+														<span class="shrink-0 font-sans text-[10px] text-muted-foreground">
+															{formatDate(file.uploadedAt)}
+														</span>
+													{/if}
 													<span class="ml-auto shrink-0 text-[10px] text-muted-foreground">
-														{formatFileSize(file.size)}
+														{formatFileSize(file.originalSize ?? file.size)}
 													</span>
 												</div>
 											</ContextMenu.Trigger>

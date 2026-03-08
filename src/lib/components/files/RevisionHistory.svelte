@@ -3,6 +3,7 @@
 	import { Badge } from '$lib/shadcn/components/ui/badge/index.js';
 	import { Button } from '$lib/shadcn/components/ui/button/index.js';
 	import { Separator } from '$lib/shadcn/components/ui/separator/index.js';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 	import {
 		FileStack,
 		FileLock,
@@ -11,16 +12,20 @@
 		HardDrive,
 		Loader2,
 		AlertCircle,
-		X
+		X,
+		Upload
 	} from '@lucide/svelte';
 	import { createBrowserClient } from '$lib/services/supabase/client';
+	import UploadNewVersion from './UploadNewVersion.svelte';
 
 	interface LedgerEntry {
 		block_id: string;
 		file_id: string;
+		file_name: string;
 		created_at: string;
 		signature: string;
 		sequence: number;
+		previous_block: string | null;
 	}
 
 	interface FileInfo {
@@ -36,17 +41,20 @@
 	let {
 		open = $bindable(false),
 		fileName,
-		folderPath
+		folderPath,
+		onVersionUploaded
 	}: {
 		open: boolean;
 		fileName: string;
 		folderPath: string;
+		onVersionUploaded?: () => void;
 	} = $props();
 
 	let loading = $state(false);
 	let error = $state<string | null>(null);
 	let fileInfo = $state<FileInfo | null>(null);
 	let ledgerEntries = $state<LedgerEntry[]>([]);
+	let uploadDialogOpen = $state(false);
 
 	$effect(() => {
 		if (open && fileName && folderPath) {
@@ -63,44 +71,136 @@
 		try {
 			const supabase = createBrowserClient();
 
-			// Build the full file path for lookup
-			const fullPath = `${folderPath}/${fileName}`;
+			// Strip .enc / .encrypted suffix to get the original file name stored in file_metadata
+			const originalName = fileName.replace(/\.(enc|encrypted)$/, '');
 
-			// Fetch file_metadata record for this file
-			const { data: metaData, error: metaError } = await supabase
+			// Extract the application number from folderPath
+			const appNumber = folderPath.split('/').pop() ?? '';
+
+			// Query ALL file_metadata records in this folder
+			const { data: metaRows, error: metaError } = await supabase
 				.schema('api')
 				.from('file_metadata')
 				.select('file_id, file_name, file_hash, file_path, uploaded_at, size, status')
-				.eq('file_path', fullPath)
-				.maybeSingle();
+				.ilike('file_path', `%${appNumber}%`)
+				.order('uploaded_at', { ascending: false });
 
 			if (metaError) throw new Error(metaError.message);
 
-			if (metaData) {
-				fileInfo = metaData as FileInfo;
+			// Build a lookup from file_name → metadata
+			const metaByName = new SvelteMap<string, (typeof metaRows)[0]>();
+			const metaById = new SvelteMap<string, (typeof metaRows)[0]>();
+			for (const row of metaRows ?? []) {
+				metaByName.set(row.file_name, row);
+				metaById.set(row.file_id, row);
+			}
 
-				// Fetch ledger entries for this file
-				const { data: ledgerData, error: ledgerError } = await supabase
-					.schema('api')
-					.from('file_ledger')
-					.select('block_id, file_id, created_at, signature, sequence')
-					.eq('file_id', metaData.file_id)
-					.order('sequence', { ascending: false });
+			// Find the current file's metadata record
+			const currentMeta = metaByName.get(originalName);
 
-				if (ledgerError) throw new Error(ledgerError.message);
-				ledgerEntries = (ledgerData ?? []) as LedgerEntry[];
-			} else {
+			if (!currentMeta) {
 				// No metadata record found — show basic info from storage
 				fileInfo = {
 					file_id: null,
 					file_name: fileName,
 					file_hash: null,
-					file_path: fullPath,
+					file_path: `${folderPath}/${fileName}`,
 					uploaded_at: null,
 					size: 0,
 					status: null
 				};
+				return;
 			}
+
+			// Get ALL ledger entries in this folder for chain traversal
+			const allFileIds = (metaRows ?? []).map((v) => v.file_id);
+
+			const { data: allLedgerData, error: ledgerError } = await supabase
+				.schema('api')
+				.from('file_ledger')
+				.select('block_id, file_id, created_at, signature, sequence, previous_block')
+				.in('file_id', allFileIds)
+				.order('sequence', { ascending: false });
+
+			if (ledgerError) throw new Error(ledgerError.message);
+
+			const allLedger = allLedgerData ?? [];
+
+			// Build lookups for chain traversal
+			const ledgerByFileId = new SvelteMap<string, (typeof allLedger)[0]>();
+			const ledgerByBlockId = new SvelteMap<string, (typeof allLedger)[0]>();
+			const ledgerByPrevBlock = new SvelteMap<string, (typeof allLedger)[0][]>();
+
+			for (const entry of allLedger) {
+				if (!ledgerByFileId.has(entry.file_id)) {
+					ledgerByFileId.set(entry.file_id, entry);
+				}
+				ledgerByBlockId.set(entry.block_id, entry);
+				if (entry.previous_block) {
+					const list = ledgerByPrevBlock.get(entry.previous_block) ?? [];
+					list.push(entry);
+					ledgerByPrevBlock.set(entry.previous_block, list);
+				}
+			}
+
+			// Find the connected chain via previous_block links
+			const chainFileIds = new SvelteSet<string>();
+			const currentLedger = ledgerByFileId.get(currentMeta.file_id);
+
+			if (currentLedger) {
+				// Walk backwards through previous_block to find ancestors
+				chainFileIds.add(currentLedger.file_id);
+				let cursor: (typeof allLedger)[0] | undefined = currentLedger;
+				while (cursor?.previous_block) {
+					const prev = ledgerByBlockId.get(cursor.previous_block);
+					if (!prev || chainFileIds.has(prev.file_id)) break;
+					chainFileIds.add(prev.file_id);
+					cursor = prev;
+				}
+
+				// Walk forwards to find descendants
+				const queue = [currentLedger.block_id];
+				while (queue.length > 0) {
+					const blockId = queue.shift()!;
+					const children = ledgerByPrevBlock.get(blockId) ?? [];
+					for (const child of children) {
+						if (!chainFileIds.has(child.file_id)) {
+							chainFileIds.add(child.file_id);
+							queue.push(child.block_id);
+						}
+					}
+				}
+			} else {
+				// No ledger entry yet — just show this file
+				chainFileIds.add(currentMeta.file_id);
+			}
+
+			// Build version entries from the chain
+			const chainMeta = [...chainFileIds]
+				.map((fid) => metaById.get(fid))
+				.filter((m): m is NonNullable<typeof m> => m != null);
+
+			// Sort by uploaded_at descending — newest first
+			chainMeta.sort(
+				(a, b) => new Date(b.uploaded_at ?? 0).getTime() - new Date(a.uploaded_at ?? 0).getTime()
+			);
+
+			// Set file info to the newest version
+			fileInfo = chainMeta[0] as FileInfo;
+
+			// Build ledger display entries
+			ledgerEntries = chainMeta.map((v, idx) => {
+				const ledger = ledgerByFileId.get(v.file_id);
+				return {
+					block_id: ledger?.block_id ?? '',
+					file_id: v.file_id,
+					file_name: v.file_name,
+					created_at: ledger?.created_at ?? v.uploaded_at ?? '',
+					signature: ledger?.signature ?? '',
+					sequence: ledger?.sequence ?? chainMeta.length - idx,
+					previous_block: ledger?.previous_block ?? null
+				};
+			});
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load revision data';
 		} finally {
@@ -146,9 +246,20 @@
 						</Drawer.Description>
 					</div>
 				</div>
-				<Button variant="ghost" size="icon" class="size-8" onclick={() => (open = false)}>
-					<X class="size-4" />
-				</Button>
+				<div class="flex items-center gap-1">
+					<Button
+						variant="outline"
+						size="sm"
+						class="gap-1.5"
+						onclick={() => (uploadDialogOpen = true)}
+					>
+						<Upload class="size-3.5" />
+						Upload New Version
+					</Button>
+					<Button variant="ghost" size="icon" class="size-8" onclick={() => (open = false)}>
+						<X class="size-4" />
+					</Button>
+				</div>
 			</Drawer.Header>
 
 			<div class="px-4 pb-6">
@@ -232,7 +343,7 @@
 							</div>
 						{:else}
 							<div class="flex gap-3 overflow-x-auto pb-2">
-								{#each ledgerEntries as entry (entry.block_id)}
+								{#each ledgerEntries as entry (entry.file_id)}
 									<div
 										class="flex min-w-55 flex-col gap-2 rounded-lg border bg-card p-3 shadow-sm transition-colors hover:bg-muted/40"
 									>
@@ -251,8 +362,8 @@
 										<!-- File icon + name -->
 										<div class="flex items-center gap-2">
 											<FileLock class="size-4 shrink-0 text-muted-foreground" />
-											<span class="truncate text-xs font-medium" title={fileName}>
-												{fileName}
+											<span class="truncate text-xs font-medium" title={entry.file_name}>
+												{entry.file_name}
 											</span>
 										</div>
 
@@ -276,3 +387,13 @@
 		</div>
 	</Drawer.Content>
 </Drawer.Root>
+
+<UploadNewVersion
+	bind:open={uploadDialogOpen}
+	{fileName}
+	{folderPath}
+	onUploaded={() => {
+		loadRevisionData();
+		onVersionUploaded?.();
+	}}
+/>

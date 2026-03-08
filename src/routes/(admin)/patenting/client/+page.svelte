@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { invalidate } from '$app/navigation';
 	import { Button } from '$lib/shadcn/components/ui/button/index.js';
 	import { Input } from '$lib/shadcn/components/ui/input/index.js';
 	import { Checkbox } from '$lib/shadcn/components/ui/checkbox/index.js';
@@ -9,20 +8,11 @@
 
 	import {
 		ArrowUpDown,
-		ChevronDown,
 		ChevronRight,
 		Download,
-		Ellipsis,
-		Eye,
-		File,
-		FileJson,
-		FileLock,
-		FolderClosed,
-		FolderOpen,
 		ListFilter,
-		Loader2,
-		Pencil,
 		Plus,
+		RefreshCw,
 		Search
 	} from '@lucide/svelte';
 	import type { IpApplicationRow } from './+page.server';
@@ -33,7 +23,57 @@
 
 	let { data } = $props();
 
+	// ── Client-side filter / sort / pagination state ──
 	let searchValue = $state('');
+	let activeStatus = $state('all');
+	let sortColumn = $state('filling_date');
+	let sortDirection = $state<'asc' | 'desc'>('desc');
+	let currentPage = $state(1);
+	const MAX_PAGE_SIZE = 5;
+
+	// ── Refresh state ──
+	let isRefreshing = $state(false);
+
+	async function handleRefresh() {
+		isRefreshing = true;
+		await invalidate('app:ip-applications');
+		isRefreshing = false;
+	}
+
+	// ── Derived: filter → sort → slice ──
+	const processedApplications = $derived.by(() => {
+		const s = searchValue.trim().toLowerCase();
+		let result = data.applications as IpApplicationRow[];
+
+		if (s) {
+			result = result.filter(
+				(app) =>
+					(app.title_of_invention ?? '').toLowerCase().includes(s) ||
+					(app.application_number ?? '').toLowerCase().includes(s)
+			);
+		}
+
+		if (activeStatus !== 'all') {
+			result = result.filter((app) => app.status === activeStatus);
+		}
+
+		return [...result].sort((a, b) => {
+			const aVal = String(a[sortColumn as keyof IpApplicationRow] ?? '');
+			const bVal = String(b[sortColumn as keyof IpApplicationRow] ?? '');
+			const cmp = aVal.localeCompare(bVal);
+			return sortDirection === 'asc' ? cmp : -cmp;
+		});
+	});
+
+	const totalRows = $derived(processedApplications.length);
+	const maxRowPerPage = $derived(Math.ceil(totalRows / MAX_PAGE_SIZE));
+	const paginatedRows = $derived(
+		processedApplications.slice((currentPage - 1) * MAX_PAGE_SIZE, currentPage * MAX_PAGE_SIZE)
+	);
+	const activeTab = $derived(activeStatus);
+	const pageNumbers = $derived(getPageNumbers(currentPage, maxRowPerPage));
+	// Reset to page 1 whenever filters or sort change
+	// (search reset is handled via oninput on the Input element)
 
 	// ── Sheet state ──
 	let sheetOpen = $state(false);
@@ -69,45 +109,28 @@
 		}
 	}
 
-	$effect(() => {
-		searchValue = data.search;
-	});
-
-	function updateParams(updates: Record<string, string | number>) {
-		const params = new URLSearchParams($page.url.searchParams);
-		for (const [key, value] of Object.entries(updates)) {
-			if (value === '' || value === null || value === undefined) {
-				params.delete(key);
-			} else {
-				params.set(key, String(value));
-			}
-		}
-		if (!('page' in updates)) {
-			params.set('page', '1');
-		}
-		goto(`?${params.toString()}`, { replaceState: true, keepFocus: true });
-	}
-
-	function handleSearch() {
-		updateParams({ search: searchValue });
-	}
-
 	function handleSearchKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleSearch();
+		if (e.key === 'Escape') searchValue = '';
 	}
 
 	function handleTabChange(value: string) {
-		updateParams({ status: value });
+		activeStatus = value;
+		currentPage = 1;
 	}
 
 	function handleSort(column: string) {
-		const newDir = data.sortColumn === column && data.sortDirection === 'asc' ? 'desc' : 'asc';
-		updateParams({ sort: column, dir: newDir });
+		if (sortColumn === column) {
+			sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortColumn = column;
+			sortDirection = 'asc';
+		}
+		currentPage = 1;
 	}
 
 	function goToPage(p: number) {
-		if (p < 1 || p > data.totalPages) return;
-		updateParams({ page: p });
+		if (p < 1 || p > maxRowPerPage) return;
+		currentPage = p;
 	}
 
 	function formatDate(dateString: string | null): string {
@@ -158,9 +181,6 @@
 		}
 		return pages;
 	}
-
-	const activeTab = $derived(data.status || 'all');
-	const pageNumbers = $derived(getPageNumbers(data.page, data.totalPages));
 </script>
 
 <div class="flex flex-col gap-6 p-6">
@@ -171,6 +191,15 @@
 			<p class="mt-1 text-muted-foreground">Manage client patenting records.</p>
 		</div>
 		<div class="flex items-center gap-3">
+			<Button
+				variant="outline"
+				size="icon"
+				title="Refresh data"
+				disabled={isRefreshing}
+				onclick={handleRefresh}
+			>
+				<RefreshCw class="size-4 {isRefreshing ? 'animate-spin' : ''}" />
+			</Button>
 			<Button variant="outline" class="gap-2">
 				<Download class="size-4" />
 				Export as
@@ -185,7 +214,7 @@
 	<!-- Count -->
 	<div class="flex items-center gap-2">
 		<h2 class="text-lg font-semibold">All applications</h2>
-		<span class="text-lg text-muted-foreground">{data.totalCount}</span>
+		<span class="text-lg text-muted-foreground">{totalRows}</span>
 	</div>
 
 	<!-- Tabs and Search -->
@@ -209,6 +238,9 @@
 					placeholder="Search"
 					class="w-60 pl-9"
 					bind:value={searchValue}
+					oninput={() => {
+						currentPage = 1;
+					}}
 					onkeydown={handleSearchKeydown}
 				/>
 			</div>
@@ -277,14 +309,14 @@
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#if data.applications.length === 0}
+				{#if paginatedRows.length === 0}
 					<Table.Row>
 						<Table.Cell colspan={8} class="py-12 text-center text-muted-foreground">
 							No applications found.
 						</Table.Cell>
 					</Table.Row>
 				{/if}
-				{#each data.applications as app (app.application_number)}
+				{#each paginatedRows as app (app.application_number)}
 					<TableRow {app} {getClientName} {getStatusStyle} {formatDate} {openDetails} />
 				{/each}
 			</Table.Body>
@@ -292,18 +324,18 @@
 	</div>
 
 	<!-- Pagination -->
-	{#if data.totalPages > 1}
+	{#if maxRowPerPage > 1}
 		<div class="flex items-center justify-between">
 			<p class="text-sm text-muted-foreground">
-				Page {data.page} of {data.totalPages}
+				Page {currentPage} of {maxRowPerPage}
 			</p>
 			<div class="flex items-center gap-1">
-				{#each pageNumbers as p}
+				{#each pageNumbers as p, i (i)}
 					{#if p === '...'}
 						<span class="px-2 text-sm text-muted-foreground">...</span>
 					{:else}
 						<Button
-							variant={p === data.page ? 'default' : 'outline'}
+							variant={p === currentPage ? 'default' : 'outline'}
 							size="sm"
 							class="size-8"
 							onclick={() => goToPage(p as number)}
@@ -316,8 +348,8 @@
 					variant="outline"
 					size="sm"
 					class="ml-2 gap-1"
-					disabled={data.page >= data.totalPages}
-					onclick={() => goToPage(data.page + 1)}
+					disabled={currentPage >= maxRowPerPage}
+					onclick={() => goToPage(currentPage + 1)}
 				>
 					Next
 					<ChevronRight class="size-4" />

@@ -10,15 +10,15 @@ export interface IpApplicationRow extends IpApplication {
 	type_of_office_action_name: string | null;
 }
 
-export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
-	const search = url.searchParams.get('search') ?? '';
-	const status = url.searchParams.get('status') ?? 'all';
-	const sortColumn = url.searchParams.get('sort') ?? 'filling_date';
-	const sortDirection = (url.searchParams.get('dir') ?? 'desc') as 'asc' | 'desc';
-	const page = parseInt(url.searchParams.get('page') ?? '1', 10);
-	const pageSize = parseInt(url.searchParams.get('pageSize') ?? '10', 10);
+/**
+ * Fetches all IP applications once per page visit.
+ * Filtering, sorting, and pagination are handled client-side.
+ * Call `invalidate('app:ip-applications')` to manually refresh.
+ */
+export const load: PageServerLoad = async ({ locals: { supabase }, depends }) => {
+	depends('app:ip-applications');
 
-	let query = supabase
+	const { data, error } = await supabase
 		.schema('api')
 		.from('ip_applications')
 		.select(
@@ -54,47 +54,13 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 			type_of_office_action!left (
 				name
 			)
-		`,
-			{ count: 'exact' }
-		);
-
-	if (search) {
-		query = query.or(`title_of_invention.ilike.%${search}%,application_number.ilike.%${search}%`);
-	}
-
-	if (status !== 'all') {
-		query = query.eq('status', status);
-	}
-
-	const validSortColumns = [
-		'application_number',
-		'title_of_invention',
-		'status',
-		'filling_date',
-		'deadline'
-	];
-	const safeSort = validSortColumns.includes(sortColumn) ? sortColumn : 'filling_date';
-	query = query.order(safeSort, { ascending: sortDirection === 'asc' });
-
-	const rangeFrom = (page - 1) * pageSize;
-	const rangeTo = rangeFrom + pageSize - 1;
-	query = query.range(rangeFrom, rangeTo);
-
-	const { data, error, count } = await query;
+		`
+		)
+		.order('filling_date', { ascending: false });
 
 	if (error) {
 		console.error('Error fetching ip_applications:', error);
-		return {
-			applications: [] as IpApplicationRow[],
-			totalCount: 0,
-			page: 1,
-			pageSize,
-			totalPages: 0,
-			search,
-			status,
-			sortColumn,
-			sortDirection
-		};
+		return { applications: [] as IpApplicationRow[] };
 	}
 
 	const applications: IpApplicationRow[] = (data ?? []).map((row: Record<string, unknown>) => {
@@ -129,18 +95,5 @@ export const load: PageServerLoad = async ({ locals: { supabase }, url }) => {
 		};
 	});
 
-	const totalCount = count ?? 0;
-	const totalPages = Math.ceil(totalCount / pageSize);
-
-	return {
-		applications,
-		totalCount,
-		page,
-		pageSize,
-		totalPages,
-		search,
-		status,
-		sortColumn,
-		sortDirection
-	};
+	return { applications };
 };
