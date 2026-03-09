@@ -1,20 +1,27 @@
-import type { Actions } from './$types';
-import { fail, redirect } from '@sveltejs/kit';
+import { LoginFormSchema } from '$lib/types/FormTypes.js';
+import { message, superValidate } from 'sveltekit-superforms';
+import { zod4 as zod } from 'sveltekit-superforms/adapters';
+import type { PageServerLoad } from './$types';
+import { redirect, fail } from '@sveltejs/kit';
 
-export const actions: Actions = {
+export const load = (async () => {
+	return { form: superValidate(zod(LoginFormSchema)) };
+}) satisfies PageServerLoad;
+
+export const actions = {
 	login: async ({ request, locals: { supabase } }) => {
-		const formData = await request.formData();
-		const email = formData.get('email') as string;
-		const password = formData.get('password') as string;
-
-		if (!email || !password) {
-			return fail(400, { message: 'Email and password are required', email });
+		const form = await superValidate(request, zod(LoginFormSchema));
+		if (!form.valid) {
+			return fail(400, { form });
 		}
 
-		const { error } = await supabase.auth.signInWithPassword({ email, password });
+		const { error } = await supabase.auth.signInWithPassword({
+			email: form.data.email,
+			password: form.data.password
+		});
 
 		if (error) {
-			return fail(401, { message: error.message, email });
+			return message(form, `Login Failed. ${error.message}`, { status: 401 });
 		}
 
 		redirect(303, '/dashboard');

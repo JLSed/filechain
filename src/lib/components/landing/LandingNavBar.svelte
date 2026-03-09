@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 </script>
 
-<nav class="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/80 backdrop-blur-md">
+<nav class="sticky top-0 z-50 w-full border bg-white/80 backdrop-blur-md">
 	<div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 		<!-- Logo -->
 		<a href="/" class="flex items-center gap-2 transition-opacity hover:opacity-80">
@@ -13,23 +13,23 @@
 
 		<!-- Actions -->
 		<div class="flex items-center gap-4">
-			{#if $page.url.pathname !== '/login'}
+			{#if !$page.url.pathname.startsWith('/login')}
 				<a
 					href="/login"
-					class="hidden text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600 sm:block"
+					class="hover:text-pribg-primary hidden text-sm font-medium text-slate-600 transition-colors sm:block"
 				>
 					Log In
 				</a>
 				<a
-					href="/login"
-					class="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-black"
+					href="/apply"
+					class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/90"
 				>
-					Get Started
+					Apply for Consultation
 				</a>
 			{:else}
 				<a
 					href="/"
-					class="text-sm font-medium text-slate-600 transition-colors hover:text-emerald-600"
+					class="hover:text-pribg-primary text-sm font-medium text-slate-600 transition-colors"
 				>
 					Back to Home
 				</a>

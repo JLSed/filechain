@@ -11,13 +11,13 @@ import {
 
 export const pageTitles: Record<string, string> = {
 	'/dashboard': 'Dashboard',
-	'/forms': 'Filling Forms',
+	'/forms': 'Filing Forms',
 	'/reports': 'Reports',
 	'/audit-logs': 'Audit Logs',
 	'/patenting/client': 'Patenting of Client',
 	'/patenting/ipophil': 'Patenting of IPOPHL',
 	'/files': 'File Management',
-	'/user': 'User Management'
+	'/users': 'User Management'
 };
 
 // ── 3. Route protection ──
@@ -34,10 +34,6 @@ export const protectedRoutes = [
 ];
 export const authRoutes = ['/login', '/register'];
 
-export const ICON_SIZE_SMALL = 18;
-export const ICON_SIZE_MEDIUM = 22;
-export const ICON_SIZE_LARGE = 28;
-
 export const overviewGroup: Sidebar.Item[] = [
 	{
 		title: 'Dashboard',
@@ -45,7 +41,7 @@ export const overviewGroup: Sidebar.Item[] = [
 		icon: LayoutDashboard
 	},
 	{
-		title: 'Filling Forms',
+		title: 'Filing Forms',
 		url: '/forms',
 		icon: FileText
 	},
@@ -82,7 +78,7 @@ export const managementGroups: Sidebar.Item[] = [
 	},
 	{
 		title: 'User Management',
-		url: '/user',
+		url: '/users',
 		icon: Users
 	}
 ];

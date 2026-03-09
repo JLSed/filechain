@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { sidebarGroups } from '$lib/constants/constant';
 	import * as Sidebar from '$lib/shadcn/components/ui/sidebar/index.js';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import Logo from '$lib/assets/dmv-logo-light.svg';
 	import { SquareUser, ChevronsUpDown, Settings, LogOut } from '@lucide/svelte';
+	import { sidebarGroups } from '$lib/constants/LinkData';
+	import type { UserProfile } from '$lib/types/DatabaseTypes';
 
-	let { user }: { user: User.Profile } = $props();
+	let { user }: { user: UserProfile } = $props();
 
 	const sidebar = Sidebar.useSidebar();
 
@@ -25,7 +26,7 @@
 							<img src={Logo} alt="DMV Logo" class="size-8 shrink-0" />
 							<div class="flex flex-col items-start">
 								<span class="font-semibold">DMV IP Consultancy</span>
-								<span class="text-xs text-sidebar-foreground/70">Services</span>
+								<span class="text-xs text-sidebar-foreground/70">Admin Panel</span>
 							</div>
 						</a>
 					{/snippet}
@@ -103,7 +104,7 @@
 						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
-							<form action="/dashboard?/logout" method="POST" class="w-full">
+							<form action="/?/logout" method="POST" class="w-full">
 								<button type="submit" class="flex w-full items-center gap-2 text-left text-sm">
 									<LogOut />
 									Log out

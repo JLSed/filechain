@@ -895,3 +895,46 @@ function LargeList({ items }: { items: Item[] }) {
   );
 }
 ```
+
+---
+
+## Component Organization by Page
+
+### Page-Level Component Structure
+
+**Instructions for Copilot:**
+
+- When designing a page, every significant/large component added to that page **must** be extracted into its own file.
+- Create a dedicated folder inside `src/lib/components/` named after the page (e.g., `src/lib/components/dashboard/`, `src/lib/components/files/`).
+- Place all components belonging to that page inside that folder.
+- The page file (`+page.svelte`) should only import and compose these components — it should not contain large inline component definitions.
+
+**Example structure for a "dashboard" page:**
+
+```
+src/
+  lib/
+    components/
+      dashboard/
+        StatsCard.svelte
+        RecentActivity.svelte
+        UsageChart.svelte
+        QuickActions.svelte
+  routes/
+    (admin)/
+      dashboard/
+        +page.svelte   <- imports from $lib/components/dashboard/
+```
+
+```svelte
+<!-- +page.svelte -->
+<script lang="ts">
+	import StatsCard from '$lib/components/dashboard/StatsCard.svelte';
+	import RecentActivity from '$lib/components/dashboard/RecentActivity.svelte';
+	import UsageChart from '$lib/components/dashboard/UsageChart.svelte';
+</script>
+
+<StatsCard />
+<RecentActivity />
+<UsageChart />
+```
