@@ -3,3 +3,5 @@
 
 	let { data }: PageProps = $props();
 </script>
+
+<p>{data}</p>

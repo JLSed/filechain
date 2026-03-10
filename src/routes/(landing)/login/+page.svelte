@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import LoginForm from '$lib/components/landing/login/LoginForm.svelte';
 	import copyrightPana from '$lib/assets/copyright-pana.svg';
-	import layeredWaves from '$lib/assets/layered-waves.svg';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
 </script>

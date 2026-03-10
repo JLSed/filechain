@@ -6,14 +6,17 @@
 	import { SquareUser, ChevronsUpDown, Settings, LogOut } from '@lucide/svelte';
 	import { sidebarGroups } from '$lib/constants/LinkData';
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
+	import { formatName } from '$lib/utils/formatter';
 
-	let { user }: { user: UserProfile } = $props();
+	interface ComponentProps {
+		user: UserProfile;
+	}
+
+	let { user }: ComponentProps = $props();
 
 	const sidebar = Sidebar.useSidebar();
 
-	const formattedName = $derived(
-		`${user.first_name.charAt(0).toUpperCase()}. ${user.middle_name ? user.middle_name.charAt(0).toUpperCase() + '. ' : ''} ${user.last_name}`
-	);
+	const formattedName = $derived(formatName(user.first_name, user.middle_name, user.last_name));
 </script>
 
 <Sidebar.Root collapsible="icon">
