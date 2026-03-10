@@ -328,27 +328,27 @@ class UserRepository {
 **Example (TypeScript with TypeORM):**
 
 ```typescript
-import { getManager } from "typeorm";
+import { getManager } from 'typeorm';
 
 async function createUserWithProfile(userData: any, profileData: any) {
-  /**
-   * Create user and profile in a transaction.
-   * If either operation fails, both are rolled back.
-   */
-  return await getManager().transaction(async (transactionalEntityManager) => {
-    // Create user
-    const user = transactionalEntityManager.create(User, userData);
-    await transactionalEntityManager.save(user);
+	/**
+	 * Create user and profile in a transaction.
+	 * If either operation fails, both are rolled back.
+	 */
+	return await getManager().transaction(async (transactionalEntityManager) => {
+		// Create user
+		const user = transactionalEntityManager.create(User, userData);
+		await transactionalEntityManager.save(user);
 
-    // Create profile
-    const profile = transactionalEntityManager.create(Profile, {
-      ...profileData,
-      userId: user.id,
-    });
-    await transactionalEntityManager.save(profile);
+		// Create profile
+		const profile = transactionalEntityManager.create(Profile, {
+			...profileData,
+			userId: user.id
+		});
+		await transactionalEntityManager.save(profile);
 
-    return { user, profile };
-  });
+		return { user, profile };
+	});
 }
 ```
 

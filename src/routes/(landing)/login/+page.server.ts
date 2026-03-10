@@ -15,6 +15,7 @@ export const actions = {
 			return fail(400, { form });
 		}
 
+		if (!supabase) return fail(400, { form });
 		const { error } = await supabase.auth.signInWithPassword({
 			email: form.data.email,
 			password: form.data.password

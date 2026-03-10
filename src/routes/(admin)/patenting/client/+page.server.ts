@@ -5,6 +5,8 @@ import z from 'zod';
 
 export const load = (async ({ locals: { supabase }, depends }) => {
 	depends('db:ip-applications');
+	if (!supabase) return error(400, 'Supabase is not initialized');
+
 	const { data, error: dbError } = await supabase
 		.schema('api')
 		.from('ip_applications')

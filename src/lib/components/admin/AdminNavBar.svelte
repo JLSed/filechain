@@ -1,19 +1,16 @@
-<script module lang="ts">
+<script lang="ts">
 	import { page } from '$app/state';
 	import { Bell, Inbox, Menu, PanelLeftClose, PanelLeftOpen } from '@lucide/svelte';
 	import { useSidebar } from '$lib/shadcn/components/ui/sidebar/context.svelte.js';
-	import type { UserProfile } from '$lib/types/DatabaseTypes';
 	import { pageTitles } from '$lib/constants/LinkData';
-</script>
 
-<script lang="ts">
-	let { user }: { user: UserProfile } = $props();
+	// interface CommponentProps {
+	//   user: UserProfile
+	// }
+
+	// let { user }: CommponentProps = $props();
 
 	const sidebar = useSidebar();
-
-	const formattedName = $derived(
-		`${user.first_name.charAt(0).toUpperCase()}. ${user.middle_name ? user.middle_name.charAt(0).toUpperCase() + '. ' : ''} ${user.last_name}`
-	);
 </script>
 
 <nav class="sticky flex border-b border-primary/20">

@@ -8,9 +8,10 @@
 	import { ListFilter, RefreshCcw, Search } from '@lucide/svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import ApplicationSheet from '$lib/components/admin/patenting-client/ApplicationSheet.svelte';
+	import { untrack } from 'svelte';
 	let { data }: PageProps = $props();
 
-	const table = new ApplicationTableState(data.applications);
+	const table = new ApplicationTableState(untrack(() => data.applications));
 </script>
 
 <main class="p-2">

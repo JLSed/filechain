@@ -7,12 +7,18 @@
 	import { sidebarGroups } from '$lib/constants/LinkData';
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
 
-	let { user }: { user: UserProfile } = $props();
+	interface ComponentProps {
+		user: UserProfile | null;
+	}
+
+	let { user }: ComponentProps = $props();
 
 	const sidebar = Sidebar.useSidebar();
 
+	// TODO: Fix the user possibly null here
+
 	const formattedName = $derived(
-		`${user.first_name.charAt(0).toUpperCase()}. ${user.middle_name ? user.middle_name.charAt(0).toUpperCase() + '. ' : ''} ${user.last_name}`
+		`${user?.first_name.charAt(0).toUpperCase()}. ${user?.middle_name ? user.middle_name.charAt(0).toUpperCase() + '. ' : ''} ${user?.last_name}`
 	);
 </script>
 
@@ -74,7 +80,7 @@
 								<SquareUser class="size-6!" />
 								<div class="grid flex-1 text-start text-sm leading-tight">
 									<span class="truncate font-medium">{formattedName}</span>
-									<span class="truncate text-xs">{user.role}</span>
+									<span class="truncate text-xs">{user?.role}</span>
 								</div>
 								<ChevronsUpDown class="ms-auto size-4" />
 							</Sidebar.MenuButton>
@@ -91,7 +97,7 @@
 								<SquareUser class="size-8" />
 								<div class="grid flex-1 text-start text-sm leading-tight">
 									<span class="truncate font-medium">{formattedName}</span>
-									<span class="truncate text-xs">{user.role}</span>
+									<span class="truncate text-xs">{user?.role}</span>
 								</div>
 							</div>
 						</DropdownMenu.Label>

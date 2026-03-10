@@ -10,7 +10,10 @@ import type { RequestEvent } from '@sveltejs/kit';
  * outgoing response (so the browser saves it for next time).
  */
 export function createServerClient(event: RequestEvent) {
-	return createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY, {
+	const url = import.meta.env.VITE_SUPABASE_URL;
+	const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+	if (!url || !key) return null;
+	return createClient(url, key, {
 		cookies: {
 			getAll: () => event.cookies.getAll(),
 			setAll: (cookiesToSet) => {

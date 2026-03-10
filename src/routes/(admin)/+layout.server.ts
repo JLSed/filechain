@@ -7,6 +7,8 @@ export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSessio
 
 	// TODO: redirect user to login and show an error saying fetching user profile did not work so they should try again. instead of returning profile as null
 
+	if (!supabase) return { profile: null };
+
 	const { data, error } = await supabase
 		.schema('api')
 		.from('user_profiles')

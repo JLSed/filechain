@@ -1,9 +1,10 @@
 <script lang="ts">
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
+	import { untrack } from 'svelte';
 	import { superForm } from 'sveltekit-superforms';
 	let { data } = $props();
-	const { form, errors, enhance, submitting, message } = superForm(data.form);
+	const { form, errors, enhance, submitting, message } = superForm(untrack(() => data.form));
 </script>
 
 <div class="mx-auto w-full max-w-sm">

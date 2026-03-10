@@ -3,6 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 
 export const actions: Actions = {
 	logout: async ({ locals: { supabase } }) => {
+		if (!supabase) return fail(400, 'Supabase is not initialized');
 		const { error } = await supabase.auth.signOut();
 
 		if (error) {

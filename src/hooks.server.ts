@@ -38,6 +38,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 		const UNAUTHENTICATED = { session: null, user_metadata: null };
 		// Verify the token with the Auth server first
+
+		if (!supabase) {
+			cachedSession = UNAUTHENTICATED;
+			return UNAUTHENTICATED;
+		}
+
 		const {
 			data: { user },
 			error
