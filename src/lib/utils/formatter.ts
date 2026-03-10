@@ -14,6 +14,6 @@ export function getClientName(app: IpApplication): string {
 	return parts.length > 0 ? parts.join(' ') : '—';
 }
 
-export function formatName(firstName: string, middleName: string, lastName: string): string {
+export function formatName(firstName: string, middleName: string | null, lastName: string): string {
 	return `${firstName.charAt(0).toUpperCase()}. ${middleName ? middleName.charAt(0).toUpperCase() + '. ' : ''} ${lastName}`;
 }

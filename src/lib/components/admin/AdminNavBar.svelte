@@ -4,12 +4,6 @@
 	import { useSidebar } from '$lib/shadcn/components/ui/sidebar/context.svelte.js';
 	import { pageTitles } from '$lib/constants/LinkData';
 
-	// interface CommponentProps {
-	//   user: UserProfile
-	// }
-
-	// let { user }: CommponentProps = $props();
-
 	const sidebar = useSidebar();
 </script>
 

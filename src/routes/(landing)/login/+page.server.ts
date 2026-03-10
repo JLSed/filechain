@@ -15,7 +15,13 @@ export const actions = {
 			return fail(400, { form });
 		}
 
-		if (!supabase) return fail(400, { form });
+		if (!supabase)
+			return message(
+				form,
+				'Unable to connect to the authentication service. Please try again later.',
+				{ status: 500 }
+			);
+
 		const { error } = await supabase.auth.signInWithPassword({
 			email: form.data.email,
 			password: form.data.password

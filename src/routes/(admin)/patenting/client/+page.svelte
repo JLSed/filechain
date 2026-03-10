@@ -5,12 +5,13 @@
 	import ApplicationTableRow from '$lib/components/admin/patenting-client/ApplicationTableRow.svelte';
 	import Pagination from '$lib/components/global/Pagination.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
-	import { ListFilter, RefreshCcw, Search } from '@lucide/svelte';
+	import { AlertCircle, ListFilter, RefreshCcw, Search } from '@lucide/svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import ApplicationSheet from '$lib/components/admin/patenting-client/ApplicationSheet.svelte';
 	import { untrack } from 'svelte';
 	let { data }: PageProps = $props();
 
+	// TODO: the untrack might not update the table data when refresh button is clicked.
 	const table = new ApplicationTableState(untrack(() => data.applications));
 </script>
 
@@ -51,16 +52,32 @@
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#if table.totalRows === 0}
+				{#if data.error}
 					<Table.Row>
-						<Table.Cell colspan={8} class="py-12 text-center text-muted-foreground">
-							No applications found.
+						<Table.Cell colspan={4} class="py-12">
+							<div class="flex flex-col items-center justify-center space-y-3 text-center">
+								<AlertCircle class="size-8 text-primary/70" />
+								<p class="text-sm font-medium text-primary/60">{data.error}</p>
+								<Button
+									variant="outline"
+									size="sm"
+									onclick={() => table.handleRefresh('db:ip-applications')}
+								>
+									Try Again
+								</Button>
+							</div>
 						</Table.Cell>
 					</Table.Row>
 				{:else if table.isRefreshing}
 					<Table.Row>
-						<Table.Cell colspan={8} class="py-12 text-center text-muted-foreground">
+						<Table.Cell colspan={4} class="py-12 text-center text-muted-foreground">
 							Getting the latest applications update...
+						</Table.Cell>
+					</Table.Row>
+				{:else if table.totalRows === 0}
+					<Table.Row>
+						<Table.Cell colspan={4} class="py-12 text-center text-muted-foreground">
+							No applications found.
 						</Table.Cell>
 					</Table.Row>
 				{:else}

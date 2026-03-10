@@ -5,7 +5,8 @@ import z from 'zod';
 
 export const load = (async ({ locals: { supabase }, depends }) => {
 	depends('db:ip-applications');
-	if (!supabase) return error(400, 'Supabase is not initialized');
+	if (!supabase)
+		throw error(500, 'A server configuration error occurred. Unable to connect to the database.');
 
 	const { data, error: dbError } = await supabase
 		.schema('api')
@@ -20,11 +21,16 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 
 	if (dbError) {
 		console.error('Database error:', dbError);
-		throw error(500, 'Failed to fetch IP Applications');
+		return {
+			applications: [],
+			error:
+				'We encountered an error while fetching data. The server might be temporarily unavailable. Please refresh the page.'
+		};
 	}
 
 	const cleanData = z.array(IpApplicationSchema).safeParse(data);
-	if (!cleanData.success) throw error(500, 'Failed to fetch IP Applications');
+	if (!cleanData.success)
+		return { applications: [], error: 'The data received is invalid or corrupted.' };
 
-	return { applications: cleanData.data };
+	return { applications: cleanData.data, error: null };
 }) satisfies PageServerLoad;
