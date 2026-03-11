@@ -11,9 +11,7 @@ export const load = (async () => {
 export const actions = {
 	login: async ({ request, locals: { supabase } }) => {
 		const form = await superValidate(request, zod(LoginFormSchema));
-		if (!form.valid) {
-			return fail(400, { form });
-		}
+		if (!form.valid) return fail(400, { form });
 
 		if (!supabase)
 			return message(
@@ -27,9 +25,7 @@ export const actions = {
 			password: form.data.password
 		});
 
-		if (error) {
-			return message(form, `Login Failed. ${error.message}`, { status: 401 });
-		}
+		if (error) return message(form, `Login Failed. ${error.message}`, { status: 401 });
 
 		redirect(303, '/dashboard');
 	}

@@ -1,3 +1,4 @@
+import { APPLICATION_STATUS } from '$lib/constants/SchemaData';
 import type { User } from '@supabase/supabase-js';
 import * as z from 'zod';
 
@@ -73,7 +74,7 @@ export const IpApplicationSchema = z.object({
 	application_number: z.string(),
 	client_id: z.uuid(),
 	title_of_invention: z.string(),
-	status: z.literal(['Assigned', 'Extended', 'Submitted', 'For Pickup', 'Closed']),
+	status: z.enum(APPLICATION_STATUS),
 	filling_date: z.string().nullable(),
 	paper_document_no: z.string().nullable(),
 	fees: z.number().nullable(),
