@@ -44,7 +44,6 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 		.order('created_at', { ascending: false });
 
 	const applicationsParsed = z.array(IpApplicationSchema).safeParse(applicationsData);
-	console.log('Applications parsed:', applicationsParsed);
 
 	if (appsError) {
 		console.error('Error fetching applications:', appsError);
@@ -74,7 +73,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 			console.error('Error fetching files:', filesError);
 			return {
 				client: clientParsed.data,
-				applications: applicationsData ?? [],
+				applications: applicationsParsed.success ? applicationsParsed.data : [],
 				files: [],
 				error: 'Failed to load files.'
 			};
@@ -86,7 +85,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 
 	return {
 		client: clientParsed.data,
-		applications: applicationsData ?? [],
+		applications: applicationsParsed.success ? applicationsParsed.data : [],
 		files: filesParsed.success ? filesParsed.data : [],
 		error: null
 	};

@@ -25,6 +25,7 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 	}
 
 	const cleanData = z.array(ClientProfileSchema).safeParse(data);
+	console.log('Raw client profiles data:', cleanData);
 	if (!cleanData.success)
 		return { clients: [], error: 'The data received is invalid or corrupted.' };
 

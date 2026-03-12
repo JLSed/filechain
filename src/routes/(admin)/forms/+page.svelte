@@ -103,6 +103,14 @@
 
 	let stepComplete = $derived(STEP_LABELS.map((_, i) => isStepComplete(i)));
 	let stepHasError = $derived(STEP_LABELS.map((_, i) => stepHasErrors(i)));
+	let hasAnyErrors = $derived(stepHasError.some(Boolean));
+	let allRequiredFieldsFilled = $derived(
+		stepComplete.every((complete, i) => {
+			const requiredFields = STEP_REQUIRED_FIELDS[i];
+			if (!requiredFields || requiredFields.length === 0) return true;
+			return complete;
+		})
+	);
 
 	function goToStep(step: number) {
 		currentStep = step;
@@ -162,7 +170,7 @@
 					{/if}
 
 					{#if currentStep === STEP_LABELS.length - 1}
-						<Button type="submit" disabled={submitting}>
+						<Button type="submit" disabled={submitting || !allRequiredFieldsFilled || hasAnyErrors}>
 							{submitting ? 'Submitting...' : 'Submit Application'}
 						</Button>
 					{:else}

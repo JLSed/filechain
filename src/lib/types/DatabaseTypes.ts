@@ -33,8 +33,8 @@ export const ClientProfileSchema = z.object({
 	email: z.email(),
 	mobile_number: z.string().nullable(),
 	nationality: z.string(),
-	company_name: z.string(),
-	company_address: z.string(),
+	company_name: z.string().nullable(),
+	company_address: z.string().nullable(),
 	created_at: z.string(),
 	updated_at: z.string()
 });

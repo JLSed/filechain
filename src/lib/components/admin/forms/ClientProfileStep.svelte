@@ -37,14 +37,11 @@
 		</div>
 
 		<div class="space-y-1.5">
-			<label for="middle_name" class="text-sm font-medium text-foreground">
-				Middle Name <span class="text-destructive">*</span>
-			</label>
+			<label for="middle_name" class="text-sm font-medium text-foreground"> Middle Name </label>
 			<Input
 				id="middle_name"
 				bind:value={$form.client_profiles.middle_name}
 				placeholder="Middle Name"
-				required
 				aria-invalid={$errors.client_profiles?.middle_name ? 'true' : undefined}
 			/>
 			{#if $errors.client_profiles?.middle_name}
@@ -118,14 +115,11 @@
 		</div>
 
 		<div class="space-y-1.5 md:col-span-2 lg:col-span-3">
-			<label for="company_name" class="text-sm font-medium text-foreground">
-				Company Name <span class="text-destructive">*</span>
-			</label>
+			<label for="company_name" class="text-sm font-medium text-foreground"> Company Name </label>
 			<Input
 				id="company_name"
 				bind:value={$form.client_profiles.company_name}
 				placeholder="Company Name"
-				required
 				aria-invalid={$errors.client_profiles?.company_name ? 'true' : undefined}
 			/>
 			{#if $errors.client_profiles?.company_name}
@@ -135,13 +129,12 @@
 
 		<div class="space-y-1.5 md:col-span-2 lg:col-span-3">
 			<label for="company_address" class="text-sm font-medium text-foreground">
-				Company Address <span class="text-destructive">*</span>
+				Company Address
 			</label>
 			<Input
 				id="company_address"
 				bind:value={$form.client_profiles.company_address}
 				placeholder="Company Address"
-				required
 				aria-invalid={$errors.client_profiles?.company_address ? 'true' : undefined}
 			/>
 			{#if $errors.client_profiles?.company_address}

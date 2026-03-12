@@ -32,8 +32,8 @@ export const IpApplicationFormSchema = z.object({
 		link_to_folder: z.string(),
 		remarks: z.string().nullable(),
 		type_of_invention_id: z.number(),
-		pre_protection_status_id: z.number(),
-		type_of_office_action_id: z.number()
+		pre_protection_status_id: z.number().nullable(),
+		type_of_office_action_id: z.number().nullable()
 	}),
 	files: z.array(
 		z.object({

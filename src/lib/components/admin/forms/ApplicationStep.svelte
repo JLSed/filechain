@@ -130,13 +130,12 @@
 
 		<div class="space-y-1.5">
 			<label for="pre_protection_status_id" class="text-sm font-medium text-foreground">
-				Pre-Protection Status <span class="text-destructive">*</span>
+				Pre-Protection Status
 			</label>
 			<select
 				id="pre_protection_status_id"
 				bind:value={$form.application.pre_protection_status_id}
 				class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-				required
 				aria-invalid={$errors.application?.pre_protection_status_id ? 'true' : undefined}
 			>
 				<option value={0} disabled>Select status...</option>
@@ -154,13 +153,12 @@
 	<div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
 		<div class="space-y-1.5">
 			<label for="type_of_office_action_id" class="text-sm font-medium text-foreground">
-				Type of Office Action <span class="text-destructive">*</span>
+				Type of Office Action
 			</label>
 			<select
 				id="type_of_office_action_id"
 				bind:value={$form.application.type_of_office_action_id}
 				class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-				required
 				aria-invalid={$errors.application?.type_of_office_action_id ? 'true' : undefined}
 			>
 				<option value={0} disabled>Select action...</option>

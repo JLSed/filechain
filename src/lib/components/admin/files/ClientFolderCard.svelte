@@ -2,7 +2,6 @@
 	import type { ClientProfile } from '$lib/types/DatabaseTypes';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import { Folder, Ellipsis } from '@lucide/svelte';
-	import { goto } from '$app/navigation';
 
 	interface Props {
 		client: ClientProfile;
@@ -15,10 +14,9 @@
 	);
 </script>
 
-<button
-	type="button"
-	onclick={() => goto(`/files/${client.client_id}`)}
-	class="group flex w-full cursor-pointer items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-accent"
+<a
+	href="/files/{client.client_id}"
+	class="group flex w-full items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-accent"
 >
 	<Folder class="size-5 shrink-0 fill-current text-foreground" />
 	<span class="min-w-0 flex-1 truncate text-sm font-medium">{fullName}</span>
@@ -38,4 +36,4 @@
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	</div>
-</button>
+</a>

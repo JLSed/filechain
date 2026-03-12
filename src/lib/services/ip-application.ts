@@ -29,17 +29,6 @@ export async function submitIpApplication(
 
 	const storagePath = `files/${appNumber}`;
 
-	// Fetch the current max sequence in file_ledger to continue from
-	const { data: maxSeqRow } = await supabase
-		.schema('api')
-		.from('file_ledger')
-		.select('sequence')
-		.order('sequence', { ascending: false })
-		.limit(1)
-		.single();
-
-	let nextSequence: number = maxSeqRow ? maxSeqRow.sequence + 1 : 0;
-
 	// Encrypt and upload each file
 	for (const staged of formData.files) {
 		await encryptAndUploadFile({
@@ -49,9 +38,8 @@ export async function submitIpApplication(
 			storagePath,
 			uploaderId: userId,
 			publicKeyBytes,
-			sequence: nextSequence
+			applicationNumber: appNumber
 		});
-		nextSequence++;
 	}
 
 	// Insert client profile
@@ -84,8 +72,8 @@ export async function submitIpApplication(
 			client_id: clientProfile.client_id,
 			title_of_invention: formData.application.title_of_invention.trim(),
 			type_of_invention_id: formData.application.type_of_invention_id,
-			pre_protection_status_id: formData.application.pre_protection_status_id,
-			type_of_office_action_id: formData.application.type_of_office_action_id,
+			pre_protection_status_id: formData.application.pre_protection_status_id || null,
+			type_of_office_action_id: formData.application.type_of_office_action_id || null,
 			status: formData.application.status,
 			filling_date: formData.application.filling_date || null,
 			paper_document_no: formData.application.paper_document_no || null,

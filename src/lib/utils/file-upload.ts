@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { encrypt_file } from '$lib/pkg/rust';
+import { encrypt_file, generate_block_signature } from '$lib/pkg/rust';
 
 interface EncryptAndUploadParams {
 	supabase: SupabaseClient;
@@ -8,7 +8,7 @@ interface EncryptAndUploadParams {
 	storagePath: string;
 	uploaderId: string;
 	publicKeyBytes: Uint8Array;
-	sequence: number;
+	applicationNumber: string;
 }
 
 interface EncryptAndUploadResult {
@@ -27,7 +27,7 @@ export async function encryptAndUploadFile({
 	storagePath,
 	uploaderId,
 	publicKeyBytes,
-	sequence
+	applicationNumber
 }: EncryptAndUploadParams): Promise<EncryptAndUploadResult> {
 	const fileBytes = new Uint8Array(await file.arrayBuffer());
 
@@ -63,7 +63,8 @@ export async function encryptAndUploadFile({
 				file_hash: result.original_hash_hex,
 				file_nonce: result.file_nonce_hex,
 				size: file.size,
-				category
+				category,
+				application_number: applicationNumber
 			})
 			.select('file_id')
 			.single();
@@ -85,10 +86,27 @@ export async function encryptAndUploadFile({
 			throw new Error(`DEK insert failed for "${file.name}": ${dekErr.message}`);
 		}
 
-		// Insert ledger entry
+		// Generate block signature for the genesis ledger entry
+		const timestampMs = Date.now();
+		const previousBlockHash = '0';
+		const signatureResult = generate_block_signature(
+			uploaderId,
+			timestampMs,
+			result.original_hash_hex,
+			previousBlockHash
+		);
+
+		if (!signatureResult.success) {
+			throw new Error(
+				`Signature generation failed for "${file.name}": ${signatureResult.error_message}`
+			);
+		}
+
+		// Insert ledger entry (sequence 0 = genesis version)
 		const { error: ledgerErr } = await supabase.schema('api').from('file_ledger').insert({
 			file_id: fileMeta.file_id,
-			sequence
+			sequence: 0,
+			signature: signatureResult.signature_hex
 		});
 
 		if (ledgerErr) {

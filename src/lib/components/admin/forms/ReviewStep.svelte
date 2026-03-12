@@ -23,11 +23,13 @@
 		return inventionTypes.find((t) => t != null && t.id === id)?.name ?? '—';
 	}
 
-	function getProtectionStatusName(id: number): string {
+	function getProtectionStatusName(id: number | null): string {
+		if (id === null) return '—';
 		return protectionStatuses.find((s) => s != null && s.id === id)?.name ?? '—';
 	}
 
-	function getOfficeActionName(id: number): string {
+	function getOfficeActionName(id: number | null): string {
+		if (id === null) return '—';
 		return officeActions.find((a) => a != null && a.id === id)?.name ?? '—';
 	}
 </script>

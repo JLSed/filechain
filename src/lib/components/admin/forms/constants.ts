@@ -49,21 +49,16 @@ export const STEP_FIELD_MAP: Record<number, string[]> = {
 export const STEP_REQUIRED_FIELDS: Record<number, string[]> = {
 	0: [
 		'client_profiles.first_name',
-		'client_profiles.middle_name',
 		'client_profiles.last_name',
 		'client_profiles.email',
 		'client_profiles.mobile_number',
-		'client_profiles.nationality',
-		'client_profiles.company_name',
-		'client_profiles.company_address'
+		'client_profiles.nationality'
 	],
 	1: [
 		'application.application_number',
 		'application.title_of_invention',
 		'application.status',
-		'application.type_of_invention_id',
-		'application.pre_protection_status_id',
-		'application.type_of_office_action_id'
+		'application.type_of_invention_id'
 	],
 	2: [],
 	3: []

@@ -9,6 +9,7 @@ pub mod masterkey_generator;
 pub mod masterkey_decryptor;
 pub mod encrypt_file;
 pub mod decrypt_file;
+pub mod block_signature;
 
 // Nonce type alias for AES-256-GCM (12 bytes)
 pub type Nonce = GenericArray<u8, U12>;

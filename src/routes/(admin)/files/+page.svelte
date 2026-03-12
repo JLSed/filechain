@@ -13,6 +13,10 @@
 
 	const table = new ClientFolderState(untrack(() => data.clients));
 
+	$effect(() => {
+		table.rows = data.clients;
+	});
+
 	function toggleSort() {
 		table.sortDirection = table.sortDirection === 'asc' ? 'desc' : 'asc';
 	}
