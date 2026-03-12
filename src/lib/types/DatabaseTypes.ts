@@ -131,3 +131,10 @@ export const FileMetadataSchema = z.object({
 });
 
 export type FileMetadata = z.infer<typeof FileMetadataSchema>;
+
+export interface DecryptedFileView {
+	fileName: string;
+	mimeType: string;
+	data: Uint8Array;
+	blobUrl: string;
+}

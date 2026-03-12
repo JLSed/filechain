@@ -9,9 +9,10 @@
 	interface Props {
 		file: FileMetadata;
 		currentUserId: string;
+		onfileclick: (file: FileMetadata) => void;
 	}
 
-	let { file, currentUserId }: Props = $props();
+	let { file, currentUserId, onfileclick }: Props = $props();
 
 	const version = $derived(
 		file.file_ledger && file.file_ledger.length > 0 ? `v${file.file_ledger[0].sequence}` : null
@@ -36,7 +37,7 @@
 	}
 </script>
 
-<Table.Row class="group">
+<Table.Row class="group cursor-pointer hover:bg-muted/50" onclick={() => onfileclick(file)}>
 	<Table.Cell class="flex items-center gap-2 py-3 pl-4">
 		<File class="size-4 shrink-0 text-muted-foreground" />
 		<span class="truncate text-sm">{file.file_name}</span>

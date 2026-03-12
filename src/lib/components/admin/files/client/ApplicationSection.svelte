@@ -10,9 +10,10 @@
 		app: IpApplication;
 		files: FileMetadata[];
 		currentUserId: string;
+		onfileclick: (file: FileMetadata) => void;
 	}
 
-	let { app, files, currentUserId }: Props = $props();
+	let { app, files, currentUserId, onfileclick }: Props = $props();
 	let open = $state(true);
 </script>
 
@@ -55,7 +56,7 @@
 				</Table.Header>
 				<Table.Body>
 					{#each files as file (file.file_id)}
-						<FileRow {file} {currentUserId} />
+						<FileRow {file} {currentUserId} {onfileclick} />
 					{/each}
 				</Table.Body>
 			</Table.Root>
