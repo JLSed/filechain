@@ -47,7 +47,8 @@ export const TypeOfInventionSchema = z
 		name: z.string(),
 		created_at: z.date().optional()
 	})
-	.nullable();
+	.nullable()
+	.optional();
 
 export type TypeOfInvention = z.infer<typeof TypeOfInventionSchema>;
 
@@ -57,7 +58,8 @@ export const PreProtectionStatusSchema = z
 		name: z.string(),
 		created_at: z.date().optional()
 	})
-	.nullable();
+	.nullable()
+	.optional();
 
 export type PreProtectionStatus = z.infer<typeof PreProtectionStatusSchema>;
 
@@ -67,7 +69,8 @@ export const TypeOfOfficeActionSchema = z
 		name: z.string(),
 		created_at: z.date().optional()
 	})
-	.nullable();
+	.nullable()
+	.optional();
 export type TypeOfOfficeAction = z.infer<typeof TypeOfOfficeActionSchema>;
 
 export const IpApplicationSchema = z.object({
@@ -90,11 +93,13 @@ export const IpApplicationSchema = z.object({
 	type_of_invention: TypeOfInventionSchema,
 	pre_protection_status: PreProtectionStatusSchema,
 	type_of_office_action: TypeOfOfficeActionSchema,
-	client_profiles: z.object({
-		first_name: z.string(),
-		last_name: z.string(),
-		email: z.string()
-	})
+	client_profiles: z
+		.object({
+			first_name: z.string(),
+			last_name: z.string(),
+			email: z.string()
+		})
+		.optional()
 });
 
 export type IpApplication = z.infer<typeof IpApplicationSchema>;

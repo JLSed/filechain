@@ -41,8 +41,7 @@
 		<div class="flex flex-col">
 			{#each data.applications as app (app.application_number)}
 				<ApplicationSection
-					title={app.title_of_invention}
-					app_num={app.application_number}
+					{app}
 					files={getFilesForApplication(app.application_number)}
 					{currentUserId}
 				/>

@@ -26,10 +26,7 @@
 	<div onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
-				<button
-					class="rounded-md p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted"
-					aria-label="More options"
-				>
+				<button class="rounded-md p-1 transition-opacity hover:bg-muted" aria-label="More options">
 					<Ellipsis class="size-4" />
 				</button>
 			</DropdownMenu.Trigger>

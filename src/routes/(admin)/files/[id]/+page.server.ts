@@ -1,6 +1,10 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { ClientProfileSchema, FileMetadataSchema } from '$lib/types/DatabaseTypes';
+import {
+	ClientProfileSchema,
+	FileMetadataSchema,
+	IpApplicationSchema
+} from '$lib/types/DatabaseTypes';
 import z from 'zod';
 
 export const load = (async ({ params, locals: { supabase, safeGetSession }, depends }) => {
@@ -35,11 +39,12 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 	const { data: applicationsData, error: appsError } = await supabase
 		.schema('api')
 		.from('ip_applications')
-		.select(
-			'application_number, client_id, title_of_invention, status, filling_date, created_at, updated_at'
-		)
+		.select('*')
 		.eq('client_id', clientId)
 		.order('created_at', { ascending: false });
+
+	const applicationsParsed = z.array(IpApplicationSchema).safeParse(applicationsData);
+	console.log('Applications parsed:', applicationsParsed);
 
 	if (appsError) {
 		console.error('Error fetching applications:', appsError);
