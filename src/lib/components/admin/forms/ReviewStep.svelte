@@ -14,21 +14,21 @@
 		officeActions
 	}: {
 		form: Infer<typeof IpApplicationFormSchema>;
-		inventionTypes: (TypeOfInvention & {})[];
-		protectionStatuses: (PreProtectionStatus & {})[];
-		officeActions: (TypeOfOfficeAction & {})[];
+		inventionTypes: TypeOfInvention[];
+		protectionStatuses: PreProtectionStatus[];
+		officeActions: TypeOfOfficeAction[];
 	} = $props();
 
 	function getInventionTypeName(id: number): string {
-		return inventionTypes.find((t) => t.id === id)?.name ?? '—';
+		return inventionTypes.find((t) => t != null && t.id === id)?.name ?? '—';
 	}
 
 	function getProtectionStatusName(id: number): string {
-		return protectionStatuses.find((s) => s.id === id)?.name ?? '—';
+		return protectionStatuses.find((s) => s != null && s.id === id)?.name ?? '—';
 	}
 
 	function getOfficeActionName(id: number): string {
-		return officeActions.find((a) => a.id === id)?.name ?? '—';
+		return officeActions.find((a) => a != null && a.id === id)?.name ?? '—';
 	}
 </script>
 
@@ -144,10 +144,13 @@
 	<div class="space-y-3 rounded-lg border border-border p-4">
 		<h3 class="text-sm font-semibold text-foreground">Documents</h3>
 		{#if form.files.length > 0}
-			<ul class="list-inside list-disc space-y-1 text-sm">
+			<ul class="space-y-1 text-sm">
 				{#each form.files as file, i (i)}
-					<li>
-						<span class="font-medium">{file.category}</span>
+					<li class="flex items-center gap-2">
+						<span class="min-w-0 flex-1 truncate text-foreground">{file.file.name}</span>
+						<span class="shrink-0 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+							>{file.category}</span
+						>
 					</li>
 				{/each}
 			</ul>

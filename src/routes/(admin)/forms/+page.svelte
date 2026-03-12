@@ -4,6 +4,8 @@
 	import type { PageProps } from './$types';
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import { IpApplicationFormSchema } from '$lib/types/FormTypes';
+	import type { IpApplicationFormData } from '$lib/types/FormTypes';
+	import { goto } from '$app/navigation';
 
 	import FormStepper from '$lib/components/admin/forms/FormStepper.svelte';
 	import ClientProfileStep from '$lib/components/admin/forms/ClientProfileStep.svelte';
@@ -15,14 +17,42 @@
 		STEP_REQUIRED_FIELDS,
 		STEP_FIELD_MAP
 	} from '$lib/components/admin/forms/constants';
+	import { untrack } from 'svelte';
+	import { submitIpApplication } from '$lib/services/ip-application';
+	import { createBrowserClient } from '$lib/services/supabase/client';
 
 	let { data }: PageProps = $props();
 
-	// superForm only needs the initial value; reactive updates aren't needed here
-	const { form, errors, enhance } = superForm(data.form, {
-		validators: zod4(IpApplicationFormSchema),
-		dataType: 'json'
-	});
+	let submitting = $state(false);
+	let submitError = $state<string | null>(null);
+
+	const { form, errors, enhance } = superForm(
+		untrack(() => data.form),
+		{
+			validators: zod4(IpApplicationFormSchema),
+			dataType: 'json',
+			resetForm: false,
+			onSubmit: ({ cancel }) => {
+				cancel();
+				handleClientSubmit();
+			}
+		}
+	);
+
+	async function handleClientSubmit() {
+		submitting = true;
+		submitError = null;
+
+		try {
+			const supabase = createBrowserClient();
+			await submitIpApplication($form as IpApplicationFormData, supabase);
+			goto('/files');
+		} catch (err) {
+			submitError = err instanceof Error ? err.message : 'An unexpected error occurred.';
+		} finally {
+			submitting = false;
+		}
+	}
 
 	let currentStep = $state(0);
 
@@ -94,17 +124,17 @@
 		<form method="POST" action="?/application" use:enhance class="flex flex-1 flex-col p-6">
 			<div class="flex-1">
 				{#if currentStep === 0}
-					<ClientProfileStep form={$form} errors={$errors} />
+					<ClientProfileStep {form} {errors} />
 				{:else if currentStep === 1}
 					<ApplicationStep
-						form={$form}
-						errors={$errors}
+						{form}
+						{errors}
 						inventionTypes={data.inventionTypes}
 						protectionStatuses={data.protectionStatuses}
 						officeActions={data.officeActions}
 					/>
 				{:else if currentStep === 2}
-					<DocumentUploadStep />
+					<DocumentUploadStep {form} />
 				{:else if currentStep === 3}
 					<ReviewStep
 						form={$form}
@@ -117,15 +147,28 @@
 
 			<!-- Navigation buttons -->
 			<div class="mt-8 flex items-center justify-between border-t border-border pt-4">
-				<Button type="button" variant="outline" onclick={prevStep} disabled={currentStep === 0}>
+				<Button
+					type="button"
+					variant="outline"
+					onclick={prevStep}
+					disabled={currentStep === 0 || submitting}
+				>
 					Previous
 				</Button>
 
-				{#if currentStep === STEP_LABELS.length - 1}
-					<Button type="submit">Submit Application</Button>
-				{:else}
-					<Button type="button" onclick={nextStep}>Continue</Button>
-				{/if}
+				<div class="flex items-center gap-3">
+					{#if submitError}
+						<p class="max-w-sm text-sm text-destructive">{submitError}</p>
+					{/if}
+
+					{#if currentStep === STEP_LABELS.length - 1}
+						<Button type="submit" disabled={submitting}>
+							{submitting ? 'Submitting...' : 'Submit Application'}
+						</Button>
+					{:else}
+						<Button type="button" onclick={nextStep}>Continue</Button>
+					{/if}
+				</div>
 			</div>
 		</form>
 	</div>

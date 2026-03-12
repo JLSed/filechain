@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { z } from 'zod';
 import { zod4 } from 'sveltekit-superforms/adapters';
@@ -55,5 +55,12 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 export const actions = {
 	application: async ({ request }) => {
 		const form = await superValidate(request, zod4(IpApplicationFormSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		// TODO: handle successful submission
+		return { form };
 	}
 };

@@ -42,3 +42,5 @@ export const IpApplicationFormSchema = z.object({
 		})
 	)
 });
+
+export type IpApplicationFormData = z.infer<typeof IpApplicationFormSchema>;

@@ -1,7 +1,7 @@
 export const STEP_LABELS = [
 	'Client Information',
 	'Application Details',
-	'Document Upload',
+	'Documents',
 	'Review & Submit'
 ] as const;
 
@@ -61,7 +61,6 @@ export const STEP_REQUIRED_FIELDS: Record<number, string[]> = {
 		'application.application_number',
 		'application.title_of_invention',
 		'application.status',
-		'application.link_to_folder',
 		'application.type_of_invention_id',
 		'application.pre_protection_status_id',
 		'application.type_of_office_action_id'
