@@ -14,9 +14,9 @@ export const pageTitles: Record<string, string> = {
 	'/forms': 'Filing Forms',
 	'/reports': 'Reports',
 	'/audit-logs': 'Audit Logs',
-	'/patenting/client': 'Patenting of Client',
-	'/patenting/ipophil': 'Patenting of IPOPHL',
-	'/files': 'File Management',
+	'/patenting/client': 'Client Applications',
+	'/patenting/ipophil': 'Application Timeline',
+	'/files': 'File Storage',
 	'/users': 'User Management'
 };
 
@@ -59,12 +59,12 @@ export const overviewGroup: Sidebar.Item[] = [
 
 export const patentingGroups: Sidebar.Item[] = [
 	{
-		title: 'Patenting of Client',
+		title: 'Client Applications',
 		url: '/patenting/client',
 		icon: FileUser
 	},
 	{
-		title: 'Patenting of IPOPHL',
+		title: 'Application Timeline',
 		url: '/patenting/ipophil',
 		icon: Building2
 	}
@@ -72,7 +72,7 @@ export const patentingGroups: Sidebar.Item[] = [
 
 export const managementGroups: Sidebar.Item[] = [
 	{
-		title: 'File Management',
+		title: 'File Storage',
 		url: '/files',
 		icon: FolderOpen
 	},

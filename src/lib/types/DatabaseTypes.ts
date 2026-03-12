@@ -35,8 +35,8 @@ export const ClientProfileSchema = z.object({
 	nationality: z.string(),
 	company_name: z.string(),
 	company_address: z.string(),
-	created_at: z.date(),
-	updated_at: z.date()
+	created_at: z.string(),
+	updated_at: z.string()
 });
 
 export type ClientProfile = z.infer<typeof ClientProfileSchema>;
@@ -98,3 +98,31 @@ export const IpApplicationSchema = z.object({
 });
 
 export type IpApplication = z.infer<typeof IpApplicationSchema>;
+
+export const FileMetadataSchema = z.object({
+	file_id: z.uuid(),
+	uploader_id: z.uuid(),
+	file_name: z.string(),
+	file_path: z.string(),
+	uploaded_at: z.string(),
+	size: z.number(),
+	status: z.string().nullable(),
+	category: z.string().nullable(),
+	application_number: z.string(),
+	file_ledger: z
+		.array(
+			z.object({
+				sequence: z.number()
+			})
+		)
+		.optional(),
+	user_profiles: z
+		.object({
+			first_name: z.string(),
+			last_name: z.string()
+		})
+		.nullable()
+		.optional()
+});
+
+export type FileMetadata = z.infer<typeof FileMetadataSchema>;

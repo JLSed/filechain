@@ -1,5 +1,6 @@
 import { invalidate } from '$app/navigation';
 import type { IpApplication } from '$lib/types/DatabaseTypes';
+import type { ClientProfile } from '$lib/types/DatabaseTypes';
 
 export class TableState<T extends Record<string, unknown>> {
 	private searchKeys: (keyof T)[];
@@ -83,5 +84,14 @@ export class ApplicationTableState extends TableState<IpApplication> {
 
 	constructor(rows: IpApplication[]) {
 		super(rows, ['title_of_invention', 'application_number']);
+	}
+}
+
+export class ClientFolderState extends TableState<ClientProfile> {
+	constructor(rows: ClientProfile[]) {
+		super(rows, ['first_name', 'last_name', 'company_name']);
+		this.sortColumn = 'first_name';
+		this.sortDirection = 'asc';
+		this.MAX_PAGE_SIZE = 12;
 	}
 }
