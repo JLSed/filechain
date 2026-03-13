@@ -17,3 +17,9 @@ export function getClientName(app: IpApplication): string {
 export function formatName(firstName: string, middleName: string | null, lastName: string): string {
 	return `${firstName.charAt(0).toUpperCase()}. ${middleName ? middleName.charAt(0).toUpperCase() + '. ' : ''} ${lastName}`;
 }
+
+export function formatFileSize(bytes: number): string {
+	if (bytes < 1024) return `${bytes}b`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)}kb`;
+	return `${(bytes / (1024 * 1024)).toFixed(2)}mb`;
+}

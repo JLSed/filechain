@@ -3,16 +3,20 @@
 	import * as Table from '$lib/shadcn/components/ui/table/index';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
-	import { formatDate } from '$lib/utils/formatter';
-	import { File, Ellipsis } from '@lucide/svelte';
+	import { formatDate, formatFileSize } from '$lib/utils/formatter';
+	import { File, EllipsisVertical } from '@lucide/svelte';
 
 	interface Props {
 		file: FileMetadata;
 		currentUserId: string;
 		onfileclick: (file: FileMetadata) => void;
+		onaddrevision: (file: FileMetadata) => void;
+		onviewrevisions: (file: FileMetadata) => void;
+		onverifyintegrity: (file: FileMetadata) => void;
 	}
 
-	let { file, currentUserId, onfileclick }: Props = $props();
+	let { file, currentUserId, onfileclick, onaddrevision, onviewrevisions, onverifyintegrity }: Props =
+		$props();
 
 	const version = $derived(
 		file.file_ledger && file.file_ledger.length > 0 ? `v${file.file_ledger[0].sequence}` : null
@@ -29,12 +33,6 @@
 		}
 		return '—';
 	});
-
-	function formatFileSize(bytes: number): string {
-		if (bytes < 1024) return `${bytes}b`;
-		if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)}kb`;
-		return `${(bytes / (1024 * 1024)).toFixed(2)}mb`;
-	}
 </script>
 
 <Table.Row class="group cursor-pointer hover:bg-muted/50" onclick={() => onfileclick(file)}>
@@ -58,13 +56,31 @@
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger>
 				<button class="rounded-md p-1 transition-opacity hover:bg-muted" aria-label="File options">
-					<Ellipsis class="size-4" />
+					<EllipsisVertical class="size-4" />
 				</button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
 				<DropdownMenu.Item>Share</DropdownMenu.Item>
-				<DropdownMenu.Item>Edit File Information</DropdownMenu.Item>
-				<DropdownMenu.Item>View Versions</DropdownMenu.Item>
+				<DropdownMenu.Item
+					onclick={(e: MouseEvent) => {
+						e.stopPropagation();
+						onaddrevision(file);
+					}}>Add Revision</DropdownMenu.Item
+				>
+				<DropdownMenu.Item
+					onclick={(e: MouseEvent) => {
+						e.stopPropagation();
+						onverifyintegrity(file);
+					}}>Verify Integrity</DropdownMenu.Item
+				>
+				<DropdownMenu.Item>Edit Metadata</DropdownMenu.Item>
+				<DropdownMenu.Item
+					onclick={(e: MouseEvent) => {
+						e.stopPropagation();
+						onviewrevisions(file);
+					}}
+				>View Revisions</DropdownMenu.Item>
+				<DropdownMenu.Separator />
 				<DropdownMenu.Item>Archive File</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>

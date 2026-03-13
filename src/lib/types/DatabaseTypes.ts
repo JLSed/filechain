@@ -114,10 +114,14 @@ export const FileMetadataSchema = z.object({
 	status: z.string().nullable(),
 	category: z.string().nullable(),
 	application_number: z.string(),
+	file_hash: z.string().optional(),
 	file_ledger: z
 		.array(
 			z.object({
-				sequence: z.number()
+				block_id: z.string(),
+				sequence: z.number(),
+				signature: z.string().nullable(),
+				previous_block: z.string().nullable()
 			})
 		)
 		.optional(),

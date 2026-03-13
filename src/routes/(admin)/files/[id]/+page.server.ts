@@ -65,7 +65,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 			.schema('api')
 			.from('file_metadata')
 			.select(
-				'file_id, uploader_id, file_name, file_path, uploaded_at, size, status, category, application_number, file_ledger(sequence), user_profiles(first_name, last_name)'
+				'file_id, uploader_id, file_name, file_path, file_hash, uploaded_at, size, status, category, application_number, file_ledger(block_id, sequence, signature, previous_block), user_profiles(first_name, last_name)'
 			)
 			.in('application_number', applicationNumbers)
 			.order('uploaded_at', { ascending: false });
