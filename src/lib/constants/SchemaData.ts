@@ -6,6 +6,17 @@ export const APPLICATION_STATUS = [
 	'Closed'
 ] as const;
 
+export const USER_ROLES = [
+	'System Admin',
+	'User Admin',
+	'Finance Officer',
+	'Patent Team',
+	'UM Team',
+	'TM Team',
+	'Application Officer',
+	'Auditor'
+] as const;
+
 export const FILE_CATEGORIES = [
 	'Specification',
 	'Claims',

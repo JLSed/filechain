@@ -1,8 +1,10 @@
 <script>
 	import AdminNavBar from '$lib/components/admin/AdminNavBar.svelte';
 	import AdminSidebar from '$lib/components/admin/AdminSidebar.svelte';
+	import SetupMasterPasswordDialog from '$lib/components/admin/SetupMasterPasswordDialog.svelte';
 	let { children, data } = $props();
 	const user = $derived(data.profile);
+	const hasMasterPassword = $derived(data.hasMasterPassword);
 	import * as Sidebar from '$lib/shadcn/components/ui/sidebar/index.js';
 	import * as Tooltip from '$lib/shadcn/components/ui/tooltip/index.js';
 </script>
@@ -19,4 +21,7 @@
 			</div>
 		</div>
 	</Sidebar.Provider>
+	{#if hasMasterPassword !== undefined}
+		<SetupMasterPasswordDialog open={!hasMasterPassword} />
+	{/if}
 </Tooltip.Provider>

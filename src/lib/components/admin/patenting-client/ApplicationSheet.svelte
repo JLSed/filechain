@@ -65,11 +65,11 @@
 					<dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
 						<div>
 							<dt class="text-muted-foreground">Name</dt>
-							<dd class="font-medium">{data.client_profiles.first_name}</dd>
+							<dd class="font-medium">{data.client_profiles?.first_name ?? '—'}</dd>
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Email</dt>
-							<dd class="font-medium">{data.client_profiles.email ?? '—'}</dd>
+							<dd class="font-medium">{data.client_profiles?.email ?? '—'}</dd>
 						</div>
 						<div class="sm:col-span-2">
 							<dt class="text-muted-foreground">Contact Details</dt>

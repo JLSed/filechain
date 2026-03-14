@@ -27,8 +27,23 @@ export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSessio
 
 	if (!user_profile.success) {
 		console.error('Profile data mismatch:', user_profile.error.flatten());
-		throw error(500, 'Unable to retreive user profile');
+		throw error(500, 'Unable to retrieve user profile');
 	}
 
-	return { profile: user_profile.data };
+	const { data: secretData, error: secretError } = await supabase
+		.schema('api')
+		.from('user_secrets')
+		.select('user_id')
+		.eq('user_id', session.user.id)
+		.maybeSingle();
+
+	if (secretError) {
+		console.error('Error fetching user_secret:', secretError);
+		// If we error here, we could potentially throw instead,
+		// but let's assume worst case they just don't have it.
+	}
+
+	const hasMasterPassword = !!secretData;
+
+	return { profile: user_profile.data, hasMasterPassword };
 };

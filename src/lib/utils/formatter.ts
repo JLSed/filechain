@@ -10,7 +10,7 @@ export function formatDate(dateString: string | null): string {
 }
 
 export function getClientName(app: IpApplication): string {
-	const parts = [app.client_profiles.first_name, app.client_profiles.last_name].filter(Boolean);
+	const parts = [app.client_profiles?.first_name, app.client_profiles?.last_name].filter(Boolean);
 	return parts.length > 0 ? parts.join(' ') : '—';
 }
 

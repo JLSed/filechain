@@ -1,5 +1,27 @@
-import { APPLICATION_STATUS, FILE_CATEGORIES } from '$lib/constants/SchemaData';
+import { APPLICATION_STATUS, FILE_CATEGORIES, USER_ROLES } from '$lib/constants/SchemaData';
 import * as z from 'zod';
+
+export const AddUserFormSchema = z.object({
+	first_name: z.string().min(1, { message: 'First name is required' }),
+	middle_name: z.string().optional().default(''),
+	last_name: z.string().min(1, { message: 'Last name is required' }),
+	email: z.email({ message: 'Please enter a valid email address' }),
+	contact_number: z.string().optional().default(''),
+	address: z.string().optional().default(''),
+	role: z.enum(USER_ROLES, { message: 'Please select a role' })
+});
+
+export type AddUserFormData = z.infer<typeof AddUserFormSchema>;
+
+export const SetupAccountFormSchema = z.object({
+	password: z.string().min(7, { message: 'Password must be at least 7 characters' }),
+	encrypted_private_key: z.string({ message: 'Missing encrypted private key' }).min(1),
+	public_key: z.string({ message: 'Missing public key' }).min(1),
+	pk_salt: z.string({ message: 'Missing salt' }).min(1),
+	pk_nonce: z.string({ message: 'Missing nonce' }).min(1)
+});
+
+export type SetupAccountFormData = z.infer<typeof SetupAccountFormSchema>;
 
 export const LoginFormSchema = z.object({
 	email: z.email({ message: 'Please enter a valid email address' }),
@@ -44,3 +66,12 @@ export const IpApplicationFormSchema = z.object({
 });
 
 export type IpApplicationFormData = z.infer<typeof IpApplicationFormSchema>;
+
+export const SetupMasterPasswordSchema = z.object({
+	encrypted_private_key: z.string({ message: 'Missing encrypted private key' }).min(1),
+	public_key: z.string({ message: 'Missing public key' }).min(1),
+	pk_salt: z.string({ message: 'Missing salt' }).min(1),
+	pk_nonce: z.string({ message: 'Missing nonce' }).min(1)
+});
+
+export type SetupMasterPasswordData = z.infer<typeof SetupMasterPasswordSchema>;

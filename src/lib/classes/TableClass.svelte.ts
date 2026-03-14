@@ -1,6 +1,7 @@
 import { invalidate } from '$app/navigation';
 import type { IpApplication } from '$lib/types/DatabaseTypes';
 import type { ClientProfile } from '$lib/types/DatabaseTypes';
+import type { UserProfile } from '$lib/types/DatabaseTypes';
 
 export class TableState<T extends Record<string, unknown>> {
 	private searchKeys: (keyof T)[];
@@ -93,5 +94,33 @@ export class ClientFolderState extends TableState<ClientProfile> {
 		this.sortColumn = 'first_name';
 		this.sortDirection = 'asc';
 		this.MAX_PAGE_SIZE = 12;
+	}
+}
+
+export class UserTableState extends TableState<UserProfile> {
+	sheetOpen = $state(false);
+	editRoleOpen = $state(false);
+	archiveOpen = $state(false);
+	selectedUser: UserProfile | null = $state(null);
+
+	openDetails = (user: UserProfile) => {
+		this.selectedUser = user;
+		this.sheetOpen = true;
+	};
+
+	openEditRole = (user: UserProfile) => {
+		this.selectedUser = user;
+		this.editRoleOpen = true;
+	};
+
+	openArchive = (user: UserProfile) => {
+		this.selectedUser = user;
+		this.archiveOpen = true;
+	};
+
+	constructor(rows: UserProfile[]) {
+		super(rows, ['first_name', 'last_name', 'email', 'role']);
+		this.sortColumn = 'first_name';
+		this.sortDirection = 'asc';
 	}
 }

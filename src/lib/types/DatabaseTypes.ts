@@ -4,11 +4,15 @@ import * as z from 'zod';
 
 export const UserProfileSchema = z.object({
 	user_id: z.uuid(),
-	role: z.string(),
-	first_name: z.string(),
-	last_name: z.string(),
+	role: z.string().nullable(),
+	first_name: z.string().nullable(),
+	last_name: z.string().nullable(),
 	middle_name: z.string().nullable(),
-	is_active: z.boolean()
+	is_active: z.boolean(),
+	created_at: z.string(),
+	contact_number: z.string().nullable(),
+	address: z.string().nullable(),
+	email: z.string().nullable()
 });
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;

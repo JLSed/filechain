@@ -16,7 +16,7 @@
 
 	const sidebar = Sidebar.useSidebar();
 
-	const formattedName = $derived(formatName(user.first_name, user.middle_name, user.last_name));
+	const formattedName = $derived(formatName(user.first_name ?? '', user.middle_name, user.last_name ?? ''));
 </script>
 
 <Sidebar.Root collapsible="icon">
