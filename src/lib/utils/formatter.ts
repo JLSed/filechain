@@ -23,3 +23,20 @@ export function formatFileSize(bytes: number): string {
 	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)}kb`;
 	return `${(bytes / (1024 * 1024)).toFixed(2)}mb`;
 }
+
+/**
+ * Formats a UTC timestamp into a readable string.
+ * e.g. "Mar 15, 2026 - 1:03 PM"
+ */
+export function formatTimestamp(ts: string): string {
+	const date = new Date(ts);
+	const month = date.toLocaleString('en-US', { month: 'short' });
+	const day = date.getDate();
+	const year = date.getFullYear();
+	const time = date.toLocaleString('en-US', {
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true
+	});
+	return `${month} ${day}, ${year} - ${time}`;
+}

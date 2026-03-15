@@ -140,6 +140,21 @@ export const FileMetadataSchema = z.object({
 
 export type FileMetadata = z.infer<typeof FileMetadataSchema>;
 
+export const AuditLogSchema = z.object({
+	log_id: z.uuid(),
+	actor_id: z.uuid().nullable(),
+	details: z.string(),
+	old_value: z.string().nullable(),
+	new_value: z.string().nullable(),
+	affected_column: z.string().nullable(),
+	severity_level: z.string(),
+	ip_address: z.string().nullable(),
+	timestamp: z.string(),
+	event_type: z.string()
+});
+
+export type AuditLog = z.infer<typeof AuditLogSchema>;
+
 export interface DecryptedFileView {
 	fileName: string;
 	mimeType: string;

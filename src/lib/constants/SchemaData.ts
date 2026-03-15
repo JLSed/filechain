@@ -28,3 +28,15 @@ export const FILE_CATEGORIES = [
 	'Priority Document',
 	'Other'
 ] as const;
+
+export const AUDIT_EVENT_TYPES = [
+	'Added Application',
+	'Edited Application',
+	'Edited File',
+	'Added Account',
+	'Edited Account',
+	'Logged In',
+	'Failed Login'
+] as const;
+
+export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;

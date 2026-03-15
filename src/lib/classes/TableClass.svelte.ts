@@ -2,6 +2,7 @@ import { invalidate } from '$app/navigation';
 import type { IpApplication } from '$lib/types/DatabaseTypes';
 import type { ClientProfile } from '$lib/types/DatabaseTypes';
 import type { UserProfile } from '$lib/types/DatabaseTypes';
+import type { AuditLog } from '$lib/types/DatabaseTypes';
 
 export class TableState<T extends Record<string, unknown>> {
 	private searchKeys: (keyof T)[];
@@ -122,5 +123,14 @@ export class UserTableState extends TableState<UserProfile> {
 		super(rows, ['first_name', 'last_name', 'email', 'role']);
 		this.sortColumn = 'first_name';
 		this.sortDirection = 'asc';
+	}
+}
+
+export class AuditLogTableState extends TableState<AuditLog> {
+	constructor(rows: AuditLog[]) {
+		super(rows, ['details', 'event_type']);
+		this.sortColumn = 'timestamp';
+		this.sortDirection = 'desc';
+		this.MAX_PAGE_SIZE = 10;
 	}
 }
