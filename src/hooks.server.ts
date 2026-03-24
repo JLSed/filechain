@@ -48,6 +48,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 			data: { user },
 			error
 		} = await supabase.auth.getUser();
+		console.log(user?.id);
 
 		if (error || !user) {
 			cachedSession = UNAUTHENTICATED;

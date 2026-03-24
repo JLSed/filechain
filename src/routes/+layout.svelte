@@ -5,6 +5,7 @@
 	import { invalidate } from '$app/navigation';
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import LandingNavBar from '$lib/components/landing/LandingNavBar.svelte';
+	import Toaster from '$lib/shadcn/components/ui/sonner/sonner.svelte';
 
 	let { data, children } = $props();
 
@@ -41,3 +42,4 @@
 {/if}
 
 {@render children()}
+<Toaster richColors position="top-right" />

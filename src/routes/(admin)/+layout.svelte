@@ -14,7 +14,7 @@
 		<div class="flex h-screen w-full">
 			<AdminSidebar {user} />
 			<div class="flex min-w-0 flex-1 flex-col">
-				<AdminNavBar />
+				<AdminNavBar userId={user.user_id} />
 				<main class="flex-1 overflow-x-hidden overflow-y-auto">
 					{@render children()}
 				</main>

@@ -28,6 +28,7 @@
 
 	let revisionFile = $state<FileMetadata | null>(null);
 	let revisionDialogOpen = $state(false);
+	let revisionTeam = $state<string | null>(null);
 
 	let revisionChain = $state<FileMetadata[]>([]);
 	let revisionDrawerOpen = $state(false);
@@ -113,6 +114,8 @@
 
 	function handleAddRevision(file: FileMetadata): void {
 		revisionFile = file;
+		const app = data.applications.find((a) => a.application_number === file.application_number);
+		revisionTeam = app?.team_assigned ?? null;
 		revisionDialogOpen = true;
 	}
 
@@ -125,6 +128,7 @@
 	function handleRevisionDialogClose(): void {
 		revisionDialogOpen = false;
 		revisionFile = null;
+		revisionTeam = null;
 	}
 
 	function handleViewRevisions(file: FileMetadata): void {
@@ -198,6 +202,7 @@
 
 <AddRevisionDialog
 	file={revisionFile}
+	applicationTeam={revisionTeam}
 	bind:open={revisionDialogOpen}
 	onuploaded={handleRevisionUploaded}
 	onclose={handleRevisionDialogClose}

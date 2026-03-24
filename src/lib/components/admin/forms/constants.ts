@@ -39,7 +39,7 @@ export const STEP_FIELD_MAP: Record<number, string[]> = {
 		'application.type_of_office_action_id'
 	],
 	2: ['files'],
-	3: []
+	3: ['application.team_assigned']
 };
 
 /**
@@ -61,5 +61,5 @@ export const STEP_REQUIRED_FIELDS: Record<number, string[]> = {
 		'application.type_of_invention_id'
 	],
 	2: [],
-	3: []
+	3: ['application.team_assigned']
 };

@@ -97,6 +97,7 @@ export const IpApplicationSchema = z.object({
 	type_of_invention: TypeOfInventionSchema,
 	pre_protection_status: PreProtectionStatusSchema,
 	type_of_office_action: TypeOfOfficeActionSchema,
+	team_assigned: z.string().nullable(),
 	client_profiles: z
 		.object({
 			first_name: z.string(),
@@ -154,6 +155,20 @@ export const AuditLogSchema = z.object({
 });
 
 export type AuditLog = z.infer<typeof AuditLogSchema>;
+
+export const ApplicationTaskSchema = z.object({
+	task_id: z.uuid(),
+	application_number: z.string(),
+	title: z.string(),
+	description: z.string().nullable(),
+	is_completed: z.boolean(),
+	completed_by: z.uuid().nullable(),
+	completed_at: z.string().nullable(),
+	created_by: z.uuid(),
+	created_at: z.string()
+});
+
+export type ApplicationTask = z.infer<typeof ApplicationTaskSchema>;
 
 export interface DecryptedFileView {
 	fileName: string;

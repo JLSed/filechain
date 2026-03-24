@@ -1,4 +1,4 @@
-import { APPLICATION_STATUS, FILE_CATEGORIES, USER_ROLES } from '$lib/constants/SchemaData';
+import { APPLICATION_STATUS, FILE_CATEGORIES, TEAM_ROLES, USER_ROLES } from '$lib/constants/SchemaData';
 import * as z from 'zod';
 
 export const AddUserFormSchema = z.object({
@@ -30,6 +30,7 @@ export const LoginFormSchema = z.object({
 
 export const IpApplicationFormSchema = z.object({
 	client_profiles: z.object({
+		client_id: z.string().optional(),
 		first_name: z.string(),
 		middle_name: z.string(),
 		last_name: z.string(),
@@ -55,7 +56,8 @@ export const IpApplicationFormSchema = z.object({
 		remarks: z.string().nullable(),
 		type_of_invention_id: z.number(),
 		pre_protection_status_id: z.number().nullable(),
-		type_of_office_action_id: z.number().nullable()
+		type_of_office_action_id: z.number().nullable(),
+		team_assigned: z.enum(TEAM_ROLES)
 	}),
 	files: z.array(
 		z.object({

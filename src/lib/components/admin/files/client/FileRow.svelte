@@ -15,8 +15,14 @@
 		onverifyintegrity: (file: FileMetadata) => void;
 	}
 
-	let { file, currentUserId, onfileclick, onaddrevision, onviewrevisions, onverifyintegrity }: Props =
-		$props();
+	let {
+		file,
+		currentUserId,
+		onfileclick,
+		onaddrevision,
+		onviewrevisions,
+		onverifyintegrity
+	}: Props = $props();
 
 	const version = $derived(
 		file.file_ledger && file.file_ledger.length > 0 ? `v${file.file_ledger[0].sequence}` : null
@@ -25,7 +31,7 @@
 	const uploaderName = $derived(() => {
 		if (file.uploader_id === currentUserId) {
 			if (file.user_profiles) {
-				return 'me';
+				return 'You';
 			}
 		}
 		if (file.user_profiles) {
@@ -78,8 +84,8 @@
 					onclick={(e: MouseEvent) => {
 						e.stopPropagation();
 						onviewrevisions(file);
-					}}
-				>View Revisions</DropdownMenu.Item>
+					}}>View Revisions</DropdownMenu.Item
+				>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Item>Archive File</DropdownMenu.Item>
 			</DropdownMenu.Content>

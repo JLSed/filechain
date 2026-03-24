@@ -13,11 +13,19 @@ import { IpApplicationFormSchema } from '$lib/types/FormTypes.js';
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	if (!supabase)
 		throw error(500, 'Unable to connect to the authentication service. Please try again later.');
-	const [inventionTypes, protectionStatuses, officeActions] = await Promise.all([
-		supabase.schema('api').from('type_of_invention').select('id, name'),
-		supabase.schema('api').from('pre_protection_status').select('id, name'),
-		supabase.schema('api').from('type_of_office_action').select('id, name')
-	]);
+	const [inventionTypes, protectionStatuses, officeActions, clientProfilesResult] =
+		await Promise.all([
+			supabase.schema('api').from('type_of_invention').select('id, name'),
+			supabase.schema('api').from('pre_protection_status').select('id, name'),
+			supabase.schema('api').from('type_of_office_action').select('id, name'),
+			supabase
+				.schema('api')
+				.from('client_profiles')
+				.select(
+					'client_id, first_name, middle_name, last_name, email, mobile_number, nationality, company_name, company_address'
+				)
+				.order('last_name', { ascending: true })
+		]);
 
 	const cleanData = {
 		inventionTypes: z.array(TypeOfInventionSchema).safeParse(inventionTypes.data),
@@ -48,6 +56,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 		inventionTypes: cleanData.inventionTypes.data,
 		protectionStatuses: cleanData.protectionStatuses.data,
 		officeActions: cleanData.officeActions.data,
+		clientProfiles: clientProfilesResult.data ?? [],
 		form: await superValidate(zod4(IpApplicationFormSchema))
 	};
 };

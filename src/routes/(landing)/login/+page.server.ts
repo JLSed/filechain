@@ -26,7 +26,8 @@ export const actions = {
 			);
 
 		const email = form.data.email;
-		const ipAddress = getClientAddress();
+		let ipAddress = getClientAddress();
+		if (ipAddress === '::1') ipAddress = '127.0.0.1';
 
 		const { data, error } = await supabase.auth.signInWithPassword({
 			email,

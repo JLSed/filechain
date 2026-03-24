@@ -1,7 +1,9 @@
 <script lang="ts">
 	import Separator from '$lib/shadcn/components/ui/separator/separator.svelte';
 	import * as Sheet from '$lib/shadcn/components/ui/sheet/index.js';
+	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import type { IpApplication } from '$lib/types/DatabaseTypes';
+	import { Maximize2 } from '@lucide/svelte';
 	interface ComponentProps {
 		data: IpApplication | null;
 		sheetOpen: boolean;
@@ -18,9 +20,22 @@
 			</div>
 		{:else}
 			<Sheet.Header>
-				<Sheet.Title>Application Details</Sheet.Title>
-				<Sheet.Description>{data.status}</Sheet.Description>
-				<Sheet.Description>{data.application_number}</Sheet.Description>
+				<div class="flex items-center justify-between">
+					<div>
+						<Sheet.Title>Application Details</Sheet.Title>
+						<Sheet.Description>{data.status}</Sheet.Description>
+						<Sheet.Description>{data.application_number}</Sheet.Description>
+					</div>
+					<Button
+						variant="outline"
+						size="sm"
+						class="gap-1.5"
+						href="/application/{data.application_number}"
+					>
+						<Maximize2 class="size-3.5" />
+						Full View
+					</Button>
+				</div>
 			</Sheet.Header>
 			<div class="flex flex-col gap-6 px-4 pb-8">
 				<section>

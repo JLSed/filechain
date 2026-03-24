@@ -14,8 +14,8 @@ export const pageTitles: Record<string, string> = {
 	'/forms': 'Filing Forms',
 	'/reports': 'Reports',
 	'/audit-logs': 'Audit Logs',
-	'/patenting/client': 'Client Applications',
-	'/patenting/ipophil': 'Application Timeline',
+	'/application': 'Client Applications',
+	'/application/timeline': 'Application Timeline',
 	'/files': 'File Storage',
 	'/users': 'User Management'
 };
@@ -29,8 +29,8 @@ export const protectedRoutes = [
 	'/forms',
 	'/reports',
 	'/audit-logs',
-	'/patenting/client',
-	'/patenting/ipophil'
+	'/application',
+	'/application/timeline'
 ];
 export const authRoutes = ['/login', '/register'];
 
@@ -60,12 +60,12 @@ export const overviewGroup: Sidebar.Item[] = [
 export const patentingGroups: Sidebar.Item[] = [
 	{
 		title: 'Client Applications',
-		url: '/patenting/client',
+		url: '/application',
 		icon: FileUser
 	},
 	{
 		title: 'Application Timeline',
-		url: '/patenting/ipophil',
+		url: '/application/timeline',
 		icon: Building2
 	}
 ];

@@ -6,6 +6,7 @@
 	import { IpApplicationFormSchema } from '$lib/types/FormTypes';
 	import type { IpApplicationFormData } from '$lib/types/FormTypes';
 	import { goto } from '$app/navigation';
+	import { toast } from 'svelte-sonner';
 
 	import FormStepper from '$lib/components/admin/forms/FormStepper.svelte';
 	import ClientProfileStep from '$lib/components/admin/forms/ClientProfileStep.svelte';
@@ -20,11 +21,16 @@
 	import { untrack } from 'svelte';
 	import { submitIpApplication } from '$lib/services/ip-application';
 	import { createBrowserClient } from '$lib/services/supabase/client';
+	import { formatName } from '$lib/utils/formatter';
 
 	let { data }: PageProps = $props();
 
 	let submitting = $state(false);
-	let submitError = $state<string | null>(null);
+
+	const userProfile = $derived(data.profile);
+	const formattedName = $derived(
+		formatName(userProfile.first_name ?? '', userProfile.middle_name, userProfile.last_name ?? '')
+	);
 
 	const { form, errors, enhance } = superForm(
 		untrack(() => data.form),
@@ -41,14 +47,24 @@
 
 	async function handleClientSubmit() {
 		submitting = true;
-		submitError = null;
 
 		try {
 			const supabase = createBrowserClient();
-			await submitIpApplication($form as IpApplicationFormData, supabase);
+			await submitIpApplication(
+				$form as IpApplicationFormData,
+				supabase,
+				userProfile.user_id,
+				formattedName
+			);
+			toast.success('Application submitted successfully', {
+				description: `Application ${$form.application.application_number} has been submitted.`
+			});
 			goto('/files');
 		} catch (err) {
-			submitError = err instanceof Error ? err.message : 'An unexpected error occurred.';
+			const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
+			toast.error('Failed to submit application', {
+				description: errorMessage
+			});
 		} finally {
 			submitting = false;
 		}
@@ -132,7 +148,12 @@
 		<form method="POST" action="?/application" use:enhance class="flex flex-1 flex-col p-6">
 			<div class="flex-1">
 				{#if currentStep === 0}
-					<ClientProfileStep {form} {errors} />
+					<ClientProfileStep
+						{form}
+						{errors}
+						clientProfiles={data.clientProfiles}
+						onClientSelected={nextStep}
+					/>
 				{:else if currentStep === 1}
 					<ApplicationStep
 						{form}
@@ -145,7 +166,7 @@
 					<DocumentUploadStep {form} />
 				{:else if currentStep === 3}
 					<ReviewStep
-						form={$form}
+						bind:form={$form}
 						inventionTypes={data.inventionTypes}
 						protectionStatuses={data.protectionStatuses}
 						officeActions={data.officeActions}
@@ -165,10 +186,6 @@
 				</Button>
 
 				<div class="flex items-center gap-3">
-					{#if submitError}
-						<p class="max-w-sm text-sm text-destructive">{submitError}</p>
-					{/if}
-
 					{#if currentStep === STEP_LABELS.length - 1}
 						<Button type="submit" disabled={submitting || !allRequiredFieldsFilled || hasAnyErrors}>
 							{submitting ? 'Submitting...' : 'Submit Application'}

@@ -40,3 +40,19 @@ export function formatTimestamp(ts: string): string {
 	});
 	return `${month} ${day}, ${year} - ${time}`;
 }
+
+/**
+ * Returns a human-readable countdown string for a deadline.
+ * e.g. "3 Day(s) Left", "Due Today", or "Overdue"
+ */
+export function getDaysLeft(deadline: string | null): string | null {
+	if (!deadline) return null;
+	const now = new Date();
+	now.setHours(0, 0, 0, 0);
+	const target = new Date(deadline);
+	target.setHours(0, 0, 0, 0);
+	const diff = Math.ceil((target.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+	if (diff < 0) return 'Overdue';
+	if (diff === 0) return 'Due Today';
+	return `${diff} Day(s) Left`;
+}

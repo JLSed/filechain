@@ -5,17 +5,18 @@
 	import { AlertCircle, Loader2, Upload, X } from '@lucide/svelte';
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import { uploadFileRevision } from '$lib/utils/file-revision';
-	import { getUserEncryptionKey } from '$lib/utils/crypto';
+	import { getUserEncryptionKey, getTeamAndAdminEncryptionKeys } from '$lib/utils/crypto';
 	import initWasm from '$lib/pkg/rust';
 
 	interface Props {
 		file: FileMetadata | null;
+		applicationTeam: string | null;
 		open: boolean;
 		onuploaded: () => void;
 		onclose: () => void;
 	}
 
-	let { file, open = $bindable(), onuploaded, onclose }: Props = $props();
+	let { file, applicationTeam, open = $bindable(), onuploaded, onclose }: Props = $props();
 
 	let dragging = $state(false);
 	let selectedFile = $state<File | null>(null);
@@ -75,12 +76,26 @@
 			const supabase = createBrowserClient();
 			const { userId, publicKeyBytes } = await getUserEncryptionKey(supabase);
 
+			// Build recipients list: uploader + team members + system admins
+			const recipients: Array<{ userId: string; publicKeyBytes: Uint8Array }> = [
+				{ userId, publicKeyBytes }
+			];
+
+			if (applicationTeam) {
+				const teamAndAdminKeys = await getTeamAndAdminEncryptionKeys(supabase, applicationTeam);
+				for (const recipient of teamAndAdminKeys) {
+					if (recipient.userId !== userId) {
+						recipients.push(recipient);
+					}
+				}
+			}
+
 			await uploadFileRevision({
 				supabase,
 				originalFile: file,
 				newFile: selectedFile,
 				uploaderId: userId,
-				publicKeyBytes
+				recipients
 			});
 
 			reset();

@@ -6,9 +6,10 @@
 		PreProtectionStatus,
 		TypeOfOfficeAction
 	} from '$lib/types/DatabaseTypes';
+	import { TEAM_ROLES } from '$lib/constants/SchemaData';
 
 	let {
-		form,
+		form = $bindable(),
 		inventionTypes,
 		protectionStatuses,
 		officeActions
@@ -38,6 +39,43 @@
 	<div>
 		<h2 class="text-lg font-semibold text-foreground">Review & Submit</h2>
 		<p class="text-sm text-muted-foreground">Review the information below before submitting.</p>
+	</div>
+
+	<!-- Assign a Team -->
+	<div class="space-y-3 rounded-lg border border-border p-4">
+		<h3 class="text-sm font-semibold text-foreground">Assign a Team</h3>
+		<p class="text-sm text-muted-foreground">
+			Select which team will be assigned to this application.
+		</p>
+		<div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+			{#each TEAM_ROLES as team (team)}
+				<button
+					type="button"
+					class="flex items-center gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition-all
+						{form.application.team_assigned === team
+						? 'border-primary bg-primary/10 text-primary ring-1 ring-primary'
+						: 'border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground'}"
+					onclick={() => {
+						form.application.team_assigned = team;
+					}}
+				>
+					<span
+						class="flex size-5 shrink-0 items-center justify-center rounded-full border-2
+							{form.application.team_assigned === team
+							? 'border-primary bg-primary'
+							: 'border-muted-foreground/40'}"
+					>
+						{#if form.application.team_assigned === team}
+							<span class="block size-2 rounded-full bg-primary-foreground"></span>
+						{/if}
+					</span>
+					{team}
+				</button>
+			{/each}
+		</div>
+		{#if !form.application.team_assigned}
+			<p class="text-xs text-destructive">Please select a team to assign.</p>
+		{/if}
 	</div>
 
 	<!-- Client Information -->
@@ -139,6 +177,10 @@
 					<span class="ml-1 font-medium">{form.application.remarks}</span>
 				</div>
 			{/if}
+			<div>
+				<span class="text-muted-foreground">Assigned Team:</span>
+				<span class="ml-1 font-medium">{form.application.team_assigned || '—'}</span>
+			</div>
 		</div>
 	</div>
 

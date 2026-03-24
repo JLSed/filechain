@@ -1,9 +1,11 @@
 export const APPLICATION_STATUS = [
-	'Assigned',
-	'Extended',
-	'Submitted',
-	'For Pickup',
-	'Closed'
+	'Client Intake',
+	'Drafting',
+	'Filing',
+	'Examination',
+	'Publication',
+	'Grant',
+	'Completed'
 ] as const;
 
 export const USER_ROLES = [
@@ -16,6 +18,8 @@ export const USER_ROLES = [
 	'Application Officer',
 	'Auditor'
 ] as const;
+
+export const TEAM_ROLES = ['Patent Team', 'UM Team', 'TM Team'] as const;
 
 export const FILE_CATEGORIES = [
 	'Specification',
@@ -32,6 +36,7 @@ export const FILE_CATEGORIES = [
 export const AUDIT_EVENT_TYPES = [
 	'Added Application',
 	'Edited Application',
+	'Submitted Application',
 	'Edited File',
 	'Added Account',
 	'Edited Account',
@@ -40,3 +45,10 @@ export const AUDIT_EVENT_TYPES = [
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;
+
+export const NOTIFICATION_TYPES = [
+	'New Application Submitted',
+	'Application Updated',
+	'File Uploaded',
+	'Task Completed'
+] as const;
