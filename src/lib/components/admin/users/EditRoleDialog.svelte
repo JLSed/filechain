@@ -39,11 +39,10 @@
 				use:enhance={() => {
 					submitting = true;
 					errorMessage = null;
-					return async ({ result, update }) => {
+					return async ({ result }) => {
 						submitting = false;
 						if (result.type === 'failure') {
-							errorMessage =
-								(result.data as { error?: string })?.error ?? 'Failed to update role.';
+							errorMessage = (result.data as { error?: string })?.error ?? 'Failed to update role.';
 						} else {
 							open = false;
 							await invalidate('db:user-profiles');
@@ -55,7 +54,7 @@
 				<input type="hidden" name="role" value={selectedRole} />
 
 				<div class="grid gap-2 py-4">
-					{#each USER_ROLES as role}
+					{#each USER_ROLES as role (role)}
 						<label
 							class="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors hover:bg-muted
 								{selectedRole === role ? 'border-primary bg-primary/5' : 'border-border'}"
@@ -79,7 +78,10 @@
 
 				<Dialog.Footer>
 					<Button type="button" variant="outline" onclick={() => (open = false)}>Cancel</Button>
-					<Button type="submit" disabled={submitting || !selectedRole || selectedRole === user.role}>
+					<Button
+						type="submit"
+						disabled={submitting || !selectedRole || selectedRole === user.role}
+					>
 						{submitting ? 'Saving...' : 'Save Role'}
 					</Button>
 				</Dialog.Footer>

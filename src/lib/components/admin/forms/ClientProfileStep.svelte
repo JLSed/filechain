@@ -145,7 +145,9 @@
 			<div class="h-4 w-px bg-border"></div>
 			<div>
 				<h2 class="text-lg font-semibold text-foreground">New Client</h2>
-				<p class="text-sm text-muted-foreground">Enter the client's personal and company details.</p>
+				<p class="text-sm text-muted-foreground">
+					Enter the client's personal and company details.
+				</p>
 			</div>
 		</div>
 
@@ -288,9 +290,7 @@
 			<div class="h-4 w-px bg-border"></div>
 			<div>
 				<h2 class="text-lg font-semibold text-foreground">Select Existing Client</h2>
-				<p class="text-sm text-muted-foreground">
-					Search and select a client from the database.
-				</p>
+				<p class="text-sm text-muted-foreground">Search and select a client from the database.</p>
 			</div>
 		</div>
 

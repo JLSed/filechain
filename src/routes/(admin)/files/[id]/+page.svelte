@@ -65,9 +65,7 @@
 	 * Returns an array ordered from oldest (genesis, seq 0) to newest.
 	 */
 	function buildRevisionChain(file: FileMetadata): FileMetadata[] {
-		const allFiles = data.files.filter(
-			(f) => f.application_number === file.application_number
-		);
+		const allFiles = data.files.filter((f) => f.application_number === file.application_number);
 
 		// Build a map: block_id -> FileMetadata
 		const blockIdToFile = new SvelteMap<string, FileMetadata>();

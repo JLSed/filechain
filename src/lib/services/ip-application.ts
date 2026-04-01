@@ -125,7 +125,7 @@ export async function submitIpApplication(
 	// Log audit entry for the submission
 	await insertAuditLog(supabase, {
 		actorId,
-		details: `${actorName} Submitted an application ${appNumber}`,
+		details: `${actorName} Submitted Application ${appNumber}`,
 		severityLevel: 'notice',
 		eventType: 'Submitted Application'
 	});
@@ -143,8 +143,8 @@ export async function submitIpApplication(
 			const recipientIds = teamMembers.map((m: { user_id: string }) => m.user_id);
 			await insertNotificationBatch(supabase, recipientIds, {
 				actorId,
-				title: 'New Application Submitted',
-				message: `${actorName} submitted application ${appNumber}`,
+				title: 'New Application Assigned',
+				message: `${actorName} assigned your team for application ${appNumber}`,
 				link: `/application/${appNumber}`
 			});
 		}

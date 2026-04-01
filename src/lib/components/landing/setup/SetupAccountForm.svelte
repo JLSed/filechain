@@ -24,9 +24,7 @@
 	let confirmPassword = $state('');
 	let isEncrypting = $state(false);
 	let encryptionError = $state('');
-	let passwordMismatch = $derived(
-		confirmPassword.length > 0 && $form.password !== confirmPassword
-	);
+	let passwordMismatch = $derived(confirmPassword.length > 0 && $form.password !== confirmPassword);
 
 	/**
 	 * Extracts the first error message from a superforms error field.
@@ -79,8 +77,7 @@
 			isEncrypting = false;
 			if (result.type === 'failure') {
 				encryptionError =
-					result.data?.message?.toString() ||
-					'Account setup failed. Please try again.';
+					result.data?.message?.toString() || 'Account setup failed. Please try again.';
 			}
 			update();
 		};
@@ -94,8 +91,8 @@
 			<h3 class="font-bold text-primary">Set Up Your Account</h3>
 		</div>
 		<p class="text-sm text-muted-foreground">
-			Choose a password to secure your account. This will also generate your encryption keys
-			for file security.
+			Choose a password to secure your account. This will also generate your encryption keys for
+			file security.
 		</p>
 	</div>
 
@@ -113,7 +110,12 @@
 		</div>
 	{/if}
 
-	<form method="POST" action="?/setupAccount" use:enhance={submitEnhance} class="flex flex-col gap-4">
+	<form
+		method="POST"
+		action="?/setupAccount"
+		use:enhance={submitEnhance}
+		class="flex flex-col gap-4"
+	>
 		<input type="hidden" name="encrypted_private_key" value="" />
 		<input type="hidden" name="public_key" value="" />
 		<input type="hidden" name="pk_salt" value="" />
@@ -154,14 +156,18 @@
 
 		<div class="rounded-md bg-muted/50 p-3">
 			<p class="text-xs text-muted-foreground">
-				<strong>Important:</strong> Your password is used to generate encryption keys that protect your files.
-				Keep it safe — it cannot be recovered if lost.
+				<strong>Important:</strong> Your password is used to generate encryption keys that protect your
+				files. Keep it safe — it cannot be recovered if lost.
 			</p>
 		</div>
 
 		<Button
 			type="submit"
-			disabled={isEncrypting || $submitting || passwordMismatch || !$form.password || !confirmPassword}
+			disabled={isEncrypting ||
+				$submitting ||
+				passwordMismatch ||
+				!$form.password ||
+				!confirmPassword}
 			class="w-full"
 			size="lg"
 		>

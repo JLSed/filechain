@@ -1,7 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { FileMetadata } from '$lib/types/DatabaseTypes';
 
-
 export type StepStatus = 'pending' | 'running' | 'passed' | 'failed' | 'warning';
 
 export interface IntegrityStep {
@@ -54,7 +53,7 @@ export async function runIntegrityCheck(
 	};
 
 	// Shared state across steps
-	let encryptedBlob: Blob | null = null;
+	let encryptedBlob: Blob;
 
 	// ── Step 0: Fetch Storage File ──
 	setStep(0, 'running');
@@ -121,11 +120,7 @@ export async function runIntegrityCheck(
 		if (file.file_path.endsWith(expectedSuffix)) {
 			setStep(3, 'passed', `"${storedName}" matches storage path`);
 		} else {
-			setStep(
-				3,
-				'failed',
-				`Name "${storedName}" does not match storage path "${file.file_path}"`
-			);
+			setStep(3, 'failed', `Name "${storedName}" does not match storage path "${file.file_path}"`);
 		}
 	} catch (err) {
 		setStep(3, 'failed', err instanceof Error ? err.message : 'File name check error');
@@ -142,18 +137,13 @@ export async function runIntegrityCheck(
 			const issues: string[] = [];
 
 			if (!entry.block_id) issues.push('missing block_id');
-			if (entry.sequence === undefined || entry.sequence === null)
-				issues.push('missing sequence');
+			if (entry.sequence === undefined || entry.sequence === null) issues.push('missing sequence');
 			if (!entry.signature) issues.push('missing signature');
 
 			if (issues.length > 0) {
 				setStep(4, 'failed', `Ledger issues: ${issues.join(', ')}`);
 			} else {
-				setStep(
-					4,
-					'passed',
-					`Block ${entry.block_id.substring(0, 8)}… | seq ${entry.sequence}`
-				);
+				setStep(4, 'passed', `Block ${entry.block_id.substring(0, 8)}… | seq ${entry.sequence}`);
 			}
 		}
 	} catch (err) {

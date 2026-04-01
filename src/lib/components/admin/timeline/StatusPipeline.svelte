@@ -11,14 +11,16 @@
 	const currentIndex = $derived(stages.indexOf(currentStatus as (typeof stages)[number]));
 </script>
 
-<div class="flex items-baseline gap-3 w-full overflow-x-auto py-2">
+<div class="flex w-full items-baseline gap-3 overflow-x-auto py-2">
 	{#each stages as stage, i (stage)}
 		{@const isPast = i < currentIndex}
 		{@const isCurrent = i === currentIndex}
 
-		<div class="flex flex-col items-start gap-1 shrink-0">
+		<div class="flex shrink-0 flex-col items-start gap-1">
 			<span
-				class="text-xs font-semibold leading-tight whitespace-nowrap {!isPast && !isCurrent ? 'text-muted-foreground/50' : ''}"
+				class="text-xs leading-tight font-semibold whitespace-nowrap {!isPast && !isCurrent
+					? 'text-muted-foreground/50'
+					: ''}"
 				class:text-emerald-600={isPast}
 				class:dark:text-emerald-400={isPast}
 				class:text-blue-600={isCurrent}

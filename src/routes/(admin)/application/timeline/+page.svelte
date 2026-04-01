@@ -5,6 +5,7 @@
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { AlertCircle, RefreshCcw } from '@lucide/svelte';
 	import { invalidate } from '$app/navigation';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let { data }: PageProps = $props();
 
@@ -18,7 +19,7 @@
 
 	/** Group tasks by application_number for efficient lookup */
 	const tasksByApp = $derived.by(() => {
-		const map = new Map<string, ApplicationTask[]>();
+		const map = new SvelteMap<string, ApplicationTask[]>();
 		for (const task of data.tasks) {
 			const existing = map.get(task.application_number) ?? [];
 			existing.push(task);
@@ -32,9 +33,7 @@
 	<div class="mb-6 flex items-center justify-between">
 		<div>
 			<h1 class="text-lg font-semibold">Application Timeline</h1>
-			<p class="text-sm text-muted-foreground">
-				Track progress and manage tasks for your applications
-			</p>
+			<p class="text-sm text-muted-foreground">Track progress and manage applications tasks</p>
 		</div>
 		<Button variant="outline" size="icon" disabled={isRefreshing} onclick={handleRefresh}>
 			<RefreshCcw class="size-4 {isRefreshing ? 'animate-spin' : ''}" />

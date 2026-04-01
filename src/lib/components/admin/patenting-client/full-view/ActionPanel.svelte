@@ -29,7 +29,13 @@
 					Save Changes
 				{/if}
 			</Button>
-			<Button variant="outline" size="sm" class="w-full gap-1.5" onclick={ontoggleedit} disabled={saving}>
+			<Button
+				variant="outline"
+				size="sm"
+				class="w-full gap-1.5"
+				onclick={ontoggleedit}
+				disabled={saving}
+			>
 				<X class="size-3.5" />
 				Cancel
 			</Button>
@@ -41,4 +47,3 @@
 		{/if}
 	</div>
 </aside>
-

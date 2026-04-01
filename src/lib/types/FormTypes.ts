@@ -1,4 +1,9 @@
-import { APPLICATION_STATUS, FILE_CATEGORIES, TEAM_ROLES, USER_ROLES } from '$lib/constants/SchemaData';
+import {
+	APPLICATION_STATUS,
+	FILE_CATEGORIES,
+	TEAM_ROLES,
+	USER_ROLES
+} from '$lib/constants/SchemaData';
 import * as z from 'zod';
 
 export const AddUserFormSchema = z.object({

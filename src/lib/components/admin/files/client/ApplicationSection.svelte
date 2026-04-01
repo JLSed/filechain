@@ -16,8 +16,15 @@
 		onverifyintegrity: (file: FileMetadata) => void;
 	}
 
-	let { app, files, currentUserId, onfileclick, onaddrevision, onviewrevisions, onverifyintegrity }: Props =
-		$props();
+	let {
+		app,
+		files,
+		currentUserId,
+		onfileclick,
+		onaddrevision,
+		onviewrevisions,
+		onverifyintegrity
+	}: Props = $props();
 	let open = $state(true);
 </script>
 
@@ -60,7 +67,14 @@
 				</Table.Header>
 				<Table.Body>
 					{#each files as file (file.file_id)}
-						<FileRow {file} {currentUserId} {onfileclick} {onaddrevision} {onviewrevisions} {onverifyintegrity} />
+						<FileRow
+							{file}
+							{currentUserId}
+							{onfileclick}
+							{onaddrevision}
+							{onviewrevisions}
+							{onverifyintegrity}
+						/>
 					{/each}
 				</Table.Body>
 			</Table.Root>

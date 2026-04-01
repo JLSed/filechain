@@ -68,7 +68,7 @@
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div
 			bind:this={container}
-			class="overflow-x-auto px-6 pb-6 pt-2 {isDragging
+			class="overflow-x-auto px-6 pt-2 pb-6 {isDragging
 				? 'cursor-grabbing select-none'
 				: 'cursor-grab'}"
 			onmousedown={handleMouseDown}
@@ -92,10 +92,7 @@
 							<span class="text-[11px] text-muted-foreground">
 								{formatDate(file.uploaded_at)}
 							</span>
-							<Badge
-								variant={isLatest ? 'default' : 'secondary'}
-								class="text-[10px] leading-tight"
-							>
+							<Badge variant={isLatest ? 'default' : 'secondary'} class="text-[10px] leading-tight">
 								{isGenesis ? 'Genesis' : `v${ledger?.sequence ?? i}`}
 							</Badge>
 						</div>
@@ -103,15 +100,11 @@
 						<!-- Card -->
 						<div
 							class="w-56 rounded-lg border p-3 transition-colors
-								{isLatest
-								? 'border-primary/40 bg-primary/5'
-								: 'border-border bg-card hover:bg-muted/50'}"
+								{isLatest ? 'border-primary/40 bg-primary/5' : 'border-border bg-card hover:bg-muted/50'}"
 						>
 							<!-- File icon + name -->
 							<div class="flex items-center gap-2">
-								<div
-									class="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted"
-								>
+								<div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
 									<File class="size-4 text-muted-foreground" />
 								</div>
 								<div class="min-w-0 flex-1">
@@ -126,9 +119,7 @@
 
 							<!-- Hash -->
 							<div class="mt-2 rounded-md bg-muted/60 px-2 py-1">
-								<p
-									class="font-mono text-[11px] leading-relaxed text-muted-foreground"
-								>
+								<p class="font-mono text-[11px] leading-relaxed text-muted-foreground">
 									{truncateHash(file.file_hash)}
 								</p>
 							</div>

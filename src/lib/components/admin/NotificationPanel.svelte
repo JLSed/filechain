@@ -91,13 +91,9 @@
 </script>
 
 <Popover.Root bind:open>
-	<Popover.Trigger asChild>
+	<Popover.Trigger>
 		{#snippet child({ props })}
-			<button
-				{...props}
-				class="notification-bell"
-				aria-label="Notifications"
-			>
+			<button {...props} class="notification-bell" aria-label="Notifications">
 				<Bell size={20} />
 				{#if unreadCount > 0}
 					<span class="notification-badge">
@@ -108,20 +104,14 @@
 		{/snippet}
 	</Popover.Trigger>
 
-	<Popover.Content
-		align="end"
-		sideOffset={8}
-		class="notification-panel"
-	>
+	<Popover.Content align="end" sideOffset={8} class="notification-panel">
 		<div class="notification-header">
 			<h3>Notifications</h3>
 		</div>
 
 		<Tabs.Root value="all" class="notification-tabs">
 			<Tabs.List class="notification-tabs-list">
-				<Tabs.Trigger value="all" class="notification-tab-trigger">
-					All Notifications
-				</Tabs.Trigger>
+				<Tabs.Trigger value="all" class="notification-tab-trigger">All Notifications</Tabs.Trigger>
 				<Tabs.Trigger value="unread" class="notification-tab-trigger">
 					Unread{#if unreadCount > 0}&nbsp;({unreadCount}){/if}
 				</Tabs.Trigger>
@@ -174,10 +164,7 @@
 				{:else}
 					<div class="notification-list">
 						{#each unreadNotifications as notification (notification.id)}
-							<button
-								class="notification-item unread"
-								onclick={() => markAsRead(notification)}
-							>
+							<button class="notification-item unread" onclick={() => markAsRead(notification)}>
 								<div class="notification-item-content">
 									<span class="notification-title">{notification.title}</span>
 									<span class="notification-message">{notification.message}</span>

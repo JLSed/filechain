@@ -11,9 +11,6 @@ import { createAdminClient } from '$lib/services/supabase/admin';
 
 export const load = (async ({ locals: { supabase }, depends }) => {
 	depends('db:user-profiles');
-	if (!supabase)
-		throw error(500, 'A server configuration error occurred. Unable to connect to the database.');
-
 	const { data, error: dbError } = await supabase.schema('api').from('user_profiles').select('*');
 
 	if (dbError) {

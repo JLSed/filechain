@@ -65,9 +65,7 @@
 		{#if error}
 			<div class="rounded-lg border border-red-200 bg-red-50 p-6">
 				<p class="text-sm text-destructive">{error}</p>
-				<a href="/login" class="mt-4 inline-block text-sm text-primary underline">
-					Go to login
-				</a>
+				<a href="/login" class="mt-4 inline-block text-sm text-primary underline"> Go to login </a>
 			</div>
 		{:else}
 			<Loader2 class="mx-auto mb-4 h-8 w-8 animate-spin text-primary" />

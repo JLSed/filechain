@@ -16,8 +16,13 @@
 		onclose: () => void;
 	}
 
-	let { applicationNumber, applicationTeam, open = $bindable(), onuploaded, onclose }: Props =
-		$props();
+	let {
+		applicationNumber,
+		applicationTeam,
+		open = $bindable(),
+		onuploaded,
+		onclose
+	}: Props = $props();
 
 	let dragging = $state(false);
 	let selectedFile = $state<File | null>(null);
@@ -106,8 +111,7 @@
 			reset();
 			onuploaded();
 		} catch (err) {
-			error =
-				err instanceof Error ? err.message : 'An unexpected error occurred during upload.';
+			error = err instanceof Error ? err.message : 'An unexpected error occurred during upload.';
 		} finally {
 			loading = false;
 		}
@@ -121,9 +125,7 @@
 				<Upload class="size-4" />
 				Add New File
 			</Dialog.Title>
-			<Dialog.Description>
-				Upload a new file for this application.
-			</Dialog.Description>
+			<Dialog.Description>Upload a new file for this application.</Dialog.Description>
 		</Dialog.Header>
 
 		<div class="grid gap-4 py-2">

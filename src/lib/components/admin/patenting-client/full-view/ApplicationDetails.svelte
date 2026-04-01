@@ -9,7 +9,6 @@
 	import Separator from '$lib/shadcn/components/ui/separator/separator.svelte';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
-	import * as Select from '$lib/shadcn/components/ui/select/index';
 	import Calendar from '$lib/shadcn/components/ui/calendar/calendar.svelte';
 	import * as Popover from '$lib/shadcn/components/ui/popover/index';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
@@ -46,6 +45,7 @@
 		protectionStatuses: PreProtectionStatus[];
 		officeActions: TypeOfOfficeAction[];
 		editData: EditData;
+		originalData: EditData;
 	}
 
 	let {
@@ -54,21 +54,88 @@
 		inventionTypes,
 		protectionStatuses,
 		officeActions,
-		editData = $bindable()
+		editData = $bindable(),
+		originalData
 	}: Props = $props();
 
 	const df = new DateFormatter('en-US', { dateStyle: 'long' });
 
-	// --- Helpers for lookup names ---
-	const inventionName = $derived(
-		inventionTypes.find((t) => t?.id === editData.type_of_invention_id)?.name
-	);
-	const protectionName = $derived(
-		protectionStatuses.find((s) => s?.id === editData.pre_protection_status_id)?.name
-	);
-	const officeActionName = $derived(
-		officeActions.find((a) => a?.id === editData.type_of_office_action_id)?.name
-	);
+	// --- Resolve lookup ID to display name ---
+	function resolveInventionName(id: number | null): string | null {
+		if (id == null) return null;
+		return inventionTypes.find((t) => t?.id === id)?.name ?? null;
+	}
+
+	function resolveProtectionName(id: number | null): string | null {
+		if (id == null) return null;
+		return protectionStatuses.find((s) => s?.id === id)?.name ?? null;
+	}
+
+	function resolveOfficeActionName(id: number | null): string | null {
+		if (id == null) return null;
+		return officeActions.find((a) => a?.id === id)?.name ?? null;
+	}
+
+	/**
+	 * Computes a JSON diff of changes between originalData and editData.
+	 * Returns null if nothing changed.
+	 */
+	export function getChanges(): Record<string, { old: unknown; new: unknown }> | null {
+		const changes: Record<string, { old: unknown; new: unknown }> = {};
+
+		// Simple string/number/null fields
+		const simpleFields: (keyof EditData)[] = [
+			'title_of_invention',
+			'inventor_names',
+			'contact_details',
+			'filling_date',
+			'deadline',
+			'mailing_date',
+			'publication_date',
+			'paper_document_no',
+			'fees',
+			'remarks'
+		];
+
+		for (const field of simpleFields) {
+			const oldVal = originalData[field];
+			const newVal = editData[field];
+			if (String(oldVal ?? '') !== String(newVal ?? '')) {
+				changes[field] = { old: oldVal || null, new: newVal || null };
+			}
+		}
+
+		// Lookup fields — resolve IDs to human-readable names
+		if (originalData.type_of_invention_id !== editData.type_of_invention_id) {
+			changes['type_of_invention'] = {
+				old: resolveInventionName(originalData.type_of_invention_id),
+				new: resolveInventionName(editData.type_of_invention_id)
+			};
+		}
+
+		if (originalData.pre_protection_status_id !== editData.pre_protection_status_id) {
+			changes['pre_protection_status'] = {
+				old: resolveProtectionName(originalData.pre_protection_status_id),
+				new: resolveProtectionName(editData.pre_protection_status_id)
+			};
+		}
+
+		if (originalData.type_of_office_action_id !== editData.type_of_office_action_id) {
+			changes['type_of_office_action'] = {
+				old: resolveOfficeActionName(originalData.type_of_office_action_id),
+				new: resolveOfficeActionName(editData.type_of_office_action_id)
+			};
+		}
+
+		if (originalData.team_assigned !== editData.team_assigned) {
+			changes['team_assigned'] = {
+				old: originalData.team_assigned,
+				new: editData.team_assigned
+			};
+		}
+
+		return Object.keys(changes).length > 0 ? changes : null;
+	}
 
 	// --- Date helpers ---
 	function toCalendarDate(dateStr: string | null | undefined): CalendarDate | undefined {
@@ -179,14 +246,7 @@
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Office Action</dt>
 				{#if isEditing}
-					<Select.Root type="single">
-						<Select.Trigger>Select Action</Select.Trigger>
-						<Select.Content>
-							{#each officeActions.filter(Boolean) as action (action!.id)}
-								<Select.Item value={action!.id}>{action!.name}</Select.Item>
-							{/each}
-						</Select.Content>
-						<!-- <select
+					<select
 						class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 						value={editData.type_of_office_action_id ?? 0}
 						onchange={(e) => {
@@ -198,8 +258,7 @@
 						{#each officeActions.filter(Boolean) as action (action!.id)}
 							<option value={action!.id}>{action!.name}</option>
 						{/each}
-					</select> -->
-					</Select.Root>
+					</select>
 				{:else}
 					<dd class="font-medium">{data.type_of_office_action?.name ?? '—'}</dd>
 				{/if}

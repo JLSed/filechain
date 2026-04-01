@@ -18,13 +18,6 @@ export const actions = {
 		const form = await superValidate(request, zod(LoginFormSchema));
 		if (!form.valid) return fail(400, { form });
 
-		if (!supabase)
-			return message(
-				form,
-				'Unable to connect to the authentication service. Please try again later.',
-				{ status: 500 }
-			);
-
 		const email = form.data.email;
 		let ipAddress = getClientAddress();
 		if (ipAddress === '::1') ipAddress = '127.0.0.1';
@@ -73,7 +66,7 @@ export const actions = {
 
 			await insertAuditLog(supabase, {
 				actorId: data.user.id,
-				details: `${actorName}[IP: ${ipAddress}] Logged In`,
+				details: `${actorName} Logged In`,
 				severityLevel: 'notice',
 				ipAddress,
 				eventType: 'Logged In'

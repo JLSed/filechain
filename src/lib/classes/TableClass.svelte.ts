@@ -11,7 +11,7 @@ export class TableState<T extends Record<string, unknown>> {
 		this.rows = rows;
 		this.searchKeys = searchKeys;
 	}
-	MAX_PAGE_SIZE = 6;
+	MAX_PAGE_SIZE = 10;
 
 	isRefreshing = $state(false);
 	searchValue = $state('');
@@ -127,6 +127,14 @@ export class UserTableState extends TableState<UserProfile> {
 }
 
 export class AuditLogTableState extends TableState<AuditLog> {
+	sheetOpen = $state(false);
+	selectedLog: AuditLog | null = $state(null);
+
+	openDetails = (log: AuditLog) => {
+		this.selectedLog = log;
+		this.sheetOpen = true;
+	};
+
 	constructor(rows: AuditLog[]) {
 		super(rows, ['details', 'event_type']);
 		this.sortColumn = 'timestamp';

@@ -1,13 +1,9 @@
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { IpApplicationSchema, ApplicationTaskSchema } from '$lib/types/DatabaseTypes';
 import z from 'zod';
 
 export const load = (async ({ locals: { supabase }, depends, parent }) => {
 	depends('db:timeline');
-
-	if (!supabase)
-		throw error(500, 'A server configuration error occurred. Unable to connect to the database.');
 
 	const { profile } = await parent();
 	const isSystemAdmin = profile.role === 'System Admin';

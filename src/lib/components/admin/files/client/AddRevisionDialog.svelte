@@ -101,8 +101,7 @@
 			reset();
 			onuploaded();
 		} catch (err) {
-			error =
-				err instanceof Error ? err.message : 'An unexpected error occurred during upload.';
+			error = err instanceof Error ? err.message : 'An unexpected error occurred during upload.';
 		} finally {
 			loading = false;
 		}

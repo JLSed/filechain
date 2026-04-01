@@ -5,7 +5,7 @@ import { redirect, error } from '@sveltejs/kit';
 export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSession } }) => {
 	const { session } = await safeGetSession();
 
-	if (!session || !supabase) {
+	if (!session) {
 		throw redirect(303, '/login');
 	}
 

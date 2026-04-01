@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 	const { session } = await safeGetSession();
 
 	// Must have a session (from the invite callback)
-	if (!session || !supabase) {
+	if (!session) {
 		redirect(303, '/login');
 	}
 
@@ -45,12 +45,6 @@ export const actions: Actions = {
 			});
 		}
 
-		if (!supabase) {
-			return message(form, 'A server configuration error occurred. Unable to connect.', {
-				status: 500
-			});
-		}
-
 		// 1. Set the user's password
 		const { error: passwordError } = await supabase.auth.updateUser({
 			password: form.data.password
@@ -64,16 +58,13 @@ export const actions: Actions = {
 		}
 
 		// 2. Save the master key
-		const { error: secretError } = await supabase
-			.schema('api')
-			.from('user_secrets')
-			.insert({
-				user_id: session.user.id,
-				encrypted_private_key: form.data.encrypted_private_key,
-				public_key: form.data.public_key,
-				pk_salt: form.data.pk_salt,
-				pk_nonce: form.data.pk_nonce
-			});
+		const { error: secretError } = await supabase.schema('api').from('user_secrets').insert({
+			user_id: session.user.id,
+			encrypted_private_key: form.data.encrypted_private_key,
+			public_key: form.data.public_key,
+			pk_salt: form.data.pk_salt,
+			pk_nonce: form.data.pk_nonce
+		});
 
 		if (secretError) {
 			console.error('Master key save error:', secretError);

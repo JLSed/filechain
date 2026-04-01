@@ -54,7 +54,7 @@
 								{#if data.role}
 									<Badge variant="outline">{data.role}</Badge>
 								{:else}
-									<span class="italic text-muted-foreground">No role assigned</span>
+									<span class="text-muted-foreground italic">No role assigned</span>
 								{/if}
 							</dd>
 						</div>
@@ -96,7 +96,7 @@
 						</div>
 						<div>
 							<dt class="text-muted-foreground">User ID</dt>
-							<dd class="font-medium font-mono text-xs break-all">{data.user_id}</dd>
+							<dd class="font-mono text-xs font-medium break-all">{data.user_id}</dd>
 						</div>
 					</dl>
 				</section>

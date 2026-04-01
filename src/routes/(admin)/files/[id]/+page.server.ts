@@ -10,9 +10,6 @@ import z from 'zod';
 export const load = (async ({ params, locals: { supabase, safeGetSession }, depends }) => {
 	depends('db:client-files');
 
-	if (!supabase)
-		throw error(500, 'A server configuration error occurred. Unable to connect to the database.');
-
 	const session = await safeGetSession();
 	if (!session.session) throw error(401, 'Unauthorized');
 

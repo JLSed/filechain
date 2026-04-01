@@ -11,8 +11,6 @@ import { superValidate } from 'sveltekit-superforms';
 import { IpApplicationFormSchema } from '$lib/types/FormTypes.js';
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
-	if (!supabase)
-		throw error(500, 'Unable to connect to the authentication service. Please try again later.');
 	const [inventionTypes, protectionStatuses, officeActions, clientProfilesResult] =
 		await Promise.all([
 			supabase.schema('api').from('type_of_invention').select('id, name'),

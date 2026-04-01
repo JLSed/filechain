@@ -1,4 +1,3 @@
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { AuditLogSchema } from '$lib/types/DatabaseTypes';
 import z from 'zod';
@@ -6,14 +5,10 @@ import z from 'zod';
 export const load = (async ({ locals: { supabase }, depends }) => {
 	depends('db:audit-logs');
 
-	if (!supabase) {
-		throw error(500, 'A server configuration error occurred. Unable to connect to the database.');
-	}
-
 	const { data, error: dbError } = await supabase
 		.schema('api')
 		.from('audit_logs')
-		.select('*')
+		.select('*, user_profiles ( first_name, last_name, role )')
 		.order('timestamp', { ascending: false });
 
 	if (dbError) {

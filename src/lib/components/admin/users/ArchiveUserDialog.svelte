@@ -20,17 +20,18 @@
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title>Archive User</Dialog.Title>
-			<Dialog.Description>
-				Are you sure you want to archive this user account?
-			</Dialog.Description>
+			<Dialog.Description>Are you sure you want to archive this user account?</Dialog.Description>
 		</Dialog.Header>
 
 		{#if user}
-			<div class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950">
+			<div
+				class="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950"
+			>
 				<TriangleAlert class="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
 				<div>
 					<p class="text-sm font-medium text-amber-800 dark:text-amber-200">
-						{user.first_name} {user.last_name}
+						{user.first_name}
+						{user.last_name}
 					</p>
 					<p class="mt-1 text-xs text-amber-700 dark:text-amber-300">
 						This user will be marked as inactive and will no longer be able to access the system.

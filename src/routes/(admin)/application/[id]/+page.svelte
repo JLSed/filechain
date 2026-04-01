@@ -16,7 +16,7 @@
 	import { ArrowLeft } from '@lucide/svelte';
 	import { invalidate } from '$app/navigation';
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
-	import { createBrowserClient } from '$lib/services/supabase/client';
+	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 
 	let { data }: PageProps = $props();
@@ -52,11 +52,16 @@
 	}
 
 	let editData = $state(buildEditData());
+	let originalData = $state(buildEditData());
+
+	// Component ref for calling getChanges()
+	let detailsRef: ReturnType<typeof ApplicationDetails> | undefined = $state();
 
 	function toggleEdit(): void {
 		if (!isEditing) {
 			// Entering edit mode: snapshot current data
 			editData = buildEditData();
+			originalData = buildEditData();
 		}
 		isEditing = !isEditing;
 	}
@@ -64,8 +69,6 @@
 	async function handleSave(): Promise<void> {
 		saving = true;
 		try {
-			const supabase = createBrowserClient();
-
 			const updatePayload: Record<string, unknown> = {
 				title_of_invention: editData.title_of_invention,
 				type_of_invention_id: editData.type_of_invention_id,
@@ -86,14 +89,32 @@
 				remarks: editData.remarks || null
 			};
 
-			const { error } = await supabase
-				.schema('api')
-				.from('ip_applications')
-				.update(updatePayload)
-				.eq('application_number', app.application_number);
+			// Compute changes diff from the ApplicationDetails component
+			const changes = detailsRef?.getChanges() ?? null;
 
-			if (error) {
-				toast.error(`Failed to save: ${error.message}`);
+			// Submit to server action for DB update + audit logging
+			const formData = new FormData();
+			formData.set('application_number', app.application_number);
+			formData.set('payload', JSON.stringify(updatePayload));
+			if (changes) {
+				formData.set('changes', JSON.stringify(changes));
+			}
+
+			const response = await fetch('?/saveApplication', {
+				method: 'POST',
+				body: formData
+			});
+
+			const result = deserialize(await response.text());
+
+			if (result.type === 'failure') {
+				const message = (result.data as { message?: string })?.message ?? 'Failed to save.';
+				toast.error(message);
+				return;
+			}
+
+			if (result.type === 'error') {
+				toast.error(result.error?.message ?? 'An unexpected error occurred.');
 				return;
 			}
 
@@ -271,12 +292,14 @@
 			<div class="min-w-0 flex-1">
 				<div class="rounded-lg border bg-background p-6">
 					<ApplicationDetails
+						bind:this={detailsRef}
 						data={app}
 						{isEditing}
 						inventionTypes={data.inventionTypes}
 						protectionStatuses={data.protectionStatuses}
 						officeActions={data.officeActions}
 						bind:editData
+						{originalData}
 					/>
 
 					<Separator class="my-8" />

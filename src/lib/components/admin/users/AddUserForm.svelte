@@ -45,8 +45,8 @@
 	}
 </script>
 
-<div class="mx-auto max-w-3xl flex-1 max-h-full overflow-y-auto">
-	<form method="POST" action="?/addUser" use:enhance class="flex flex-col p-6 gap-8">
+<div class="mx-auto max-h-full max-w-3xl flex-1 overflow-y-auto">
+	<form method="POST" action="?/addUser" use:enhance class="flex flex-col gap-8 p-6">
 		{#if $message}
 			<div class="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-500">
 				{$message}
@@ -85,7 +85,7 @@
 						placeholder="Enter middle name"
 					/>
 				</div>
-				<div class="sm:col-span-2 space-y-2">
+				<div class="space-y-2 sm:col-span-2">
 					<label for="last_name" class="text-sm font-medium">
 						Last Name <span class="text-destructive">*</span>
 					</label>
@@ -102,7 +102,7 @@
 			</div>
 
 			<div class="grid gap-4 sm:grid-cols-2">
-				<div class="sm:col-span-2 space-y-2">
+				<div class="space-y-2 sm:col-span-2">
 					<label for="email" class="text-sm font-medium">
 						Email <span class="text-destructive">*</span>
 					</label>
@@ -128,9 +128,7 @@
 		<div class="space-y-6">
 			<div>
 				<h2 class="text-lg font-semibold">Contact Details</h2>
-				<p class="text-sm text-muted-foreground">
-					Add optional contact information for this user.
-				</p>
+				<p class="text-sm text-muted-foreground">Add optional contact information for this user.</p>
 			</div>
 
 			<div class="grid gap-4 sm:grid-cols-2">
@@ -203,4 +201,3 @@
 		</div>
 	</form>
 </div>
-

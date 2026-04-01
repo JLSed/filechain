@@ -145,13 +145,19 @@ export const AuditLogSchema = z.object({
 	log_id: z.uuid(),
 	actor_id: z.uuid().nullable(),
 	details: z.string(),
-	old_value: z.string().nullable(),
-	new_value: z.string().nullable(),
-	affected_column: z.string().nullable(),
+	changes: z.record(z.string(), z.object({ old: z.unknown(), new: z.unknown() })).nullable(),
 	severity_level: z.string(),
 	ip_address: z.string().nullable(),
 	timestamp: z.string(),
-	event_type: z.string()
+	event_type: z.string(),
+	user_profiles: z
+		.object({
+			first_name: z.string().nullable(),
+			last_name: z.string().nullable(),
+			role: z.string().nullable()
+		})
+		.nullable()
+		.optional()
 });
 
 export type AuditLog = z.infer<typeof AuditLogSchema>;

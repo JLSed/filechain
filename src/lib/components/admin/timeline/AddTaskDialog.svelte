@@ -81,16 +81,19 @@
 			open = false;
 			await invalidate('db:timeline');
 		} catch (err) {
-			toast.error(
-				err instanceof Error ? err.message : 'An unexpected error occurred.'
-			);
+			toast.error(err instanceof Error ? err.message : 'An unexpected error occurred.');
 		} finally {
 			submitting = false;
 		}
 	}
 </script>
 
-<Dialog.Root bind:open onOpenChange={(isOpen) => { if (!isOpen) resetForm(); }}>
+<Dialog.Root
+	bind:open
+	onOpenChange={(isOpen) => {
+		if (!isOpen) resetForm();
+	}}
+>
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title>Add Task</Dialog.Title>
@@ -108,12 +111,7 @@
 		>
 			<div class="space-y-2">
 				<Label for="task-title">Title</Label>
-				<Input
-					id="task-title"
-					bind:value={title}
-					placeholder="Enter task title"
-					required
-				/>
+				<Input id="task-title" bind:value={title} placeholder="Enter task title" required />
 			</div>
 
 			<div class="space-y-2">
@@ -126,9 +124,7 @@
 			</div>
 
 			<Dialog.Footer>
-				<Button variant="outline" type="button" onclick={() => (open = false)}>
-					Cancel
-				</Button>
+				<Button variant="outline" type="button" onclick={() => (open = false)}>Cancel</Button>
 				<Button type="submit" disabled={submitting || !title.trim()}>
 					{submitting ? 'Adding...' : 'Add Task'}
 				</Button>

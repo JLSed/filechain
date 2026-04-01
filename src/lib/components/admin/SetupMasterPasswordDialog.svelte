@@ -59,7 +59,7 @@
 		formData.set('public_key', publicKey);
 		formData.set('pk_salt', pkSalt);
 		formData.set('pk_nonce', pkNonce);
-		
+
 		return async ({ update, result }) => {
 			isLoading = false;
 			if (result.type === 'success') {
@@ -84,19 +84,31 @@
 		<Dialog.Header>
 			<Dialog.Title>Set Master Password</Dialog.Title>
 			<Dialog.Description>
-				Your master password encrypts all your files and generates your client wallet keys. It cannot be recovered if lost. Please keep it safe.
+				Your master password encrypts all your files and generates your client wallet keys. It
+				cannot be recovered if lost. Please keep it safe.
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<form method="POST" action="/?/setupMasterKey" use:enhance={submitEnhance} class="flex flex-col gap-4">
+		<form
+			method="POST"
+			action="/?/setupMasterKey"
+			use:enhance={submitEnhance}
+			class="flex flex-col gap-4"
+		>
 			<div class="grid w-full items-center gap-1.5">
 				<Label for="password">Master Password</Label>
 				<Input type="password" id="password" bind:value={password} required />
 			</div>
-			
+
 			<div class="grid w-full items-center gap-1.5">
 				<Label for="confirmPassword">Confirm Password</Label>
-				<Input type="password" id="confirmPassword" bind:value={confirmPassword} required disabled={isLoading || !!successMessage} />
+				<Input
+					type="password"
+					id="confirmPassword"
+					bind:value={confirmPassword}
+					required
+					disabled={isLoading || !!successMessage}
+				/>
 			</div>
 
 			{#if errorMessage}

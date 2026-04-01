@@ -1,16 +1,11 @@
 import type { Actions } from './$types';
-import { fail, error, redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { SetupMasterPasswordSchema } from '$lib/types/FormTypes';
 
 export const actions: Actions = {
 	logout: async ({ locals: { supabase } }) => {
-		if (!supabase) {
-			console.error('Server configuration error: Missing connection details.');
-			throw error(500, 'A server configuration error occurred. Unable to connect to the database.');
-		}
-
 		const { error: fetchError } = await supabase.auth.signOut();
 
 		if (fetchError) {
@@ -26,10 +21,6 @@ export const actions: Actions = {
 		const { session } = await safeGetSession();
 		if (!session) {
 			return fail(401, { message: 'Unauthorized access. Please login.' });
-		}
-
-		if (!supabase) {
-			return fail(500, { message: 'A server configuration error occurred. Unable to connect to the database.' });
 		}
 
 		const { error: insertError } = await supabase.from('user_secret').insert({

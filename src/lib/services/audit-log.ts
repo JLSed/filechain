@@ -4,9 +4,7 @@ import type { AUDIT_EVENT_TYPES, SEVERITY_LEVELS } from '$lib/constants/SchemaDa
 interface InsertAuditLogParams {
 	actorId: string;
 	details: string;
-	oldValue?: string | null;
-	newValue?: string | null;
-	affectedColumn?: string | null;
+	changes?: Record<string, { old: unknown; new: unknown }> | null;
 	severityLevel?: (typeof SEVERITY_LEVELS)[number];
 	ipAddress?: string | null;
 	eventType: (typeof AUDIT_EVENT_TYPES)[number];
@@ -22,11 +20,14 @@ interface InsertAuditLogParams {
  * ```typescript
  * await insertAuditLog(supabase, {
  *   actorId: session.user.id,
- *   details: 'J. P. Sedillo Edited "Status" Application 2029345345',
- *   oldValue: 'For Filling',
- *   newValue: 'Completed',
- *   affectedColumn: 'status',
+ *   details: 'J. P. Sedillo Edited Application 2029345345',
+ *   changes: {
+ *     status: { old: 'Client Intake', new: 'Filing' },
+ *     fees: { old: 1500, new: 2000 },
+ *     team_assigned: { old: 'TM Team', new: 'UM Team' }
+ *   },
  *   severityLevel: 'notice',
+ *   ipAddress: '127.0.0.1',
  *   eventType: 'Edited Application'
  * });
  * ```
@@ -41,9 +42,7 @@ export async function insertAuditLog(
 		.insert({
 			actor_id: params.actorId,
 			details: params.details,
-			old_value: params.oldValue ?? null,
-			new_value: params.newValue ?? null,
-			affected_column: params.affectedColumn ?? null,
+			changes: params.changes ?? null,
 			severity_level: params.severityLevel ?? 'neutral',
 			ip_address: params.ipAddress ?? null,
 			event_type: params.eventType
