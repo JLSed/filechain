@@ -1,14 +1,13 @@
-import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { IpApplicationSchema } from '$lib/types/DatabaseTypes';
 import z from 'zod';
 
-export const load = (async ({ locals: { supabase }, depends }) => {
+export const load = (async ({ locals: { supabase }, depends, parent }) => {
 	depends('db:ip-applications');
-	if (!supabase)
-		throw error(500, 'A server configuration error occurred. Unable to connect to the database.');
+	const { profile } = await parent();
+	const isSystemAdmin = profile.role === 'System Admin';
 
-	const { data, error: dbError } = await supabase
+	let appQuery = supabase
 		.schema('api')
 		.from('ip_applications')
 		.select(
@@ -18,6 +17,12 @@ export const load = (async ({ locals: { supabase }, depends }) => {
         pre_protection_status!left (name),
         type_of_office_action!left (name)`
 		);
+
+	if (!isSystemAdmin && profile.role) {
+		appQuery = appQuery.eq('team_assigned', profile.role);
+	}
+
+	const { data, error: dbError } = await appQuery;
 
 	if (dbError) {
 		console.error('Database error:', dbError);

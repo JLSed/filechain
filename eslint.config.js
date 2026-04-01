@@ -12,7 +12,7 @@ import prettier from 'eslint-config-prettier';
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
-	{ ignores: ['.github/'] },
+	{ ignores: ['.github/', 'src/lib/pkg/**/*'] },
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,

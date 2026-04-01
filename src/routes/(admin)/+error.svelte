@@ -9,12 +9,8 @@
 	}
 </script>
 
-<div
-	class="flex h-screen w-full flex-col items-center justify-center bg-zinc-50 p-4 text-center dark:bg-zinc-950"
->
-	<div
-		class="max-w-md space-y-6 rounded-xl border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-	>
+<div class="flex h-screen w-full flex-col items-center justify-center p-4 text-center">
+	<div class="max-w-md space-y-6 p-8">
 		<div
 			class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30"
 		>
@@ -34,18 +30,16 @@
 		</div>
 
 		<div class="space-y-3">
-			<h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-				Ops... Something went wrong
-			</h1>
+			<h1 class="text-2xl font-bold tracking-tight text-primary">Ops... Something went wrong</h1>
 
-			<p class="text-zinc-600 dark:text-zinc-400">
+			<p class="text-primary/50">
 				{$page.error?.message || 'An unexpected error occurred. Please try again later.'}
 			</p>
 		</div>
 
 		{#if $page.status}
 			<div
-				class="inline-flex items-center rounded-md bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300"
+				class="inline-flex items-center rounded-md bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-800"
 			>
 				Error Code: {$page.status}
 			</div>
@@ -54,7 +48,7 @@
 		<div class="pt-4">
 			<button
 				onclick={handleRefresh}
-				class="inline-flex h-10 items-center justify-center rounded-md bg-zinc-900 px-8 text-sm font-medium text-white transition-colors hover:bg-zinc-900/90 focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 focus:outline-none dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90 dark:focus:ring-zinc-300"
+				class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-background transition-colors hover:bg-primary/90 focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 focus:outline-none dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90 dark:focus:ring-zinc-300"
 			>
 				Refresh Page
 			</button>

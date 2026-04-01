@@ -1,9 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { Bell, Inbox, Menu, PanelLeftClose, PanelLeftOpen } from '@lucide/svelte';
+	import { Inbox, Menu, PanelLeftClose, PanelLeftOpen } from '@lucide/svelte';
 	import { useSidebar } from '$lib/shadcn/components/ui/sidebar/context.svelte.js';
 	import { pageTitles } from '$lib/constants/LinkData';
+	import NotificationPanel from './NotificationPanel.svelte';
 
+	interface Props {
+		userId: string;
+	}
+
+	const { userId }: Props = $props();
 	const sidebar = useSidebar();
 </script>
 
@@ -28,7 +34,7 @@
 		</div>
 		<div class="flex flex-1 items-center justify-end gap-4 md:flex">
 			<Inbox />
-			<Bell />
+			<NotificationPanel {userId} />
 		</div>
 	</div>
 </nav>

@@ -1,5 +1,8 @@
 import { invalidate } from '$app/navigation';
 import type { IpApplication } from '$lib/types/DatabaseTypes';
+import type { ClientProfile } from '$lib/types/DatabaseTypes';
+import type { UserProfile } from '$lib/types/DatabaseTypes';
+import type { AuditLog } from '$lib/types/DatabaseTypes';
 
 export class TableState<T extends Record<string, unknown>> {
 	private searchKeys: (keyof T)[];
@@ -8,7 +11,7 @@ export class TableState<T extends Record<string, unknown>> {
 		this.rows = rows;
 		this.searchKeys = searchKeys;
 	}
-	MAX_PAGE_SIZE = 6;
+	MAX_PAGE_SIZE = 10;
 
 	isRefreshing = $state(false);
 	searchValue = $state('');
@@ -83,5 +86,59 @@ export class ApplicationTableState extends TableState<IpApplication> {
 
 	constructor(rows: IpApplication[]) {
 		super(rows, ['title_of_invention', 'application_number']);
+	}
+}
+
+export class ClientFolderState extends TableState<ClientProfile> {
+	constructor(rows: ClientProfile[]) {
+		super(rows, ['first_name', 'last_name', 'company_name']);
+		this.sortColumn = 'first_name';
+		this.sortDirection = 'asc';
+		this.MAX_PAGE_SIZE = 12;
+	}
+}
+
+export class UserTableState extends TableState<UserProfile> {
+	sheetOpen = $state(false);
+	editRoleOpen = $state(false);
+	archiveOpen = $state(false);
+	selectedUser: UserProfile | null = $state(null);
+
+	openDetails = (user: UserProfile) => {
+		this.selectedUser = user;
+		this.sheetOpen = true;
+	};
+
+	openEditRole = (user: UserProfile) => {
+		this.selectedUser = user;
+		this.editRoleOpen = true;
+	};
+
+	openArchive = (user: UserProfile) => {
+		this.selectedUser = user;
+		this.archiveOpen = true;
+	};
+
+	constructor(rows: UserProfile[]) {
+		super(rows, ['first_name', 'last_name', 'email', 'role']);
+		this.sortColumn = 'first_name';
+		this.sortDirection = 'asc';
+	}
+}
+
+export class AuditLogTableState extends TableState<AuditLog> {
+	sheetOpen = $state(false);
+	selectedLog: AuditLog | null = $state(null);
+
+	openDetails = (log: AuditLog) => {
+		this.selectedLog = log;
+		this.sheetOpen = true;
+	};
+
+	constructor(rows: AuditLog[]) {
+		super(rows, ['details', 'event_type']);
+		this.sortColumn = 'timestamp';
+		this.sortDirection = 'desc';
+		this.MAX_PAGE_SIZE = 10;
 	}
 }

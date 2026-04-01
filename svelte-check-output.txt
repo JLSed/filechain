@@ -1,0 +1,37 @@
+Loading svelte-check in workspace: c:\filechain
+Getting Svelte diagnostics...
+
+c:\filechain\[32msrc\lib\utils\formatter.ts[39m:13:17
+[31mError[39m: 'app.client_profiles' is possibly 'undefined'. 
+[36mexport function getClientName(app: IpApplication): string {
+	const parts = [[35mapp.client_profiles[36m.first_name, app.client_profiles.last_name].filter(Boolean);
+	return parts.length > 0 ? parts.join(' ') : 'ΓÇö';[39m
+
+c:\filechain\[32msrc\lib\utils\formatter.ts[39m:13:49
+[31mError[39m: 'app.client_profiles' is possibly 'undefined'. 
+[36mexport function getClientName(app: IpApplication): string {
+	const parts = [app.client_profiles.first_name, [35mapp.client_profiles[36m.last_name].filter(Boolean);
+	return parts.length > 0 ? parts.join(' ') : 'ΓÇö';[39m
+
+c:\filechain\[32msrc\lib\components\admin\AdminSidebar.svelte[39m:19:44
+[31mError[39m: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'. (ts)
+[36m
+	const formattedName = $derived(formatName([35muser.first_name[36m, user.middle_name, user.last_name));
+</script>[39m
+
+c:\filechain\[32msrc\lib\components\admin\patenting-client\ApplicationSheet.svelte[39m:68:33
+[31mError[39m: 'data.client_profiles' is possibly 'undefined'. (ts)
+[36m							<dt class="text-muted-foreground">Name</dt>
+							<dd class="font-medium">{[35mdata.client_profiles[36m.first_name}</dd>
+						</div>[39m
+
+c:\filechain\[32msrc\lib\components\admin\patenting-client\ApplicationSheet.svelte[39m:72:33
+[31mError[39m: 'data.client_profiles' is possibly 'undefined'. (ts)
+[36m							<dt class="text-muted-foreground">Email</dt>
+							<dd class="font-medium">{[35mdata.client_profiles[36m.email ?? 'ΓÇö'}</dd>
+						</div>[39m
+
+====================================
+[31msvelte-check found 5 errors and 0 warnings in 3 files
+[39m

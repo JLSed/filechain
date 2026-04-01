@@ -12,7 +12,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 export function createServerClient(event: RequestEvent) {
 	const url = import.meta.env.VITE_SUPABASE_URL;
 	const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
-	if (!url || !key) return null;
+	if (!url || !key) throw new Error('Missing Supabase env variables');
 	return createClient(url, key, {
 		cookies: {
 			getAll: () => event.cookies.getAll(),
