@@ -19,7 +19,7 @@
 		'var(--chart-5)'
 	];
 
-	// Helper to extract invention name safely across single objects or PostgREST array unwrapping
+	// Helper to extract invention name safely
 	function getInventionName(typeData: unknown): string {
 		if (!typeData) return 'Unknown';
 		if (Array.isArray(typeData)) return typeData[0]?.name || 'Unknown';

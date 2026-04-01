@@ -9,6 +9,8 @@ jobs:
   lint:
     name: Lint & Format Check
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_SERVICE_ROLE_KEY: 'dummy-key-for-ci-build'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
