@@ -4,7 +4,7 @@
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import Logo from '$lib/assets/dmv-logo-light.svg';
 	import { SquareUser, ChevronsUpDown, Settings, LogOut } from '@lucide/svelte';
-	import { sidebarGroups } from '$lib/constants/LinkData';
+	import { getSidebarGroupsForRole, getDefaultRouteForRole } from '$lib/constants/LinkData';
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
 	import { formatName } from '$lib/utils/formatter';
 
@@ -15,6 +15,9 @@
 	let { user }: ComponentProps = $props();
 
 	const sidebar = Sidebar.useSidebar();
+
+	const filteredGroups = $derived(getSidebarGroupsForRole(user.role));
+	const defaultRoute = $derived(getDefaultRouteForRole(user.role));
 
 	const formattedName = $derived(
 		formatName(user.first_name ?? '', user.middle_name, user.last_name ?? '')
@@ -27,7 +30,7 @@
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton size="lg">
 					{#snippet child({ props })}
-						<a href="/dashboard" class="flex items-center gap-2" {...props}>
+						<a href={defaultRoute} class="flex items-center gap-2" {...props}>
 							<img src={Logo} alt="DMV Logo" class="size-8 shrink-0" />
 							<div class="flex flex-col items-start">
 								<span class="font-semibold">DMV IP Consultancy</span>
@@ -40,7 +43,7 @@
 		</Sidebar.Menu>
 	</Sidebar.Header>
 	<Sidebar.Content>
-		{#each sidebarGroups as group (group.label)}
+		{#each filteredGroups as group (group.label)}
 			<Sidebar.Group>
 				<Sidebar.GroupLabel>{group.label}</Sidebar.GroupLabel>
 				<Sidebar.GroupContent>
