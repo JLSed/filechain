@@ -19,18 +19,13 @@
 		STEP_FIELD_MAP
 	} from '$lib/components/admin/forms/constants';
 	import { untrack } from 'svelte';
-	import { submitIpApplication } from '$lib/services/ip-application';
+	import { uploadApplicationFiles } from '$lib/services/ip-application';
 	import { createBrowserClient } from '$lib/services/supabase/client';
-	import { formatName } from '$lib/utils/formatter';
+	import { deserialize } from '$app/forms';
 
 	let { data }: PageProps = $props();
 
 	let submitting = $state(false);
-
-	const userProfile = $derived(data.profile);
-	const formattedName = $derived(
-		formatName(userProfile.first_name ?? '', userProfile.middle_name, userProfile.last_name ?? '')
-	);
 
 	const { form, errors, enhance } = superForm(
 		untrack(() => data.form),
@@ -50,19 +45,45 @@
 
 		try {
 			const supabase = createBrowserClient();
-			await submitIpApplication(
-				$form as IpApplicationFormData,
-				supabase,
-				userProfile.user_id,
-				formattedName
-			);
+			// 1. Upload files first
+			await uploadApplicationFiles($form as IpApplicationFormData, supabase);
+
+			// 2. Submit the form data to the server action to save DB records
+			const formDataPayload = new FormData();
+			const payload = {
+				client_profiles: $form.client_profiles,
+				application: $form.application
+			};
+			formDataPayload.set('payload', JSON.stringify(payload));
+
+			const response = await fetch('?/application', {
+				method: 'POST',
+				body: formDataPayload
+			});
+
+			const result = deserialize(await response.text());
+
+			if (result.type === 'failure') {
+				const message =
+					(result.data as { message?: string })?.message ?? 'Failed to submit the application.';
+				toast.error(message);
+				return;
+			}
+
+			if (result.type === 'error') {
+				toast.error(
+					result.error?.message ?? 'An unexpected error occurred during server submission.'
+				);
+				return;
+			}
+
 			toast.success('Application submitted successfully', {
 				description: `Application ${$form.application.application_number} has been submitted.`
 			});
 			goto('/files');
 		} catch (err) {
 			const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
-			toast.error('Failed to submit application', {
+			toast.error('Failed to upload/submit application', {
 				description: errorMessage
 			});
 		} finally {

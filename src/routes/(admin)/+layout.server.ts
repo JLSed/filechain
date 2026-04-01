@@ -1,8 +1,9 @@
 import type { LayoutServerLoad } from './$types';
 import { UserProfileSchema } from '$lib/types/DatabaseTypes';
 import { redirect, error } from '@sveltejs/kit';
+import { canAccessRoute, getDefaultRouteForRole } from '$lib/constants/LinkData';
 
-export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSession } }) => {
+export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSession }, url }) => {
 	const { session } = await safeGetSession();
 
 	if (!session) {
@@ -28,6 +29,12 @@ export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSessio
 	if (!user_profile.success) {
 		console.error('Profile data mismatch:', user_profile.error.flatten());
 		throw error(500, 'Unable to retrieve user profile');
+	}
+
+	// ── Role-based route guard ──
+	const role = user_profile.data.role;
+	if (!canAccessRoute(role, url.pathname)) {
+		throw redirect(303, getDefaultRouteForRole(role));
 	}
 
 	const { data: secretData, error: secretError } = await supabase

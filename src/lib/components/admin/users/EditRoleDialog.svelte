@@ -8,10 +8,11 @@
 
 	interface ComponentProps {
 		user: UserProfile | null;
+		currentUserRole?: string | null;
 		open: boolean;
 	}
 
-	let { user, open = $bindable(false) }: ComponentProps = $props();
+	let { user, currentUserRole, open = $bindable(false) }: ComponentProps = $props();
 	let selectedRole = $state('');
 	let submitting = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -55,20 +56,22 @@
 
 				<div class="grid gap-2 py-4">
 					{#each USER_ROLES as role (role)}
-						<label
-							class="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors hover:bg-muted
-								{selectedRole === role ? 'border-primary bg-primary/5' : 'border-border'}"
-						>
-							<input
-								type="radio"
-								name="role_selection"
-								value={role}
-								checked={selectedRole === role}
-								onchange={() => (selectedRole = role)}
-								class="accent-primary"
-							/>
-							<span class="text-sm font-medium">{role}</span>
-						</label>
+						{#if !(currentUserRole === 'User Admin' && role === 'System Admin')}
+							<label
+								class="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors hover:bg-muted
+									{selectedRole === role ? 'border-primary bg-primary/5' : 'border-border'}"
+							>
+								<input
+									type="radio"
+									name="role_selection"
+									value={role}
+									checked={selectedRole === role}
+									onchange={() => (selectedRole = role)}
+									class="accent-primary"
+								/>
+								<span class="text-sm font-medium">{role}</span>
+							</label>
+						{/if}
 					{/each}
 				</div>
 

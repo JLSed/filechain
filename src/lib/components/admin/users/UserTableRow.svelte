@@ -7,12 +7,13 @@
 
 	interface ComponentProps {
 		user: UserProfile;
+		currentUserRole?: string | null;
 		openDetails: (user: UserProfile) => void;
 		openEditRole: (user: UserProfile) => void;
 		openArchive: (user: UserProfile) => void;
 	}
 
-	let { user, openDetails, openEditRole, openArchive }: ComponentProps = $props();
+	let { user, currentUserRole, openDetails, openEditRole, openArchive }: ComponentProps = $props();
 
 	function formatName(profile: UserProfile): string {
 		const parts = [profile.first_name, profile.last_name].filter(Boolean);
@@ -54,7 +55,10 @@
 		<DropdownMenu.Item onclick={() => openDetails(user)}>
 			<Eye /> View Details
 		</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={() => openEditRole(user)}>
+		<DropdownMenu.Item
+			onclick={() => openEditRole(user)}
+			disabled={user.role === 'System Admin' && currentUserRole === 'User Admin'}
+		>
 			<Shield /> Edit Role
 		</DropdownMenu.Item>
 		<DropdownMenu.Item disabled>

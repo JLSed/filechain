@@ -9,6 +9,10 @@ import {
 } from '$lib/types/DatabaseTypes';
 import { superValidate } from 'sveltekit-superforms';
 import { IpApplicationFormSchema } from '$lib/types/FormTypes.js';
+import type { IpApplicationFormData } from '$lib/types/FormTypes.js';
+import { formatName } from '$lib/utils/formatter';
+import { insertAuditLog } from '$lib/services/audit-log';
+import { insertNotificationBatch } from '$lib/services/notification';
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	const [inventionTypes, protectionStatuses, officeActions, clientProfilesResult] =
@@ -60,14 +64,127 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 };
 
 export const actions = {
-	application: async ({ request }) => {
-		const form = await superValidate(request, zod4(IpApplicationFormSchema));
+	application: async ({ request, locals: { supabase, safeGetSession }, getClientAddress }) => {
+		const session = await safeGetSession();
+		if (!session.session) return fail(401, { message: 'Unauthorized' });
 
-		if (!form.valid) {
-			return fail(400, { form });
+		const formData = await request.formData();
+		const payloadJson = formData.get('payload') as string;
+
+		if (!payloadJson) {
+			return fail(400, { message: 'Missing payload.' });
 		}
 
-		// TODO: handle successful submission
-		return { form };
+		let payload: IpApplicationFormData;
+		try {
+			payload = JSON.parse(payloadJson);
+		} catch {
+			return fail(400, { message: 'Invalid payload.' });
+		}
+
+		// Insert client profile if needed
+		let clientId = payload.client_profiles.client_id;
+		if (!clientId) {
+			const { data: clientProfile, error: clientError } = await supabase
+				.schema('api')
+				.from('client_profiles')
+				.insert({
+					first_name: payload.client_profiles.first_name?.trim() || '',
+					middle_name: payload.client_profiles.middle_name?.trim() || null,
+					last_name: payload.client_profiles.last_name?.trim() || '',
+					email: payload.client_profiles.email?.trim() || null,
+					mobile_number: payload.client_profiles.mobile_number || null,
+					nationality: payload.client_profiles.nationality?.trim() || null,
+					company_name: payload.client_profiles.company_name?.trim() || null,
+					company_address: payload.client_profiles.company_address?.trim() || null
+				})
+				.select('client_id')
+				.single();
+
+			if (clientError || !clientProfile) {
+				return fail(500, { message: `Failed to save client profile: ${clientError?.message}` });
+			}
+			clientId = clientProfile.client_id;
+		}
+
+		const appNumber = payload.application.application_number.trim();
+		const storagePath = `files/${appNumber}`;
+		const teamRole = payload.application.team_assigned;
+
+		// Insert application
+		const { error: insertError } = await supabase
+			.schema('api')
+			.from('ip_applications')
+			.insert({
+				application_number: appNumber,
+				client_id: clientId,
+				title_of_invention: payload.application.title_of_invention?.trim() || '',
+				type_of_invention_id: payload.application.type_of_invention_id,
+				pre_protection_status_id: payload.application.pre_protection_status_id || null,
+				type_of_office_action_id: payload.application.type_of_office_action_id || null,
+				status: payload.application.status,
+				filling_date: payload.application.filling_date || null,
+				paper_document_no: payload.application.paper_document_no || null,
+				fees: payload.application.fees,
+				deadline: payload.application.deadline || null,
+				mailing_date: payload.application.mailing_date || null,
+				publication_date: payload.application.publication_date || null,
+				inventor_names: payload.application.inventor_names,
+				contact_details: payload.application.contact_details || null,
+				link_to_folder: storagePath,
+				remarks: payload.application.remarks || null,
+				team_assigned: teamRole
+			});
+
+		if (insertError) {
+			return fail(500, { message: `Failed to save application: ${insertError.message}` });
+		}
+
+		// Log audit entry with IP address
+		let ipAddress = getClientAddress();
+		if (ipAddress === '::1') ipAddress = '127.0.0.1';
+
+		const { data: profile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('first_name, middle_name, last_name')
+			.eq('user_id', session.session.user.id)
+			.single();
+
+		const actorName = profile
+			? formatName(profile.first_name ?? '', profile.middle_name, profile.last_name ?? '')
+			: (session.session.user.email ?? 'Unknown');
+
+		await insertAuditLog(supabase, {
+			actorId: session.session.user.id,
+			details: `${actorName} Submitted Application ${appNumber}`,
+			severityLevel: 'notice',
+			ipAddress,
+			eventType: 'Submitted Application'
+		});
+
+		// Notify team members
+		try {
+			const { data: teamMembers } = await supabase
+				.schema('api')
+				.from('user_profiles')
+				.select('user_id')
+				.or(`role.eq.${teamRole},role.eq.System Admin`)
+				.neq('user_id', session.session.user.id);
+
+			if (teamMembers && teamMembers.length > 0) {
+				const recipientIds = teamMembers.map((m: { user_id: string }) => m.user_id);
+				await insertNotificationBatch(supabase, recipientIds, {
+					actorId: session.session.user.id,
+					title: 'New Application Assigned',
+					message: `${actorName} assigned your team for application ${appNumber}`,
+					link: `/application/${appNumber}`
+				});
+			}
+		} catch (notifError) {
+			console.error('Failed to send notifications:', notifError);
+		}
+
+		return { success: true };
 	}
 };

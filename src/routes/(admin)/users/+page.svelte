@@ -105,6 +105,7 @@
 						{#each table.paginatedRows as row (row.user_id)}
 							<UserTableRow
 								user={row}
+								currentUserRole={data.profile?.role}
 								openDetails={table.openDetails}
 								openEditRole={table.openEditRole}
 								openArchive={table.openArchive}
@@ -118,7 +119,11 @@
 	</main>
 
 	<UserDetailsSheet data={table.selectedUser} bind:sheetOpen={table.sheetOpen} />
-	<EditRoleDialog user={table.selectedUser} bind:open={table.editRoleOpen} />
+	<EditRoleDialog
+		user={table.selectedUser}
+		currentUserRole={data.profile?.role}
+		bind:open={table.editRoleOpen}
+	/>
 	<ArchiveUserDialog user={table.selectedUser} bind:open={table.archiveOpen} />
 {:else}
 	<main class="flex h-full flex-col">

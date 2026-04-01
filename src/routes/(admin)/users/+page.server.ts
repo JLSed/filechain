@@ -63,14 +63,42 @@ export const actions = {
 		return { success: true };
 	},
 
-	editRole: async ({ request, locals: { supabase } }) => {
+	editRole: async ({ request, locals: { supabase, safeGetSession } }) => {
 		if (!supabase) throw error(500, 'Unable to connect to the database.');
+
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Unauthorized.' });
 
 		const formData = await request.formData();
 		const userId = formData.get('user_id')?.toString();
 		const role = formData.get('role')?.toString();
 
 		if (!userId || !role) return fail(400, { error: 'User ID and role are required.' });
+
+		// Check permissions: A User Admin cannot change the role of a System Admin,
+		// nor can they assign the System Admin role.
+		const { data: currentUserData } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('role')
+			.eq('user_id', session.user.id)
+			.single();
+
+		if (currentUserData?.role === 'User Admin') {
+			const { data: targetUserData } = await supabase
+				.schema('api')
+				.from('user_profiles')
+				.select('role')
+				.eq('user_id', userId)
+				.single();
+
+			if (targetUserData?.role === 'System Admin') {
+				return fail(403, { error: 'You are not authorized to change the role of a System Admin.' });
+			}
+			if (role === 'System Admin') {
+				return fail(403, { error: 'You are not authorized to assign the System Admin role.' });
+			}
+		}
 
 		const { error: dbError } = await supabase
 			.schema('api')
