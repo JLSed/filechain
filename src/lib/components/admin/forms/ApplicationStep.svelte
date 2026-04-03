@@ -10,8 +10,16 @@
 	import { APPLICATION_STATUS } from '$lib/constants/SchemaData';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
-	import { X } from '@lucide/svelte';
+	import { X, CalendarIcon } from '@lucide/svelte';
 	import { generateApplicationNumber } from '$lib/utils/generator';
+	import Calendar from '$lib/shadcn/components/ui/calendar/calendar.svelte';
+	import * as Popover from '$lib/shadcn/components/ui/popover/index';
+	import {
+		type DateValue,
+		CalendarDate,
+		getLocalTimeZone,
+		DateFormatter
+	} from '@internationalized/date';
 
 	let {
 		form,
@@ -36,6 +44,39 @@
 			(_, i) => i !== index
 		);
 	}
+
+	const df = new DateFormatter('en-US', { dateStyle: 'long' });
+
+	function toCalendarDate(dateStr: string | null | undefined): CalendarDate | undefined {
+		if (!dateStr) return undefined;
+		const [y, m, d] = dateStr.split('-').map(Number);
+		if (!y || !m || !d) return undefined;
+		return new CalendarDate(y, m, d);
+	}
+
+	function fromCalendarDate(val: DateValue | undefined): string | null {
+		if (!val) return null;
+		const date = val.toDate(getLocalTimeZone());
+		const y = date.getFullYear();
+		const m = String(date.getMonth() + 1).padStart(2, '0');
+		const d = String(date.getDate()).padStart(2, '0');
+		return `${y}-${m}-${d}`;
+	}
+
+	function formatCalendarDate(val: DateValue | undefined): string {
+		if (!val) return 'Select date';
+		return df.format(val.toDate(getLocalTimeZone()));
+	}
+
+	let fillingDateOpen = $state(false);
+	let deadlineOpen = $state(false);
+	let mailingDateOpen = $state(false);
+	let publicationDateOpen = $state(false);
+
+	let fillingDateValue = $derived(toCalendarDate($form.application.filling_date));
+	let deadlineValue = $derived(toCalendarDate($form.application.deadline));
+	let mailingDateValue = $derived(toCalendarDate($form.application.mailing_date));
+	let publicationDateValue = $derived(toCalendarDate($form.application.publication_date));
 
 	$effect(() => {
 		if (!$form.application.application_number) {
@@ -171,55 +212,143 @@
 			{/if}
 		</div>
 
-		<div class="space-y-1.5">
+		<div class="flex flex-col space-y-1.5">
 			<label for="filling_date" class="text-sm font-medium text-foreground">Filing Date</label>
-			<Input
-				id="filling_date"
-				type="date"
-				bind:value={$form.application.filling_date}
-				aria-invalid={$errors.application?.filling_date ? 'true' : undefined}
-			/>
+			<Popover.Root bind:open={fillingDateOpen}>
+				<Popover.Trigger>
+					{#snippet child({ props })}
+						<Button
+							variant="outline"
+							class="w-full justify-start text-start text-sm font-normal {!fillingDateValue
+								? 'text-muted-foreground'
+								: ''}"
+							{...props}
+							aria-invalid={$errors.application?.filling_date ? 'true' : undefined}
+						>
+							<CalendarIcon class="me-2 size-4" />
+							{formatCalendarDate(fillingDateValue)}
+						</Button>
+					{/snippet}
+				</Popover.Trigger>
+				<Popover.Content class="w-auto overflow-hidden p-0" align="start">
+					<Calendar
+						type="single"
+						value={fillingDateValue}
+						onValueChange={(val) => {
+							$form.application.filling_date = fromCalendarDate(val) ?? '';
+							fillingDateOpen = false;
+						}}
+						captionLayout="dropdown"
+					/>
+				</Popover.Content>
+			</Popover.Root>
 			{#if $errors.application?.filling_date}
 				<p class="text-xs text-destructive">{$errors.application.filling_date}</p>
 			{/if}
 		</div>
 
-		<div class="space-y-1.5">
+		<div class="flex flex-col space-y-1.5">
 			<label for="deadline" class="text-sm font-medium text-foreground">Deadline</label>
-			<Input
-				id="deadline"
-				type="date"
-				bind:value={$form.application.deadline}
-				aria-invalid={$errors.application?.deadline ? 'true' : undefined}
-			/>
+			<Popover.Root bind:open={deadlineOpen}>
+				<Popover.Trigger>
+					{#snippet child({ props })}
+						<Button
+							variant="outline"
+							class="w-full justify-start text-start text-sm font-normal {!deadlineValue
+								? 'text-muted-foreground'
+								: ''}"
+							{...props}
+							aria-invalid={$errors.application?.deadline ? 'true' : undefined}
+						>
+							<CalendarIcon class="me-2 size-4" />
+							{formatCalendarDate(deadlineValue)}
+						</Button>
+					{/snippet}
+				</Popover.Trigger>
+				<Popover.Content class="w-auto overflow-hidden p-0" align="start">
+					<Calendar
+						type="single"
+						value={deadlineValue}
+						onValueChange={(val) => {
+							$form.application.deadline = fromCalendarDate(val) ?? '';
+							deadlineOpen = false;
+						}}
+						captionLayout="dropdown"
+					/>
+				</Popover.Content>
+			</Popover.Root>
 			{#if $errors.application?.deadline}
 				<p class="text-xs text-destructive">{$errors.application.deadline}</p>
 			{/if}
 		</div>
 
-		<div class="space-y-1.5">
+		<div class="flex flex-col space-y-1.5">
 			<label for="mailing_date" class="text-sm font-medium text-foreground">Mailing Date</label>
-			<Input
-				id="mailing_date"
-				type="date"
-				bind:value={$form.application.mailing_date}
-				aria-invalid={$errors.application?.mailing_date ? 'true' : undefined}
-			/>
+			<Popover.Root bind:open={mailingDateOpen}>
+				<Popover.Trigger>
+					{#snippet child({ props })}
+						<Button
+							variant="outline"
+							class="w-full justify-start text-start text-sm font-normal {!mailingDateValue
+								? 'text-muted-foreground'
+								: ''}"
+							{...props}
+							aria-invalid={$errors.application?.mailing_date ? 'true' : undefined}
+						>
+							<CalendarIcon class="me-2 size-4" />
+							{formatCalendarDate(mailingDateValue)}
+						</Button>
+					{/snippet}
+				</Popover.Trigger>
+				<Popover.Content class="w-auto overflow-hidden p-0" align="start">
+					<Calendar
+						type="single"
+						value={mailingDateValue}
+						onValueChange={(val) => {
+							$form.application.mailing_date = fromCalendarDate(val) ?? '';
+							mailingDateOpen = false;
+						}}
+						captionLayout="dropdown"
+					/>
+				</Popover.Content>
+			</Popover.Root>
 			{#if $errors.application?.mailing_date}
 				<p class="text-xs text-destructive">{$errors.application.mailing_date}</p>
 			{/if}
 		</div>
 
-		<div class="space-y-1.5">
+		<div class="flex flex-col space-y-1.5">
 			<label for="publication_date" class="text-sm font-medium text-foreground"
 				>Publication Date</label
 			>
-			<Input
-				id="publication_date"
-				type="date"
-				bind:value={$form.application.publication_date}
-				aria-invalid={$errors.application?.publication_date ? 'true' : undefined}
-			/>
+			<Popover.Root bind:open={publicationDateOpen}>
+				<Popover.Trigger>
+					{#snippet child({ props })}
+						<Button
+							variant="outline"
+							class="w-full justify-start text-start text-sm font-normal {!publicationDateValue
+								? 'text-muted-foreground'
+								: ''}"
+							{...props}
+							aria-invalid={$errors.application?.publication_date ? 'true' : undefined}
+						>
+							<CalendarIcon class="me-2 size-4" />
+							{formatCalendarDate(publicationDateValue)}
+						</Button>
+					{/snippet}
+				</Popover.Trigger>
+				<Popover.Content class="w-auto overflow-hidden p-0" align="start">
+					<Calendar
+						type="single"
+						value={publicationDateValue}
+						onValueChange={(val) => {
+							$form.application.publication_date = fromCalendarDate(val) ?? '';
+							publicationDateOpen = false;
+						}}
+						captionLayout="dropdown"
+					/>
+				</Popover.Content>
+			</Popover.Root>
 			{#if $errors.application?.publication_date}
 				<p class="text-xs text-destructive">{$errors.application.publication_date}</p>
 			{/if}

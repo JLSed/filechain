@@ -18,6 +18,7 @@
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
+	import { page } from '$app/stores';
 
 	let { data }: PageProps = $props();
 
@@ -28,7 +29,7 @@
 	);
 
 	// Edit state
-	let isEditing = $state(false);
+	let isEditing = $state($page.url.searchParams.get('edit') === 'true');
 	let saving = $state(false);
 
 	/** Build a fresh editData snapshot from the current application. */

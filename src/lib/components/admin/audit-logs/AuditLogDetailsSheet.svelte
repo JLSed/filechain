@@ -5,7 +5,7 @@
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import type { AuditLog } from '$lib/types/DatabaseTypes';
 	import { formatTimestamp } from '$lib/utils/formatter';
-	import { Maximize2, Globe, User, FileText } from '@lucide/svelte';
+	import { Maximize2, Globe, User, FileText, FilePen } from '@lucide/svelte';
 
 	interface ComponentProps {
 		data: AuditLog | null;
@@ -110,6 +110,7 @@
 					<Separator />
 					<section>
 						<h3 class="mb-3 text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+							<FilePen class="mr-1.5 inline size-3.5" />
 							Changes
 						</h3>
 						<div class="space-y-3">

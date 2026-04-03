@@ -20,12 +20,6 @@
 				>
 					Log In
 				</a>
-				<a
-					href="/apply"
-					class="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-primary/90"
-				>
-					Apply for Consultation
-				</a>
 			{:else}
 				<a
 					href="/"
