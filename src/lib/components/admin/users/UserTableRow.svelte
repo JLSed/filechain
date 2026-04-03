@@ -2,8 +2,9 @@
 	import * as Table from '$lib/shadcn/components/ui/table/index.js';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
-	import { Archive, Eye, Shield, KeyRound } from '@lucide/svelte';
+	import { Archive, Eye, Shield, KeyRound, ExternalLink } from '@lucide/svelte';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
+	import { goto } from '$app/navigation';
 
 	interface ComponentProps {
 		user: UserProfile;
@@ -54,6 +55,9 @@
 	<DropdownMenu.Content>
 		<DropdownMenu.Item onclick={() => openDetails(user)}>
 			<Eye /> View Details
+		</DropdownMenu.Item>
+		<DropdownMenu.Item onclick={() => goto(`/users/${user.user_id}`)}>
+			<ExternalLink /> View Full Profile
 		</DropdownMenu.Item>
 		<DropdownMenu.Item
 			onclick={() => openEditRole(user)}

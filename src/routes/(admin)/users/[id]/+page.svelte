@@ -1,0 +1,136 @@
+<script lang="ts">
+	import type { PageProps } from './$types';
+	import UserDetails from '$lib/components/admin/users/full-view/UserDetails.svelte';
+	import UserActionPanel from '$lib/components/admin/users/full-view/UserActionPanel.svelte';
+	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
+	import Button from '$lib/shadcn/components/ui/button/button.svelte';
+	import { ArrowLeft } from '@lucide/svelte';
+	import { invalidate } from '$app/navigation';
+	import { deserialize } from '$app/forms';
+	import { toast } from 'svelte-sonner';
+
+	let { data }: PageProps = $props();
+
+	const user = $derived(data.user);
+	const displayName = $derived([user.first_name, user.last_name].filter(Boolean).join(' ') || '—');
+
+	// Edit state
+	let isEditing = $state(false);
+	let saving = $state(false);
+
+	/** Build a fresh editData snapshot from the current user. */
+	function buildEditData() {
+		return {
+			first_name: user.first_name,
+			last_name: user.last_name,
+			middle_name: user.middle_name,
+			role: user.role,
+			contact_number: user.contact_number,
+			address: user.address,
+			is_active: user.is_active
+		};
+	}
+
+	let editData = $state(buildEditData());
+	let originalData = $state(buildEditData());
+
+	// Component ref for calling getChanges()
+	let detailsRef: ReturnType<typeof UserDetails> | undefined = $state();
+
+	function toggleEdit(): void {
+		if (!isEditing) {
+			// Entering edit mode: snapshot current data
+			editData = buildEditData();
+			originalData = buildEditData();
+		}
+		isEditing = !isEditing;
+	}
+
+	async function handleSave(): Promise<void> {
+		saving = true;
+		try {
+			const updatePayload: Record<string, unknown> = {
+				first_name: editData.first_name || null,
+				last_name: editData.last_name || null,
+				middle_name: editData.middle_name || null,
+				role: editData.role,
+				contact_number: editData.contact_number || null,
+				address: editData.address || null,
+				is_active: editData.is_active
+			};
+
+			// Compute changes diff from the UserDetails component
+			const changes = detailsRef?.getChanges() ?? null;
+
+			// Submit to server action for DB update + audit logging
+			const formData = new FormData();
+			formData.set('user_id', user.user_id);
+			formData.set('payload', JSON.stringify(updatePayload));
+			if (changes) {
+				formData.set('changes', JSON.stringify(changes));
+			}
+
+			const response = await fetch('?/saveUser', {
+				method: 'POST',
+				body: formData
+			});
+
+			const result = deserialize(await response.text());
+
+			if (result.type === 'failure') {
+				const message = (result.data as { message?: string })?.message ?? 'Failed to save.';
+				toast.error(message);
+				return;
+			}
+
+			if (result.type === 'error') {
+				toast.error(result.error?.message ?? 'An unexpected error occurred.');
+				return;
+			}
+
+			toast.success('User updated successfully.');
+			isEditing = false;
+			await invalidate('db:user-detail');
+		} catch (err) {
+			toast.error(
+				err instanceof Error ? err.message : 'An unexpected error occurred while saving.'
+			);
+		} finally {
+			saving = false;
+		}
+	}
+</script>
+
+<main class="p-4 lg:p-6">
+	<!-- Header -->
+	<div class="mb-6 flex items-center gap-3">
+		<Button variant="outline" size="icon" href="/users">
+			<ArrowLeft class="size-4" />
+		</Button>
+		<div class="flex-1">
+			<h1 class="text-lg font-semibold">{displayName}</h1>
+			<div class="mt-0.5 flex items-center gap-2">
+				<span class="text-sm text-muted-foreground">{user.email ?? '—'}</span>
+				<span class="text-muted-foreground/40">·</span>
+				{#if user.role}
+					<Badge variant="outline" class="text-xs">{user.role}</Badge>
+				{:else}
+					<span class="text-xs text-muted-foreground italic">No role</span>
+				{/if}
+			</div>
+		</div>
+	</div>
+
+	<!-- Main layout: content + action panel -->
+	<div class="flex flex-col gap-6 lg:flex-row lg:items-start">
+		<!-- Left: Details -->
+		<div class="min-w-0 flex-1">
+			<div class="rounded-lg border bg-background p-6">
+				<UserDetails bind:this={detailsRef} data={user} {isEditing} bind:editData {originalData} />
+			</div>
+		</div>
+
+		<!-- Right: Action Panel -->
+		<UserActionPanel {isEditing} {saving} ontoggleedit={toggleEdit} onsave={handleSave} />
+	</div>
+</main>

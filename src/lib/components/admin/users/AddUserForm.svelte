@@ -8,6 +8,7 @@
 
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
+	import PhoneInput from '$lib/components/global/PhoneInput.svelte';
 
 	interface ComponentProps {
 		data: { form: SuperValidated<AddUserFormData> };
@@ -43,6 +44,19 @@
 		}
 		return undefined;
 	}
+
+	// Phone input state
+	let phoneDialCode = $state('+63');
+	let phoneLocalNumber = $state('');
+
+	// Sync combined value back to form
+	$effect(() => {
+		if (phoneLocalNumber) {
+			$form.contact_number = `${phoneDialCode} ${phoneLocalNumber}`;
+		} else {
+			$form.contact_number = '';
+		}
+	});
 </script>
 
 <div class="mx-auto max-h-full max-w-3xl flex-1 overflow-y-auto">
@@ -134,12 +148,7 @@
 			<div class="grid gap-4 sm:grid-cols-2">
 				<div class="space-y-2">
 					<label for="contact_number" class="text-sm font-medium">Contact Number</label>
-					<Input
-						id="contact_number"
-						name="contact_number"
-						bind:value={$form.contact_number}
-						placeholder="e.g. +63 912 345 6789"
-					/>
+					<PhoneInput bind:value={phoneLocalNumber} bind:dialCode={phoneDialCode} />
 					{#if getError($errors.contact_number)}
 						<span class="text-xs text-destructive">{getError($errors.contact_number)}</span>
 					{/if}

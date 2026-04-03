@@ -114,6 +114,7 @@
 		return requiredFields.every((field) => {
 			const value = getNestedValue($form as unknown as Record<string, unknown>, field);
 			if (value === null || value === undefined) return false;
+			if (Array.isArray(value)) return value.length > 0;
 			if (typeof value === 'string') return value.trim().length > 0;
 			if (typeof value === 'number') return !Number.isNaN(value);
 			return true;
@@ -138,7 +139,15 @@
 		});
 	}
 
-	let stepComplete = $derived(STEP_LABELS.map((_, i) => isStepComplete(i)));
+	let baseStepComplete = $derived(STEP_LABELS.map((_, i) => isStepComplete(i)));
+	let stepComplete = $derived(
+		baseStepComplete.map((complete, i) => {
+			if (i === STEP_LABELS.length - 1) {
+				return baseStepComplete.every(Boolean);
+			}
+			return complete;
+		})
+	);
 	let stepHasError = $derived(STEP_LABELS.map((_, i) => stepHasErrors(i)));
 	let hasAnyErrors = $derived(stepHasError.some(Boolean));
 	let allRequiredFieldsFilled = $derived(

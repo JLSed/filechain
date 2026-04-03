@@ -4,6 +4,7 @@
 	import type { IpApplication } from '$lib/types/DatabaseTypes';
 	import { getClientName } from '$lib/utils/formatter';
 	import { Archive, Edit, Eye, FolderOpen } from '@lucide/svelte';
+	import { goto } from '$app/navigation';
 
 	interface PageProps {
 		app: IpApplication;
@@ -32,9 +33,13 @@
 		{/snippet}
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content>
-		<DropdownMenu.Item onclick={() => openDetails(app)}><Eye /> View Details</DropdownMenu.Item>
-		<DropdownMenu.Item><FolderOpen /> View Files</DropdownMenu.Item>
-		<DropdownMenu.Item><Edit /> Edit Application</DropdownMenu.Item>
+		<DropdownMenu.Item onclick={() => openDetails(app)}><Eye /> Quick View</DropdownMenu.Item>
+		<DropdownMenu.Item onclick={() => goto(`/application/${app.application_number}`)}
+			><FolderOpen /> View Application</DropdownMenu.Item
+		>
+		<DropdownMenu.Item onclick={() => goto(`/application/${app.application_number}?edit=true`)}
+			><Edit /> Edit Application</DropdownMenu.Item
+		>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Item variant="destructive"><Archive />Archive Application</DropdownMenu.Item>
 	</DropdownMenu.Content>

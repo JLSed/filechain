@@ -60,6 +60,6 @@ export const STEP_REQUIRED_FIELDS: Record<number, string[]> = {
 		'application.status',
 		'application.type_of_invention_id'
 	],
-	2: [],
+	2: ['files'],
 	3: ['application.team_assigned']
 };

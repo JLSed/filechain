@@ -3,6 +3,7 @@
 	import type { IpApplicationFormSchema } from '$lib/types/FormTypes';
 	import type { Writable } from 'svelte/store';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
+	import PhoneInput from '$lib/components/global/PhoneInput.svelte';
 	import * as Table from '$lib/shadcn/components/ui/table/index.js';
 	import { UserPlus, Users, ArrowLeft, Search } from '@lucide/svelte';
 
@@ -34,6 +35,19 @@
 
 	let mode: ClientMode = $state('select');
 	let searchQuery = $state('');
+
+	// Phone input state
+	let phoneDialCode = $state('+63');
+	let phoneLocalNumber = $state('');
+
+	// Sync combined value back to form
+	$effect(() => {
+		if (phoneLocalNumber) {
+			$form.client_profiles.mobile_number = `${phoneDialCode} ${phoneLocalNumber}`;
+		} else {
+			$form.client_profiles.mobile_number = '';
+		}
+	});
 
 	const filteredClients = $derived(() => {
 		if (!searchQuery.trim()) return clientProfiles;
@@ -218,13 +232,7 @@
 				<label for="mobile_number" class="text-sm font-medium text-foreground">
 					Mobile Number <span class="text-destructive">*</span>
 				</label>
-				<Input
-					id="mobile_number"
-					bind:value={$form.client_profiles.mobile_number}
-					placeholder="+63 900 000 0000"
-					required
-					aria-invalid={$errors.client_profiles?.mobile_number ? 'true' : undefined}
-				/>
+				<PhoneInput bind:value={phoneLocalNumber} bind:dialCode={phoneDialCode} required />
 				{#if $errors.client_profiles?.mobile_number}
 					<p class="text-xs text-destructive">{$errors.client_profiles.mobile_number}</p>
 				{/if}

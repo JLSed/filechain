@@ -1,9 +1,12 @@
 <script lang="ts">
-	import type { FileMetadata } from '$lib/types/DatabaseTypes';
+	import type { DecryptedFileView, FileMetadata } from '$lib/types/DatabaseTypes';
 	import * as Drawer from '$lib/shadcn/components/ui/drawer/index';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
-	import { formatDate, formatFileSize } from '$lib/utils/formatter';
-	import { GitBranch, File } from '@lucide/svelte';
+	import Button from '$lib/shadcn/components/ui/button/button.svelte';
+	import MasterPasswordDialog from './MasterPasswordDialog.svelte';
+	import FileViewer from './FileViewer.svelte';
+	import { formatTimestamp, formatFileSize } from '$lib/utils/formatter';
+	import { GitBranch, File, Eye } from '@lucide/svelte';
 
 	interface Props {
 		files: FileMetadata[];
@@ -17,6 +20,13 @@
 	let isDragging = $state(false);
 	let startX = $state(0);
 	let scrollLeft = $state(0);
+
+	/** Master password dialog state */
+	let selectedFile = $state<FileMetadata | null>(null);
+	let passwordDialogOpen = $state(false);
+
+	/** File viewer state */
+	let activeFileView = $state<DecryptedFileView | null>(null);
 
 	function handleMouseDown(e: MouseEvent): void {
 		if (!container) return;
@@ -51,7 +61,45 @@
 		if (hash.length <= length) return hash;
 		return `${hash.slice(0, length)}…`;
 	}
+
+	/**
+	 * Get the uploader's display name from user_profiles.
+	 */
+	function getUploaderName(file: FileMetadata): string {
+		const profile = file.user_profiles;
+		if (!profile) return '—';
+		return [profile.first_name, profile.last_name].filter(Boolean).join(' ') || '—';
+	}
+
+	function handleViewFile(file: FileMetadata): void {
+		selectedFile = file;
+		passwordDialogOpen = true;
+	}
+
+	function handleDecrypted(fileView: DecryptedFileView): void {
+		passwordDialogOpen = false;
+		selectedFile = null;
+		activeFileView = fileView;
+	}
+
+	function handlePasswordDialogClose(): void {
+		passwordDialogOpen = false;
+		selectedFile = null;
+	}
+
+	function handleViewerClose(): void {
+		if (activeFileView) {
+			URL.revokeObjectURL(activeFileView.blobUrl);
+		}
+		activeFileView = null;
+	}
 </script>
+
+{#if activeFileView}
+	<div class="fixed inset-0 z-50 bg-background">
+		<FileViewer fileView={activeFileView} onclose={handleViewerClose} />
+	</div>
+{/if}
 
 <Drawer.Root bind:open onOpenChange={handleOpenChange} direction="bottom">
 	<Drawer.Content class="max-h-[50vh]">
@@ -90,7 +138,7 @@
 						<!-- Header: date + sequence -->
 						<div class="mb-2 flex w-full items-center justify-between gap-4 px-1">
 							<span class="text-[11px] text-muted-foreground">
-								{formatDate(file.uploaded_at)}
+								{formatTimestamp(file.uploaded_at)}
 							</span>
 							<Badge variant={isLatest ? 'default' : 'secondary'} class="text-[10px] leading-tight">
 								{isGenesis ? 'Genesis' : `v${ledger?.sequence ?? i}`}
@@ -117,11 +165,33 @@
 								</div>
 							</div>
 
+							<!-- Uploader name -->
+							<div class="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+								<span class="font-medium">Uploaded by:</span>
+								<span class="truncate">{getUploaderName(file)}</span>
+							</div>
+
 							<!-- Hash -->
 							<div class="mt-2 rounded-md bg-muted/60 px-2 py-1">
 								<p class="font-mono text-[11px] leading-relaxed text-muted-foreground">
 									{truncateHash(file.file_hash)}
 								</p>
+							</div>
+
+							<!-- View button -->
+							<div class="mt-2 flex justify-end">
+								<Button
+									variant="ghost"
+									size="sm"
+									class="h-7 gap-1.5 px-2 text-xs"
+									onclick={(e) => {
+										e.stopPropagation();
+										handleViewFile(file);
+									}}
+								>
+									<Eye class="size-3.5" />
+									View
+								</Button>
 							</div>
 						</div>
 					</div>
@@ -141,3 +211,10 @@
 		</div>
 	</Drawer.Content>
 </Drawer.Root>
+
+<MasterPasswordDialog
+	file={selectedFile}
+	bind:open={passwordDialogOpen}
+	ondecrypted={handleDecrypted}
+	onclose={handlePasswordDialogClose}
+/>

@@ -62,7 +62,7 @@ export const IpApplicationFormSchema = z.object({
 		type_of_invention_id: z.number(),
 		pre_protection_status_id: z.number().nullable(),
 		type_of_office_action_id: z.number().nullable(),
-		team_assigned: z.enum(TEAM_ROLES)
+		team_assigned: z.enum(TEAM_ROLES).default('' as unknown as (typeof TEAM_ROLES)[number])
 	}),
 	files: z.array(
 		z.object({

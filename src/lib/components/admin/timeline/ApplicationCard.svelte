@@ -8,7 +8,7 @@
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import Separator from '$lib/shadcn/components/ui/separator/separator.svelte';
-	import { Eye, Maximize2, Clock, Users, CalendarPlus, ArrowUpDown, X } from '@lucide/svelte';
+	import { Eye, Maximize2, Clock, Users, CalendarPlus, ArrowUpDown, X, Edit } from '@lucide/svelte';
 	import { formatDate, getDaysLeft } from '$lib/utils/formatter';
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import { invalidate } from '$app/navigation';
@@ -26,6 +26,10 @@
 	let sheetOpen = $state(false);
 	let statusDropdownOpen = $state(false);
 	let updatingStatus = $state(false);
+
+	let editingRemarks = $state(false);
+	let draftRemarks = $state('');
+	let savingRemarks = $state(false);
 
 	const daysLeft = $derived(getDaysLeft(application.deadline));
 
@@ -56,6 +60,37 @@
 			toast.error(err instanceof Error ? err.message : 'An unexpected error occurred.');
 		} finally {
 			updatingStatus = false;
+		}
+	}
+
+	async function handleSaveRemarks(): Promise<void> {
+		if (draftRemarks === (application.remarks ?? '')) {
+			editingRemarks = false;
+			return;
+		}
+
+		savingRemarks = true;
+		try {
+			const supabase = createBrowserClient();
+			const { error } = await supabase
+				.schema('api')
+				.from('ip_applications')
+				.update({ remarks: draftRemarks })
+				.eq('application_number', application.application_number);
+
+			if (error) {
+				toast.error(`Failed to update remarks: ${error.message}`);
+				return;
+			}
+
+			toast.success('Remarks updated');
+			application.remarks = draftRemarks;
+			editingRemarks = false;
+			await invalidate('db:timeline');
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : 'An unexpected error occurred.');
+		} finally {
+			savingRemarks = false;
 		}
 	}
 </script>
@@ -114,6 +149,26 @@
 	<!-- Status Pipeline -->
 	<div class="px-5">
 		<StatusPipeline currentStatus={application.status} />
+	</div>
+
+	<!-- Remarks Section -->
+	<div class="mt-4 mb-4 px-5">
+		<div class="mb-2">
+			<h4 class="text-xs font-semibold tracking-wider text-muted-foreground uppercase">Remarks</h4>
+		</div>
+
+		{#if editingRemarks}
+			<textarea
+				bind:value={draftRemarks}
+				class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+				placeholder="Add remarks..."
+				disabled={savingRemarks}
+			></textarea>
+		{:else if application.remarks}
+			<p class="text-sm whitespace-pre-wrap">{application.remarks}</p>
+		{:else}
+			<p class="text-sm text-muted-foreground italic">No remarks provided.</p>
+		{/if}
 	</div>
 
 	<Separator />
@@ -186,6 +241,46 @@
 			>
 				<ArrowUpDown class="size-3.5!" />
 				Update Status
+			</Button>
+		{/if}
+
+		{#if editingRemarks}
+			<div class="flex items-center gap-1.5">
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-7 gap-1.5 text-xs"
+					disabled={savingRemarks}
+					onclick={handleSaveRemarks}
+				>
+					{savingRemarks ? 'Saving...' : 'Save Remark'}
+				</Button>
+				<Button
+					variant="ghost"
+					size="sm"
+					class="h-7 w-7 p-0"
+					title="Cancel"
+					disabled={savingRemarks}
+					onclick={() => {
+						editingRemarks = false;
+						draftRemarks = application.remarks ?? '';
+					}}
+				>
+					<X class="size-3.5!" />
+				</Button>
+			</div>
+		{:else}
+			<Button
+				variant="outline"
+				size="sm"
+				class="h-7 gap-1.5 text-xs"
+				onclick={() => {
+					draftRemarks = application.remarks ?? '';
+					editingRemarks = true;
+				}}
+			>
+				<Edit class="size-3.5!" />
+				Edit Remarks
 			</Button>
 		{/if}
 	</div>
