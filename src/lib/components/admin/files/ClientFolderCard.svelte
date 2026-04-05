@@ -2,6 +2,7 @@
 	import type { ClientProfile } from '$lib/types/DatabaseTypes';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import { Folder, Ellipsis } from '@lucide/svelte';
+	import { goto } from '$app/navigation';
 
 	interface Props {
 		client: ClientProfile;
@@ -12,6 +13,14 @@
 	const fullName = $derived(
 		[client.first_name, client.middle_name, client.last_name].filter(Boolean).join(' ')
 	);
+
+	function handleViewClient(): void {
+		goto(`/client/${client.client_id}`);
+	}
+
+	function handleEditDetails(): void {
+		goto(`/client/${client.client_id}?edit=true`);
+	}
 </script>
 
 <a
@@ -29,8 +38,8 @@
 				</button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
-				<DropdownMenu.Item>View Client</DropdownMenu.Item>
-				<DropdownMenu.Item>Edit Details</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={handleViewClient}>View Client</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={handleEditDetails}>Edit Details</DropdownMenu.Item>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Item class="text-destructive">Archieve</DropdownMenu.Item>
 			</DropdownMenu.Content>

@@ -41,7 +41,15 @@ export const AUDIT_EVENT_TYPES = [
 	'Added Account',
 	'Edited Account',
 	'Logged In',
-	'Failed Login'
+	'Failed Login',
+	'Added File',
+	'Added Revision',
+	'Viewed File',
+	'Added Task',
+	'Completed Task',
+	'Edited Remarks',
+	'Updated Status',
+	'Edited Client'
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;

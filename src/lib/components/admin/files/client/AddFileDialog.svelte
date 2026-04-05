@@ -6,6 +6,7 @@
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import { encryptAndUploadFile } from '$lib/utils/file-upload';
 	import { getUserEncryptionKey, getTeamAndAdminEncryptionKeys } from '$lib/utils/crypto';
+	import { logAuditEvent } from '$lib/services/audit-log-client';
 	import initWasm from '$lib/pkg/rust';
 
 	interface Props {
@@ -106,6 +107,11 @@
 				uploaderId: userId,
 				recipients,
 				applicationNumber
+			});
+
+			logAuditEvent({
+				details: `[actor] added file "${selectedFile.name}" to application ${applicationNumber}`,
+				eventType: 'Added File'
 			});
 
 			reset();

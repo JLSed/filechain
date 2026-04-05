@@ -7,6 +7,7 @@
 	import { AlertCircle, Loader2, Lock } from '@lucide/svelte';
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import { decryptAndViewFile } from '$lib/utils/file-decrypt';
+	import { logAuditEvent } from '$lib/services/audit-log-client';
 
 	interface Props {
 		file: FileMetadata | null;
@@ -53,6 +54,11 @@
 				supabase,
 				file,
 				password: password.trim()
+			});
+
+			logAuditEvent({
+				details: `[actor] viewed file "${file.file_name}" in application ${file.application_number}`,
+				eventType: 'Viewed File'
 			});
 
 			reset();

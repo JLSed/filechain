@@ -5,6 +5,7 @@
 	import Label from '$lib/shadcn/components/ui/label/label.svelte';
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import { insertNotificationBatch } from '$lib/services/notification';
+	import { logAuditEvent } from '$lib/services/audit-log-client';
 	import { invalidate } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 
@@ -75,6 +76,11 @@
 					});
 				}
 			}
+
+			logAuditEvent({
+				details: `[actor] added task "${title.trim()}" to application ${applicationNumber}`,
+				eventType: 'Added Task'
+			});
 
 			toast.success('Task added successfully');
 			resetForm();

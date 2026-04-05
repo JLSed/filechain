@@ -6,6 +6,8 @@ import { superValidate, message } from 'sveltekit-superforms';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import z from 'zod';
 import { createAdminClient } from '$lib/services/supabase/admin';
+import { insertAuditLog } from '$lib/services/audit-log';
+import { formatName } from '$lib/utils/formatter';
 
 // TODO: refresh button on page does not fetch data in database
 
@@ -114,7 +116,7 @@ export const actions = {
 		return { success: true };
 	},
 
-	addUser: async ({ request, url }) => {
+	addUser: async ({ request, url, locals: { supabase, safeGetSession }, getClientAddress }) => {
 		const form = await superValidate(request, zod4(AddUserFormSchema));
 
 		if (!form.valid) {
@@ -158,6 +160,42 @@ export const actions = {
 			console.error('Profile update error:', profileError);
 			return message(form, 'User invited but profile update failed. Please edit the user.', {
 				status: 500
+			});
+		}
+
+		// Audit log for adding a new account
+		const { session } = await safeGetSession();
+		if (session) {
+			let ipAddress = getClientAddress();
+			if (ipAddress === '::1') ipAddress = '127.0.0.1';
+
+			const { data: actorProfile } = await supabase
+				.schema('api')
+				.from('user_profiles')
+				.select('first_name, middle_name, last_name')
+				.eq('user_id', session.user.id)
+				.single();
+
+			const actorName = actorProfile
+				? formatName(
+						actorProfile.first_name ?? '',
+						actorProfile.middle_name,
+						actorProfile.last_name ?? ''
+					)
+				: (session.user.email ?? 'Unknown');
+
+			const newUserName = formatName(
+				form.data.first_name,
+				form.data.middle_name || null,
+				form.data.last_name
+			);
+
+			await insertAuditLog(supabase, {
+				actorId: session.user.id,
+				details: `${actorName} added new account for ${newUserName} (${form.data.email})`,
+				severityLevel: 'notice',
+				ipAddress,
+				eventType: 'Added Account'
 			});
 		}
 
