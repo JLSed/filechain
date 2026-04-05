@@ -20,6 +20,7 @@ export const pageTitles: Record<string, string> = {
 	'/application': 'Client Applications',
 	'/application/timeline': 'Application Timeline',
 	'/files': 'File Storage',
+	'/client': 'Client Details',
 	'/users': 'User Management'
 };
 
@@ -27,6 +28,7 @@ export const pageTitles: Record<string, string> = {
 export const protectedRoutes = [
 	'/dashboard',
 	'/files',
+	'/client',
 	'/settings',
 	'/users',
 	'/forms',
@@ -43,9 +45,9 @@ export const authRoutes = ['/login', '/register'];
 const roleAllowedRoutes: Record<Exclude<UserRole, 'System Admin'>, string[]> = {
 	'User Admin': ['/users'],
 	'Finance Officer': ['/reports'],
-	'Patent Team': ['/application', '/files'],
-	'UM Team': ['/application', '/files'],
-	'TM Team': ['/application', '/files'],
+	'Patent Team': ['/application', '/files', '/client'],
+	'UM Team': ['/application', '/files', '/client'],
+	'TM Team': ['/application', '/files', '/client'],
 	'Application Officer': ['/forms'],
 	Auditor: ['/audit-logs']
 };

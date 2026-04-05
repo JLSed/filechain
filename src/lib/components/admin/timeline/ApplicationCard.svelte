@@ -11,6 +11,7 @@
 	import { Eye, Maximize2, Clock, Users, CalendarPlus, ArrowUpDown, X, Edit } from '@lucide/svelte';
 	import { formatDate, getDaysLeft } from '$lib/utils/formatter';
 	import { createBrowserClient } from '$lib/services/supabase/client';
+	import { logAuditEvent } from '$lib/services/audit-log-client';
 	import { invalidate } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 
@@ -55,6 +56,15 @@
 
 			toast.success(`Status updated to "${newStatus}"`);
 			statusDropdownOpen = false;
+
+			logAuditEvent({
+				details: `[actor] updated status of application ${application.application_number}`,
+				eventType: 'Updated Status',
+				changes: {
+					status: { old: application.status, new: newStatus }
+				}
+			});
+
 			await invalidate('db:timeline');
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : 'An unexpected error occurred.');
@@ -84,6 +94,15 @@
 			}
 
 			toast.success('Remarks updated');
+
+			logAuditEvent({
+				details: `[actor] edited remarks of application ${application.application_number}`,
+				eventType: 'Edited Remarks',
+				changes: {
+					remarks: { old: application.remarks ?? '', new: draftRemarks }
+				}
+			});
+
 			application.remarks = draftRemarks;
 			editingRemarks = false;
 			await invalidate('db:timeline');

@@ -5,6 +5,7 @@
 	import { ChevronDown, Circle, CircleCheck } from '@lucide/svelte';
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import { insertNotificationBatch } from '$lib/services/notification';
+	import { logAuditEvent } from '$lib/services/audit-log-client';
 	import { invalidate } from '$app/navigation';
 	import { toast } from 'svelte-sonner';
 
@@ -63,6 +64,11 @@
 					});
 				}
 			}
+
+			logAuditEvent({
+				details: `[actor] completed task "${task.title}" in application ${applicationNumber}`,
+				eventType: 'Completed Task'
+			});
 
 			toast.success('Task marked as complete');
 			await invalidate('db:timeline');

@@ -6,6 +6,7 @@
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import { uploadFileRevision } from '$lib/utils/file-revision';
 	import { getUserEncryptionKey, getTeamAndAdminEncryptionKeys } from '$lib/utils/crypto';
+	import { logAuditEvent } from '$lib/services/audit-log-client';
 	import initWasm from '$lib/pkg/rust';
 
 	interface Props {
@@ -96,6 +97,11 @@
 				newFile: selectedFile,
 				uploaderId: userId,
 				recipients
+			});
+
+			logAuditEvent({
+				details: `[actor] added revision to file "${file.file_name}" in application ${file.application_number}`,
+				eventType: 'Added Revision'
 			});
 
 			reset();
