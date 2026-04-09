@@ -5,7 +5,17 @@
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { formatDate, formatFileSize } from '$lib/utils/formatter';
-	import { File, EllipsisVertical, Plus, Upload } from '@lucide/svelte';
+	import {
+		File,
+		EllipsisVertical,
+		Plus,
+		Upload,
+		Share2,
+		ShieldCheck,
+		Pencil,
+		History,
+		Archive
+	} from '@lucide/svelte';
 
 	interface Props {
 		files: FileMetadata[];
@@ -128,28 +138,28 @@
 											</button>
 										</DropdownMenu.Trigger>
 										<DropdownMenu.Content align="end">
-											<DropdownMenu.Item>Share</DropdownMenu.Item>
+											<DropdownMenu.Item><Share2 /> Share</DropdownMenu.Item>
 											<DropdownMenu.Item
 												onclick={(e: MouseEvent) => {
 													e.stopPropagation();
 													onaddrevision(file);
-												}}>Add Revision</DropdownMenu.Item
+												}}><Upload /> Add Revision</DropdownMenu.Item
 											>
 											<DropdownMenu.Item
 												onclick={(e: MouseEvent) => {
 													e.stopPropagation();
 													onverifyintegrity(file);
-												}}>Verify Integrity</DropdownMenu.Item
+												}}><ShieldCheck /> Verify Integrity</DropdownMenu.Item
 											>
-											<DropdownMenu.Item>Edit Metadata</DropdownMenu.Item>
+											<DropdownMenu.Item><Pencil /> Edit Metadata</DropdownMenu.Item>
 											<DropdownMenu.Item
 												onclick={(e: MouseEvent) => {
 													e.stopPropagation();
 													onviewrevisions(file);
-												}}>View Revisions</DropdownMenu.Item
+												}}><History /> View Revisions</DropdownMenu.Item
 											>
 											<DropdownMenu.Separator />
-											<DropdownMenu.Item>Archive File</DropdownMenu.Item>
+											<DropdownMenu.Item><Archive /> Archive File</DropdownMenu.Item>
 										</DropdownMenu.Content>
 									</DropdownMenu.Root>
 								</div>

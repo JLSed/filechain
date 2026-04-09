@@ -41,6 +41,6 @@
 			><Edit /> Edit Application</DropdownMenu.Item
 		>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item variant="destructive"><Archive />Archive Application</DropdownMenu.Item>
+		<DropdownMenu.Item variant="destructive"><Archive /> Archive Application</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

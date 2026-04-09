@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ClientProfile } from '$lib/types/DatabaseTypes';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
-	import { Folder, Ellipsis } from '@lucide/svelte';
+	import { Folder, Ellipsis, User, Pencil, Archive } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 
 	interface Props {
@@ -38,10 +38,10 @@
 				</button>
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
-				<DropdownMenu.Item onclick={handleViewClient}>View Client</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={handleEditDetails}>Edit Details</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={handleViewClient}><User /> View Client</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={handleEditDetails}><Pencil /> Edit Details</DropdownMenu.Item>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item class="text-destructive">Archieve</DropdownMenu.Item>
+				<DropdownMenu.Item class="text-destructive"><Archive /> Archive</DropdownMenu.Item>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	</div>
