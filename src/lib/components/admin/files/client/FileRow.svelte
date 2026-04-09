@@ -4,7 +4,16 @@
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import { formatDate, formatFileSize } from '$lib/utils/formatter';
-	import { File, EllipsisVertical, Share2, Upload, ShieldCheck, Pencil, History, Archive } from '@lucide/svelte';
+	import {
+		File,
+		EllipsisVertical,
+		Share2,
+		Upload,
+		ShieldCheck,
+		Pencil,
+		History,
+		Archive
+	} from '@lucide/svelte';
 
 	interface Props {
 		file: FileMetadata;

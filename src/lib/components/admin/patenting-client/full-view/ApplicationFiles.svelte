@@ -5,7 +5,17 @@
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { formatDate, formatFileSize } from '$lib/utils/formatter';
-	import { File, EllipsisVertical, Plus, Upload, Share2, ShieldCheck, Pencil, History, Archive } from '@lucide/svelte';
+	import {
+		File,
+		EllipsisVertical,
+		Plus,
+		Upload,
+		Share2,
+		ShieldCheck,
+		Pencil,
+		History,
+		Archive
+	} from '@lucide/svelte';
 
 	interface Props {
 		files: FileMetadata[];
