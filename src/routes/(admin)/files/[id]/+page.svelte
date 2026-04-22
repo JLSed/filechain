@@ -14,10 +14,15 @@
 
 	let { data }: PageProps = $props();
 
-	const clientName = $derived(
+	const personalName = $derived(
 		[data.client.first_name, data.client.middle_name, data.client.last_name]
 			.filter(Boolean)
 			.join(' ')
+	);
+	const clientName = $derived(
+		data.client.is_individual
+			? personalName || '—'
+			: data.client.company_name?.trim() || personalName || '—'
 	);
 
 	const currentUserId = $derived(data.profile.user_id);
@@ -162,7 +167,9 @@
 			</Button>
 			<div>
 				<h1 class="text-lg font-semibold">{clientName}</h1>
-				<p class="text-sm text-muted-foreground">{data.client.company_name}</p>
+				{#if !data.client.is_individual && data.client.company_name}
+					<p class="text-sm text-muted-foreground">{data.client.company_name}</p>
+				{/if}
 			</div>
 		</div>
 

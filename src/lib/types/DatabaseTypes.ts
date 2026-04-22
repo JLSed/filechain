@@ -31,6 +31,7 @@ export type UserSecret = z.infer<typeof UserSecretSchema>;
 
 export const ClientProfileSchema = z.object({
 	client_id: z.uuid(),
+	is_individual: z.boolean(),
 	first_name: z.string(),
 	last_name: z.string(),
 	middle_name: z.string().nullable(),

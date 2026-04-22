@@ -16,7 +16,17 @@
 		return inventionTypes.find((t) => t != null && t.id === id)?.name ?? '—';
 	}
 
-
+	const isIndividual = $derived(form.client_profiles.is_individual);
+	const clientName = $derived(
+		[
+			form.client_profiles.first_name,
+			form.client_profiles.middle_name,
+			form.client_profiles.last_name
+		]
+			.map((value) => value?.trim())
+			.filter(Boolean)
+			.join(' ')
+	);
 </script>
 
 <div class="space-y-6">
@@ -67,13 +77,17 @@
 		<h3 class="text-sm font-semibold text-foreground">Client Information</h3>
 		<div class="grid grid-cols-1 gap-x-6 gap-y-2 text-sm md:grid-cols-2 lg:grid-cols-3">
 			<div>
-				<span class="text-muted-foreground">Name:</span>
-				<span class="ml-1 font-medium"
-					>{form.client_profiles.first_name}
-					{form.client_profiles.middle_name}
-					{form.client_profiles.last_name}</span
-				>
+				<span class="text-muted-foreground">Client Type:</span>
+				<span class="ml-1 font-medium">
+					{isIndividual ? 'Individual' : 'Company / Organization'}
+				</span>
 			</div>
+			{#if isIndividual || clientName}
+				<div>
+					<span class="text-muted-foreground">{isIndividual ? 'Name' : 'Contact Person'}:</span>
+					<span class="ml-1 font-medium">{clientName || '—'}</span>
+				</div>
+			{/if}
 			<div>
 				<span class="text-muted-foreground">Email:</span>
 				<span class="ml-1 font-medium">{form.client_profiles.email || '—'}</span>
@@ -82,18 +96,22 @@
 				<span class="text-muted-foreground">Mobile:</span>
 				<span class="ml-1 font-medium">{form.client_profiles.mobile_number || '—'}</span>
 			</div>
-			<div>
-				<span class="text-muted-foreground">Nationality:</span>
-				<span class="ml-1 font-medium">{form.client_profiles.nationality || '—'}</span>
-			</div>
-			<div class="md:col-span-2">
-				<span class="text-muted-foreground">Company:</span>
-				<span class="ml-1 font-medium">{form.client_profiles.company_name || '—'}</span>
-			</div>
-			<div class="md:col-span-2 lg:col-span-3">
-				<span class="text-muted-foreground">Address:</span>
-				<span class="ml-1 font-medium">{form.client_profiles.company_address || '—'}</span>
-			</div>
+			{#if isIndividual}
+				<div>
+					<span class="text-muted-foreground">Nationality:</span>
+					<span class="ml-1 font-medium">{form.client_profiles.nationality || '—'}</span>
+				</div>
+			{/if}
+			{#if !isIndividual}
+				<div class="md:col-span-2">
+					<span class="text-muted-foreground">Company Name:</span>
+					<span class="ml-1 font-medium">{form.client_profiles.company_name || '—'}</span>
+				</div>
+				<div class="md:col-span-2 lg:col-span-3">
+					<span class="text-muted-foreground">Company Address:</span>
+					<span class="ml-1 font-medium">{form.client_profiles.company_address || '—'}</span>
+				</div>
+			{/if}
 		</div>
 	</div>
 

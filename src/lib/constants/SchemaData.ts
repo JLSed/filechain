@@ -49,7 +49,8 @@ export const AUDIT_EVENT_TYPES = [
 	'Completed Task',
 	'Edited Remarks',
 	'Updated Status',
-	'Edited Client'
+	'Edited Client',
+	'Changed Password'
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;

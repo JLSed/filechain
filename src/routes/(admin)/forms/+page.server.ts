@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 				.schema('api')
 				.from('client_profiles')
 				.select(
-					'client_id, first_name, middle_name, last_name, email, mobile_number, nationality, company_name, company_address'
+					'client_id, is_individual, first_name, middle_name, last_name, email, mobile_number, nationality, company_name, company_address'
 				)
 				.order('last_name', { ascending: true })
 		]);
@@ -89,6 +89,7 @@ export const actions = {
 				.schema('api')
 				.from('client_profiles')
 				.insert({
+					is_individual: payload.client_profiles.is_individual,
 					first_name: payload.client_profiles.first_name?.trim() || '',
 					middle_name: payload.client_profiles.middle_name?.trim() || null,
 					last_name: payload.client_profiles.last_name?.trim() || '',

@@ -72,6 +72,19 @@ export class EncryptedMasterKey {
     readonly salt: string;
 }
 
+export class ReEncryptedPrivateKey {
+    private constructor();
+    free(): void;
+    [Symbol.dispose](): void;
+    readonly encrypted_private_key: Uint8Array;
+    readonly encrypted_private_key_hex: string;
+    readonly error_message: string;
+    readonly nonce: Uint8Array;
+    readonly nonce_hex: string;
+    readonly salt: string;
+    readonly success: boolean;
+}
+
 /**
  * Decrypts file data using hybrid decryption (X25519 + AES-256-GCM)
  *
@@ -158,6 +171,8 @@ export function greet(): void;
 
 export function master_key_bytes_to_hex(input: string, salt: string): string;
 
+export function re_encrypt_private_key(old_password: string, old_salt: string, encrypted_key: Uint8Array, old_nonce: Uint8Array, new_password: string): ReEncryptedPrivateKey;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
@@ -175,6 +190,21 @@ export interface InitOutput {
     readonly encryptedfileresult_file_nonce_hex: (a: number) => [number, number];
     readonly encryptedfileresult_original_hash_hex: (a: number) => [number, number];
     readonly encryptedfileresult_success: (a: number) => number;
+    readonly __wbg_decryptedprivatekey_free: (a: number, b: number) => void;
+    readonly __wbg_reencryptedprivatekey_free: (a: number, b: number) => void;
+    readonly decrypt_private_key: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+    readonly decryptedprivatekey_error_message: (a: number) => [number, number];
+    readonly decryptedprivatekey_private_key: (a: number) => [number, number];
+    readonly decryptedprivatekey_private_key_hex: (a: number) => [number, number];
+    readonly decryptedprivatekey_success: (a: number) => number;
+    readonly re_encrypt_private_key: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => number;
+    readonly reencryptedprivatekey_encrypted_private_key: (a: number) => [number, number];
+    readonly reencryptedprivatekey_encrypted_private_key_hex: (a: number) => [number, number];
+    readonly reencryptedprivatekey_error_message: (a: number) => [number, number];
+    readonly reencryptedprivatekey_nonce: (a: number) => [number, number];
+    readonly reencryptedprivatekey_nonce_hex: (a: number) => [number, number];
+    readonly reencryptedprivatekey_salt: (a: number) => [number, number];
+    readonly reencryptedprivatekey_success: (a: number) => number;
     readonly __wbg_decryptedfileresult_free: (a: number, b: number) => void;
     readonly decrypt_file: (a: any) => number;
     readonly decryptedfileresult_decrypted_data: (a: number) => [number, number];
@@ -198,12 +228,6 @@ export interface InitOutput {
     readonly encryptedmasterkey_public_key: (a: number) => [number, number];
     readonly encryptedmasterkey_public_key_hex: (a: number) => [number, number];
     readonly encryptedmasterkey_salt: (a: number) => [number, number];
-    readonly __wbg_decryptedprivatekey_free: (a: number, b: number) => void;
-    readonly decrypt_private_key: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-    readonly decryptedprivatekey_error_message: (a: number) => [number, number];
-    readonly decryptedprivatekey_private_key: (a: number) => [number, number];
-    readonly decryptedprivatekey_private_key_hex: (a: number) => [number, number];
-    readonly decryptedprivatekey_success: (a: number) => number;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_exn_store: (a: number) => void;

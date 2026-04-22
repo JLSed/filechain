@@ -12,9 +12,13 @@
 	let { data }: PageProps = $props();
 
 	const client = $derived(data.client);
-	const displayName = $derived(
-		[client.first_name, client.middle_name, client.last_name].filter(Boolean).join(' ') || '—'
+	const personalName = $derived(
+		[client.first_name, client.middle_name, client.last_name].filter(Boolean).join(' ')
 	);
+	const displayName = $derived(
+		client.is_individual ? personalName || '—' : client.company_name?.trim() || personalName || '—'
+	);
+	const clientTypeLabel = $derived(client.is_individual ? 'Individual' : 'Company / Organization');
 
 	// Edit state — initialise from ?edit=true query param
 	let isEditing = $state($page.url.searchParams.get('edit') === 'true');
@@ -23,6 +27,7 @@
 	/** Build a fresh editData snapshot from the current client. */
 	function buildEditData() {
 		return {
+			is_individual: client.is_individual,
 			first_name: client.first_name,
 			last_name: client.last_name,
 			middle_name: client.middle_name,
@@ -53,6 +58,7 @@
 		saving = true;
 		try {
 			const updatePayload: Record<string, unknown> = {
+				is_individual: editData.is_individual,
 				first_name: editData.first_name || null,
 				last_name: editData.last_name || null,
 				middle_name: editData.middle_name || null,
@@ -112,12 +118,22 @@
 			<ArrowLeft class="size-4" />
 		</Button>
 		<div class="flex-1">
-			<h1 class="text-lg font-semibold">{displayName}</h1>
+			<div class="flex flex-wrap items-center gap-2">
+				<h1 class="text-lg font-semibold">{displayName}</h1>
+				<span
+					class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium
+						{client.is_individual
+						? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+						: 'bg-blue-500/10 text-blue-700 dark:text-blue-300'}"
+				>
+					{clientTypeLabel}
+				</span>
+			</div>
 			<div class="mt-0.5 flex items-center gap-2">
 				<span class="text-sm text-muted-foreground">{client.email ?? '—'}</span>
-				{#if client.company_name}
+				{#if !client.is_individual && personalName}
 					<span class="text-muted-foreground/40">·</span>
-					<span class="text-sm text-muted-foreground">{client.company_name}</span>
+					<span class="text-sm text-muted-foreground">Contact: {personalName}</span>
 				{/if}
 			</div>
 		</div>

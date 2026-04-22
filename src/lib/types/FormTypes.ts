@@ -33,34 +33,87 @@ export const LoginFormSchema = z.object({
 	password: z.string().min(7, { message: 'Password must be at least 7 characters long' })
 });
 
-export const IpApplicationFormSchema = z.object({
-	client_profiles: z.object({
-		client_id: z.string().optional(),
-		first_name: z.string(),
-		middle_name: z.string(),
-		last_name: z.string(),
-		email: z.email(),
-		mobile_number: z.string(),
-		nationality: z.string(),
-		company_name: z.string(),
-		company_address: z.string()
-	}),
-	application: z.object({
-		title_of_invention: z.string(),
-		inventor_names: z.array(z.string()),
-		contact_details: z.string().nullable(),
-		link_to_folder: z.string(),
-		remarks: z.string().nullable(),
-		type_of_invention_id: z.number(),
-		team_assigned: z.enum(TEAM_ROLES).default('' as unknown as (typeof TEAM_ROLES)[number])
-	}),
-	files: z.array(
-		z.object({
-			file: z.file(),
-			category: z.enum(FILE_CATEGORIES)
-		})
-	)
-});
+export const IpApplicationFormSchema = z
+	.object({
+		client_profiles: z.object({
+			client_id: z.string().optional(),
+			is_individual: z.boolean(),
+			first_name: z.string(),
+			middle_name: z.string(),
+			last_name: z.string(),
+			email: z.email(),
+			mobile_number: z.string(),
+			nationality: z.string(),
+			company_name: z.string(),
+			company_address: z.string()
+		}),
+		application: z.object({
+			title_of_invention: z.string(),
+			inventor_names: z.array(z.string()),
+			contact_details: z.string().nullable(),
+			link_to_folder: z.string(),
+			remarks: z.string().nullable(),
+			type_of_invention_id: z.number(),
+			team_assigned: z.enum(TEAM_ROLES).default('' as unknown as (typeof TEAM_ROLES)[number])
+		}),
+		files: z.array(
+			z.object({
+				file: z.file(),
+				category: z.enum(FILE_CATEGORIES)
+			})
+		)
+	})
+	.superRefine(({ client_profiles }, ctx) => {
+		if (!client_profiles.mobile_number.trim()) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['client_profiles', 'mobile_number'],
+				message: 'Mobile number is required'
+			});
+		}
+
+		if (client_profiles.is_individual) {
+			if (!client_profiles.first_name.trim()) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['client_profiles', 'first_name'],
+					message: 'First name is required for individual clients'
+				});
+			}
+
+			if (!client_profiles.last_name.trim()) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['client_profiles', 'last_name'],
+					message: 'Last name is required for individual clients'
+				});
+			}
+
+			if (!client_profiles.nationality.trim()) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['client_profiles', 'nationality'],
+					message: 'Nationality is required for individual clients'
+				});
+			}
+		} else {
+			if (!client_profiles.company_name.trim()) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['client_profiles', 'company_name'],
+					message: 'Company name is required for company clients'
+				});
+			}
+
+			if (!client_profiles.company_address.trim()) {
+				ctx.addIssue({
+					code: 'custom',
+					path: ['client_profiles', 'company_address'],
+					message: 'Company address is required for company clients'
+				});
+			}
+		}
+	});
 
 export type IpApplicationFormData = z.infer<typeof IpApplicationFormSchema>;
 
@@ -72,3 +125,13 @@ export const SetupMasterPasswordSchema = z.object({
 });
 
 export type SetupMasterPasswordData = z.infer<typeof SetupMasterPasswordSchema>;
+
+export const ChangePasswordSchema = z.object({
+	current_password: z.string().min(7, { message: 'Password must be at least 7 characters' }),
+	new_password: z.string().min(7, { message: 'Password must be at least 7 characters' }),
+	encrypted_private_key: z.string({ message: 'Missing encrypted private key' }).min(1),
+	pk_salt: z.string({ message: 'Missing salt' }).min(1),
+	pk_nonce: z.string({ message: 'Missing nonce' }).min(1)
+});
+
+export type ChangePasswordData = z.infer<typeof ChangePasswordSchema>;

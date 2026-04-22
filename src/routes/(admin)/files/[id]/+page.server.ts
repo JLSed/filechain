@@ -19,7 +19,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 		.schema('api')
 		.from('client_profiles')
 		.select(
-			'client_id, first_name, last_name, middle_name, email, mobile_number, nationality, company_name, company_address, created_at, updated_at'
+			'client_id, is_individual, first_name, last_name, middle_name, email, mobile_number, nationality, company_name, company_address, created_at, updated_at'
 		)
 		.eq('client_id', clientId)
 		.single();

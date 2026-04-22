@@ -11,6 +11,7 @@ export const STEP_LABELS = [
  */
 export const STEP_FIELD_MAP: Record<number, string[]> = {
 	0: [
+		'client_profiles.is_individual',
 		'client_profiles.first_name',
 		'client_profiles.middle_name',
 		'client_profiles.last_name',
@@ -38,16 +39,14 @@ export const STEP_FIELD_MAP: Record<number, string[]> = {
  */
 export const STEP_REQUIRED_FIELDS: Record<number, string[]> = {
 	0: [
+		'client_profiles.is_individual',
 		'client_profiles.first_name',
 		'client_profiles.last_name',
 		'client_profiles.email',
 		'client_profiles.mobile_number',
 		'client_profiles.nationality'
 	],
-	1: [
-		'application.title_of_invention',
-		'application.type_of_invention_id'
-	],
+	1: ['application.title_of_invention', 'application.type_of_invention_id'],
 	2: ['files'],
 	3: ['application.team_assigned']
 };

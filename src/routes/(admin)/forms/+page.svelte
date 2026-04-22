@@ -111,19 +111,54 @@
 		}, obj);
 	}
 
+	function isValueFilled(value: unknown): boolean {
+		if (value === null || value === undefined) return false;
+		if (Array.isArray(value)) return value.length > 0;
+		if (typeof value === 'string') return value.trim().length > 0;
+		if (typeof value === 'number') return !Number.isNaN(value);
+		return true;
+	}
+
 	/**
 	 * Checks if a step has all required fields filled with non-empty values.
 	 */
 	function isStepComplete(stepIndex: number): boolean {
+		if (stepIndex === 0) {
+			const isIndividual = getNestedValue(
+				$form as unknown as Record<string, unknown>,
+				'client_profiles.is_individual'
+			);
+
+			if (typeof isIndividual !== 'boolean') return false;
+
+			const requiredStepZeroFields = isIndividual
+				? [
+						'client_profiles.is_individual',
+						'client_profiles.first_name',
+						'client_profiles.last_name',
+						'client_profiles.email',
+						'client_profiles.mobile_number',
+						'client_profiles.nationality'
+					]
+				: [
+						'client_profiles.is_individual',
+						'client_profiles.company_name',
+						'client_profiles.company_address',
+						'client_profiles.email',
+						'client_profiles.mobile_number'
+					];
+
+			return requiredStepZeroFields.every((field) => {
+				const value = getNestedValue($form as unknown as Record<string, unknown>, field);
+				return isValueFilled(value);
+			});
+		}
+
 		const requiredFields = STEP_REQUIRED_FIELDS[stepIndex];
 		if (!requiredFields || requiredFields.length === 0) return false;
 		return requiredFields.every((field) => {
 			const value = getNestedValue($form as unknown as Record<string, unknown>, field);
-			if (value === null || value === undefined) return false;
-			if (Array.isArray(value)) return value.length > 0;
-			if (typeof value === 'string') return value.trim().length > 0;
-			if (typeof value === 'number') return !Number.isNaN(value);
-			return true;
+			return isValueFilled(value);
 		});
 	}
 
@@ -191,18 +226,11 @@
 						onClientSelected={nextStep}
 					/>
 				{:else if currentStep === 1}
-					<ApplicationStep
-						{form}
-						{errors}
-						inventionTypes={data.inventionTypes}
-					/>
+					<ApplicationStep {form} {errors} inventionTypes={data.inventionTypes} />
 				{:else if currentStep === 2}
 					<DocumentUploadStep {form} />
 				{:else if currentStep === 3}
-					<ReviewStep
-						bind:form={$form}
-						inventionTypes={data.inventionTypes}
-					/>
+					<ReviewStep bind:form={$form} inventionTypes={data.inventionTypes} />
 				{/if}
 			</div>
 
