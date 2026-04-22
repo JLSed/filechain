@@ -78,6 +78,21 @@
 	function resetToSelector() {
 		mode = 'select';
 		searchQuery = '';
+
+		// Clear any previously selected/entered client data
+		$form.client_profiles = {
+			client_id: undefined,
+			first_name: '',
+			middle_name: '',
+			last_name: '',
+			email: '',
+			mobile_number: '',
+			nationality: '',
+			company_name: '',
+			company_address: ''
+		};
+		phoneDialCode = '+63';
+		phoneLocalNumber = '';
 	}
 </script>
 

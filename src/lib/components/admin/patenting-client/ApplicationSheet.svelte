@@ -24,13 +24,13 @@
 					<div>
 						<Sheet.Title>Application Details</Sheet.Title>
 						<Sheet.Description>{data.status}</Sheet.Description>
-						<Sheet.Description>{data.application_number}</Sheet.Description>
+						<Sheet.Description>{data.application_number ?? 'No app number'}</Sheet.Description>
 					</div>
 					<Button
 						variant="outline"
 						size="sm"
 						class="gap-1.5"
-						href="/application/{data.application_number}"
+						href="/application/{data.application_id}"
 					>
 						<Maximize2 class="size-3.5" />
 						Full View

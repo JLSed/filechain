@@ -42,14 +42,14 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 		supabase
 			.schema('api')
 			.from('ip_applications')
-			.select('application_number, status, type_of_invention_id, type_of_invention!left(name)')
+			.select('application_id, application_number, status, type_of_invention_id, type_of_invention!left(name)')
 			.neq('status', 'Completed'),
 
 		// 2. Applications filed this month (by filling_date)
 		supabase
 			.schema('api')
 			.from('ip_applications')
-			.select('application_number, type_of_invention_id, type_of_invention!left(name)')
+			.select('application_id, application_number, type_of_invention_id, type_of_invention!left(name)')
 			.gte('filling_date', monthStart)
 			.lte('filling_date', monthEnd),
 
@@ -57,7 +57,7 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 		supabase
 			.schema('api')
 			.from('ip_applications')
-			.select('application_number, title_of_invention, deadline')
+			.select('application_id, application_number, title_of_invention, deadline')
 			.gte('deadline', weekStart)
 			.lte('deadline', weekEnd)
 			.order('deadline', { ascending: true }),
@@ -66,7 +66,7 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 		supabase
 			.schema('api')
 			.from('ip_applications')
-			.select('application_number, title_of_invention, deadline, status')
+			.select('application_id, application_number, title_of_invention, deadline, status')
 			.lt('deadline', todayStr)
 			.neq('status', 'Completed'),
 

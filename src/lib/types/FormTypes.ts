@@ -46,22 +46,12 @@ export const IpApplicationFormSchema = z.object({
 		company_address: z.string()
 	}),
 	application: z.object({
-		application_number: z.string(),
 		title_of_invention: z.string(),
-		status: z.enum(APPLICATION_STATUS),
-		filling_date: z.string().nullable(),
-		paper_document_no: z.string().nullable(),
-		fees: z.number().nullable(),
-		deadline: z.string().nullable(),
-		mailing_date: z.string().nullable(),
-		publication_date: z.string().nullable(),
 		inventor_names: z.array(z.string()),
 		contact_details: z.string().nullable(),
 		link_to_folder: z.string(),
 		remarks: z.string().nullable(),
 		type_of_invention_id: z.number(),
-		pre_protection_status_id: z.number().nullable(),
-		type_of_office_action_id: z.number().nullable(),
 		team_assigned: z.enum(TEAM_ROLES).default('' as unknown as (typeof TEAM_ROLES)[number])
 	}),
 	files: z.array(

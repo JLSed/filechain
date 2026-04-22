@@ -16,7 +16,7 @@ export class TableState<T extends Record<string, unknown>> {
 	isRefreshing = $state(false);
 	searchValue = $state('');
 	activeStatus = $state('all');
-	sortColumn = $state('filling_date');
+	sortColumn = $state('created_at');
 	sortDirection = $state<'asc' | 'desc'>('desc');
 	currentPage = $state(1);
 	pageNumbers = $derived(this.getPageNumbers());

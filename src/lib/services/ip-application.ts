@@ -8,16 +8,14 @@ import { encryptAndUploadFile } from '$lib/utils/file-upload';
  * Encrypts and uploads an IP application's files:
  * 1. Encrypts each staged file client-side via WASM (AES-256-GCM hybrid encryption)
  *    for the uploader, all team members, and all System Admins.
- * 2. Uploads encrypted blobs to the `storage` bucket at `files/{application_number}/`.
+ * 2. Uploads encrypted blobs to the `storage` bucket at `files/{application_id}/`.
  */
 export async function uploadApplicationFiles(
 	formData: IpApplicationFormData,
-	supabase: SupabaseClient
+	supabase: SupabaseClient,
+	applicationId: string
 ): Promise<void> {
-	const appNumber = formData.application.application_number.trim();
-	if (!appNumber) {
-		throw new Error('Application number is required.');
-	}
+	const storagePath = `files/${applicationId}`;
 
 	if (!formData.files || formData.files.length === 0) {
 		return;
@@ -45,8 +43,6 @@ export async function uploadApplicationFiles(
 		}
 	}
 
-	const storagePath = `files/${appNumber}`;
-
 	// Encrypt and upload each file
 	for (const staged of formData.files) {
 		await encryptAndUploadFile({
@@ -56,7 +52,7 @@ export async function uploadApplicationFiles(
 			storagePath,
 			uploaderId: userId,
 			recipients: allRecipients,
-			applicationNumber: appNumber
+			applicationNumber: applicationId
 		});
 	}
 }

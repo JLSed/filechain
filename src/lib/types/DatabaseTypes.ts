@@ -78,7 +78,8 @@ export const TypeOfOfficeActionSchema = z
 export type TypeOfOfficeAction = z.infer<typeof TypeOfOfficeActionSchema>;
 
 export const IpApplicationSchema = z.object({
-	application_number: z.string(),
+	application_id: z.uuid(),
+	application_number: z.string().nullable(),
 	client_id: z.uuid(),
 	title_of_invention: z.string(),
 	status: z.enum(APPLICATION_STATUS),
@@ -118,7 +119,7 @@ export const FileMetadataSchema = z.object({
 	size: z.number(),
 	status: z.string().nullable(),
 	category: z.string().nullable(),
-	application_number: z.string(),
+	application_id: z.uuid().nullable().optional(),
 	file_hash: z.string().optional(),
 	file_ledger: z
 		.array(
@@ -164,7 +165,7 @@ export type AuditLog = z.infer<typeof AuditLogSchema>;
 
 export const ApplicationTaskSchema = z.object({
 	task_id: z.uuid(),
-	application_number: z.string(),
+	application_id: z.uuid(),
 	title: z.string(),
 	description: z.string().nullable(),
 	is_completed: z.boolean(),

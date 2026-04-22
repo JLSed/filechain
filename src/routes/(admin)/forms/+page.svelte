@@ -45,10 +45,8 @@
 
 		try {
 			const supabase = createBrowserClient();
-			// 1. Upload files first
-			await uploadApplicationFiles($form as IpApplicationFormData, supabase);
 
-			// 2. Submit the form data to the server action to save DB records
+			// 1. Submit the form data to the server action to save DB records
 			const formDataPayload = new FormData();
 			const payload = {
 				client_profiles: $form.client_profiles,
@@ -77,8 +75,16 @@
 				return;
 			}
 
+			// 2. Upload files using the server-generated application_id
+			if (result.type === 'success') {
+				const applicationId = (result.data as { applicationId?: string })?.applicationId;
+				if (applicationId) {
+					await uploadApplicationFiles($form as IpApplicationFormData, supabase, applicationId);
+				}
+			}
+
 			toast.success('Application submitted successfully', {
-				description: `Application ${$form.application.application_number} has been submitted.`
+				description: `Application has been submitted.`
 			});
 			goto('/files');
 		} catch (err) {
@@ -189,8 +195,6 @@
 						{form}
 						{errors}
 						inventionTypes={data.inventionTypes}
-						protectionStatuses={data.protectionStatuses}
-						officeActions={data.officeActions}
 					/>
 				{:else if currentStep === 2}
 					<DocumentUploadStep {form} />
@@ -198,8 +202,6 @@
 					<ReviewStep
 						bind:form={$form}
 						inventionTypes={data.inventionTypes}
-						protectionStatuses={data.protectionStatuses}
-						officeActions={data.officeActions}
 					/>
 				{/if}
 			</div>

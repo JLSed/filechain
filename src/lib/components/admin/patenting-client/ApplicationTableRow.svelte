@@ -18,7 +18,7 @@
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
 			<Table.Row {...props} class="cursor-pointer even:bg-muted"
-				><Table.Cell>{app.application_number}</Table.Cell>
+				><Table.Cell>{app.application_number ?? '—'}</Table.Cell>
 				<Table.Cell class="max-w-lg min-w-md">
 					<div class="flex flex-col">
 						<span class="font-medium">
@@ -34,10 +34,10 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content>
 		<DropdownMenu.Item onclick={() => openDetails(app)}><Eye /> Quick View</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={() => goto(`/application/${app.application_number}`)}
+		<DropdownMenu.Item onclick={() => goto(`/application/${app.application_id}`)}
 			><FolderOpen /> View Application</DropdownMenu.Item
 		>
-		<DropdownMenu.Item onclick={() => goto(`/application/${app.application_number}?edit=true`)}
+		<DropdownMenu.Item onclick={() => goto(`/application/${app.application_id}?edit=true`)}
 			><Edit /> Edit Application</DropdownMenu.Item
 		>
 		<DropdownMenu.Separator />

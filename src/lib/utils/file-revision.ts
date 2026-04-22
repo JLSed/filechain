@@ -87,7 +87,7 @@ export async function uploadFileRevision({
 	}
 
 	const encryptedBlob = new Blob([new Uint8Array(encResult.encrypted_data)]);
-	const storagePath = `files/${originalFile.application_number}`;
+	const storagePath = `files/${originalFile.application_id}`;
 	const filePath = `${storagePath}/${newFile.name}.enc`;
 
 	// 3. Upload encrypted blob
@@ -114,7 +114,7 @@ export async function uploadFileRevision({
 			file_nonce: encResult.file_nonce_hex,
 			size: newFile.size,
 			category: originalFile.category,
-			application_number: originalFile.application_number
+			application_id: originalFile.application_id
 		})
 		.select('file_id')
 		.single();

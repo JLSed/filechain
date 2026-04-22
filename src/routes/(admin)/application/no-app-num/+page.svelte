@@ -5,24 +5,26 @@
 	import ApplicationTableRow from '$lib/components/admin/patenting-client/ApplicationTableRow.svelte';
 	import Pagination from '$lib/components/global/Pagination.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
-	import { AlertCircle, ListFilter, RefreshCcw, Search } from '@lucide/svelte';
+	import { AlertCircle, RefreshCcw, Search } from '@lucide/svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import ApplicationSheet from '$lib/components/admin/patenting-client/ApplicationSheet.svelte';
 	import { untrack } from 'svelte';
 	let { data }: PageProps = $props();
 
-	// TODO: the untrack might not update the table data when refresh button is clicked.
 	const table = new ApplicationTableState(untrack(() => data.applications));
 </script>
 
 <main class="p-2">
-	<h1>Client Applications</h1>
+	<h1>Applications Without App Number</h1>
+	<p class="mb-4 text-sm text-muted-foreground">
+		These applications have no assigned application number yet.
+	</p>
 	<div class="flex gap-2">
 		<Button
 			variant="outline"
 			size="icon"
 			disabled={table.isRefreshing}
-			onclick={() => table.handleRefresh('db:ip-applications')}
+			onclick={() => table.handleRefresh('db:ip-applications-no-appnum')}
 			><RefreshCcw class="size-4 {table.isRefreshing ? 'animate-spin' : ''}" /></Button
 		>
 		<div class="relative">
@@ -37,9 +39,6 @@
 				}}
 			/>
 		</div>
-		<Button variant="outline" class="gap-2">
-			<ListFilter /> Filters
-		</Button>
 	</div>
 	<div class="my-4">
 		<Table.Root>
@@ -61,7 +60,7 @@
 								<Button
 									variant="outline"
 									size="sm"
-									onclick={() => table.handleRefresh('db:ip-applications')}
+									onclick={() => table.handleRefresh('db:ip-applications-no-appnum')}
 								>
 									Try Again
 								</Button>
@@ -77,7 +76,7 @@
 				{:else if table.totalRows === 0}
 					<Table.Row>
 						<Table.Cell colspan={4} class="py-12 text-center text-muted-foreground">
-							No applications found.
+							No applications without an application number.
 						</Table.Cell>
 					</Table.Row>
 				{:else}

@@ -107,38 +107,30 @@ export const actions = {
 			clientId = clientProfile.client_id;
 		}
 
-		const appNumber = payload.application.application_number.trim();
-		const storagePath = `files/${appNumber}`;
 		const teamRole = payload.application.team_assigned;
 
-		// Insert application
-		const { error: insertError } = await supabase
+		// Insert application (application_id is auto-generated as UUID)
+		const { data: insertedApp, error: insertError } = await supabase
 			.schema('api')
 			.from('ip_applications')
 			.insert({
-				application_number: appNumber,
 				client_id: clientId,
 				title_of_invention: payload.application.title_of_invention?.trim() || '',
 				type_of_invention_id: payload.application.type_of_invention_id,
-				pre_protection_status_id: payload.application.pre_protection_status_id || null,
-				type_of_office_action_id: payload.application.type_of_office_action_id || null,
-				status: payload.application.status,
-				filling_date: payload.application.filling_date || null,
-				paper_document_no: payload.application.paper_document_no || null,
-				fees: payload.application.fees,
-				deadline: payload.application.deadline || null,
-				mailing_date: payload.application.mailing_date || null,
-				publication_date: payload.application.publication_date || null,
+				status: 'Client Intake',
 				inventor_names: payload.application.inventor_names,
 				contact_details: payload.application.contact_details || null,
-				link_to_folder: storagePath,
 				remarks: payload.application.remarks || null,
 				team_assigned: teamRole
-			});
+			})
+			.select('application_id')
+			.single();
 
-		if (insertError) {
-			return fail(500, { message: `Failed to save application: ${insertError.message}` });
+		if (insertError || !insertedApp) {
+			return fail(500, { message: `Failed to save application: ${insertError?.message}` });
 		}
+
+		const applicationId = insertedApp.application_id;
 
 		// Log audit entry with IP address
 		let ipAddress = getClientAddress();
@@ -157,7 +149,7 @@ export const actions = {
 
 		await insertAuditLog(supabase, {
 			actorId: session.session.user.id,
-			details: `${actorName} Submitted Application ${appNumber}`,
+			details: `${actorName} Submitted Application ${applicationId}`,
 			severityLevel: 'notice',
 			ipAddress,
 			eventType: 'Submitted Application'
@@ -177,14 +169,14 @@ export const actions = {
 				await insertNotificationBatch(supabase, recipientIds, {
 					actorId: session.session.user.id,
 					title: 'New Application Assigned',
-					message: `${actorName} assigned your team for application ${appNumber}`,
-					link: `/application/${appNumber}`
+					message: `${actorName} assigned your team for application ${applicationId}`,
+					link: `/application/${applicationId}`
 				});
 			}
 		} catch (notifError) {
 			console.error('Failed to send notifications:', notifError);
 		}
 
-		return { success: true };
+		return { success: true, applicationId };
 	}
 };

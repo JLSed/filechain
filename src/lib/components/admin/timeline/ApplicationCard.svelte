@@ -47,7 +47,7 @@
 				.schema('api')
 				.from('ip_applications')
 				.update({ status: newStatus })
-				.eq('application_number', application.application_number);
+				.eq('application_id', application.application_id);
 
 			if (error) {
 				toast.error(`Failed to update status: ${error.message}`);
@@ -58,7 +58,7 @@
 			statusDropdownOpen = false;
 
 			logAuditEvent({
-				details: `[actor] updated status of application ${application.application_number}`,
+				details: `[actor] updated status of application ${application.application_number ?? application.application_id}`,
 				eventType: 'Updated Status',
 				changes: {
 					status: { old: application.status, new: newStatus }
@@ -86,7 +86,7 @@
 				.schema('api')
 				.from('ip_applications')
 				.update({ remarks: draftRemarks })
-				.eq('application_number', application.application_number);
+				.eq('application_id', application.application_id);
 
 			if (error) {
 				toast.error(`Failed to update remarks: ${error.message}`);
@@ -96,7 +96,7 @@
 			toast.success('Remarks updated');
 
 			logAuditEvent({
-				details: `[actor] edited remarks of application ${application.application_number}`,
+				details: `[actor] edited remarks of application ${application.application_number ?? application.application_id}`,
 				eventType: 'Edited Remarks',
 				changes: {
 					remarks: { old: application.remarks ?? '', new: draftRemarks }
@@ -195,7 +195,7 @@
 	<!-- Action Bar -->
 	<div class="flex flex-wrap items-center gap-2 px-5 py-2.5">
 		<Badge variant="outline" class="font-mono text-xs">
-			{application.application_number}
+			{application.application_number ?? '—'}
 		</Badge>
 		<Button
 			variant="outline"
@@ -211,7 +211,7 @@
 			variant="outline"
 			size="sm"
 			class="h-7 gap-1.5 text-xs"
-			href="/application/{application.application_number}"
+			href="/application/{application.application_id}"
 			title="Full View"
 		>
 			<Maximize2 class="size-3.5!" />
@@ -309,7 +309,7 @@
 	<!-- Tasks Section -->
 	<TaskTable
 		{tasks}
-		applicationNumber={application.application_number}
+		applicationNumber={application.application_id}
 		teamAssigned={application.team_assigned}
 		{userId}
 	/>
@@ -317,7 +317,7 @@
 
 <AddTaskDialog
 	bind:open={addDialogOpen}
-	applicationNumber={application.application_number}
+	applicationNumber={application.application_id}
 	teamAssigned={application.team_assigned}
 	{userId}
 />

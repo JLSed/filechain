@@ -17,13 +17,13 @@
 		isRefreshing = false;
 	}
 
-	/** Group tasks by application_number for efficient lookup */
+	/** Group tasks by application_id for efficient lookup */
 	const tasksByApp = $derived.by(() => {
 		const map = new SvelteMap<string, ApplicationTask[]>();
 		for (const task of data.tasks) {
-			const existing = map.get(task.application_number) ?? [];
+			const existing = map.get(task.application_id) ?? [];
 			existing.push(task);
-			map.set(task.application_number, existing);
+			map.set(task.application_id, existing);
 		}
 		return map;
 	});
@@ -52,10 +52,10 @@
 		</div>
 	{:else}
 		<div class="grid gap-5 xl:grid-cols-1">
-			{#each data.applications as application (application.application_number)}
+			{#each data.applications as application (application.application_id)}
 				<ApplicationCard
 					{application}
-					tasks={tasksByApp.get(application.application_number) ?? []}
+					tasks={tasksByApp.get(application.application_id) ?? []}
 					userId={data.profile.user_id}
 				/>
 			{/each}

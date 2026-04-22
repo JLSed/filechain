@@ -48,23 +48,24 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 			client: clientParsed.data,
 			applications: [],
 			files: [],
+			accessibleFileIds: [],
 			error: 'Failed to load applications.'
 		};
 	}
 
-	const applicationNumbers = (applicationsData ?? []).map(
-		(a: { application_number: string }) => a.application_number
+	const applicationIds = (applicationsData ?? []).map(
+		(a: { application_id: string }) => a.application_id
 	);
 
 	let filesData: unknown[] = [];
-	if (applicationNumbers.length > 0) {
+	if (applicationIds.length > 0) {
 		const { data: fData, error: filesError } = await supabase
 			.schema('api')
 			.from('file_metadata')
 			.select(
-				'file_id, uploader_id, file_name, file_path, file_hash, uploaded_at, size, status, category, application_number, file_ledger(block_id, sequence, signature, previous_block), user_profiles(first_name, last_name)'
+				'file_id, uploader_id, file_name, file_path, file_hash, uploaded_at, size, status, category, application_id, file_ledger(block_id, sequence, signature, previous_block), user_profiles(first_name, last_name)'
 			)
-			.in('application_number', applicationNumbers)
+			.in('application_id', applicationIds)
 			.order('uploaded_at', { ascending: false });
 		if (filesError) {
 			console.error('Error fetching files:', filesError);
@@ -72,6 +73,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 				client: clientParsed.data,
 				applications: applicationsParsed.success ? applicationsParsed.data : [],
 				files: [],
+				accessibleFileIds: [],
 				error: 'Failed to load files.'
 			};
 		}
@@ -80,10 +82,20 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 
 	const filesParsed = z.array(FileMetadataSchema).safeParse(filesData);
 
+	// Fetch the file IDs the current user has a DEK for (i.e. has access to)
+	const { data: dekData } = await supabase
+		.schema('api')
+		.from('file_dek')
+		.select('file_id')
+		.eq('owner_id', session.session.user.id);
+
+	const accessibleFileIds = (dekData ?? []).map((d: { file_id: string }) => d.file_id);
+
 	return {
 		client: clientParsed.data,
 		applications: applicationsParsed.success ? applicationsParsed.data : [],
 		files: filesParsed.success ? filesParsed.data : [],
+		accessibleFileIds,
 		error: null
 	};
 }) satisfies PageServerLoad;

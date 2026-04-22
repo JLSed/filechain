@@ -57,7 +57,7 @@
 			});
 
 			logAuditEvent({
-				details: `[actor] viewed file "${file.file_name}" in application ${file.application_number}`,
+				details: `[actor] viewed file "${file.file_name}" in application ${file.application_id}`,
 				eventType: 'Viewed File'
 			});
 

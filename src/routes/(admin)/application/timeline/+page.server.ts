@@ -37,16 +37,16 @@ export const load = (async ({ locals: { supabase }, depends, parent }) => {
 	}
 
 	// Fetch tasks for all visible applications
-	const appNumbers = appsParsed.data.map((a) => a.application_number);
+	const appIds = appsParsed.data.map((a) => a.application_id);
 
 	let tasks: z.infer<typeof ApplicationTaskSchema>[] = [];
 
-	if (appNumbers.length > 0) {
+	if (appIds.length > 0) {
 		const { data: taskData, error: taskError } = await supabase
 			.schema('api')
 			.from('application_tasks')
 			.select('*')
-			.in('application_number', appNumbers)
+			.in('application_id', appIds)
 			.order('created_at', { ascending: true });
 
 		if (taskError) {

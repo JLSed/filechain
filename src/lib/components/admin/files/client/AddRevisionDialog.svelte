@@ -100,7 +100,7 @@
 			});
 
 			logAuditEvent({
-				details: `[actor] added revision to file "${file.file_name}" in application ${file.application_number}`,
+				details: `[actor] added revision to file "${file.file_name}" in application ${file.application_id}`,
 				eventType: 'Added Revision'
 			});
 

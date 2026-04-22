@@ -6,7 +6,8 @@ import {
 	Building2,
 	FileUser,
 	FolderOpen,
-	ChartArea
+	ChartArea,
+	FileQuestion
 } from '@lucide/svelte';
 import type { USER_ROLES } from '$lib/constants/SchemaData';
 
@@ -18,6 +19,7 @@ export const pageTitles: Record<string, string> = {
 	'/reports': 'Reports',
 	'/audit-logs': 'Audit Logs',
 	'/application': 'Client Applications',
+	'/application/no-app-num': 'No Application Number',
 	'/application/timeline': 'Application Timeline',
 	'/files': 'File Storage',
 	'/client': 'Client Details',
@@ -35,6 +37,7 @@ export const protectedRoutes = [
 	'/reports',
 	'/audit-logs',
 	'/application',
+	'/application/no-app-num',
 	'/application/timeline'
 ];
 export const authRoutes = ['/login', '/register'];
@@ -110,7 +113,11 @@ export const patentingGroups: Sidebar.Item[] = [
 	{
 		title: 'Client Applications',
 		url: '/application',
-		icon: FileUser
+		icon: FileUser,
+		children: [
+			{ title: 'All Applications', url: '/application' },
+			{ title: 'Missing Application No.', url: '/application/no-app-num', icon: FileQuestion }
+		]
 	},
 	{
 		title: 'Application Timeline',

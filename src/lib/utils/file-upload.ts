@@ -57,7 +57,7 @@ export async function encryptAndUploadFile({
 		category,
 		storagePath,
 		uploaderId,
-		applicationNumber,
+		applicationId: applicationNumber,
 		recipientCount: recipients.length,
 		recipientUserIds: recipients.map((r) => r.userId)
 	});
@@ -147,7 +147,7 @@ export async function encryptAndUploadFile({
 		file_nonce: result.file_nonce_hex,
 		size: file.size,
 		category,
-		application_number: applicationNumber
+		application_id: applicationNumber
 	};
 	console.log('[encryptAndUploadFile] Inserting file metadata', metadataInsertPayload);
 
