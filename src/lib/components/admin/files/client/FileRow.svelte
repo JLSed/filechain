@@ -60,7 +60,7 @@
 		{...triggerProps}
 		class={mergeProps(triggerProps, {
 			class: `group cursor-pointer hover:bg-muted/50 ${
-				!hasAccess ? 'bg-red-500/5 hover:bg-red-500/10 cursor-help' : ''
+				!hasAccess ? 'cursor-help bg-red-500/5 hover:bg-red-500/10' : ''
 			}`
 		}).class}
 		onclick={() => onfileclick(file)}
@@ -90,7 +90,10 @@
 		<Table.Cell class="w-10 pr-4">
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
-					<button class="rounded-md p-1 transition-opacity hover:bg-muted" aria-label="File options">
+					<button
+						class="rounded-md p-1 transition-opacity hover:bg-muted"
+						aria-label="File options"
+					>
 						<EllipsisVertical class="size-4" />
 					</button>
 				</DropdownMenu.Trigger>

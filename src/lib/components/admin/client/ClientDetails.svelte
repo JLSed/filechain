@@ -16,6 +16,9 @@
 		nationality: string;
 		company_name: string | null;
 		company_address: string | null;
+		tin: string;
+		business_style: string;
+		registered_address: string;
 	}
 
 	interface Props {
@@ -25,6 +28,7 @@
 		originalData: EditData;
 	}
 
+	// eslint-disable-next-line svelte/no-unused-props -- is_individual is used in getChanges() for diff computation
 	let { data, isEditing, editData = $bindable(), originalData }: Props = $props();
 
 	/**
@@ -76,7 +80,10 @@
 			'mobile_number',
 			'nationality',
 			'company_name',
-			'company_address'
+			'company_address',
+			'tin',
+			'business_style',
+			'registered_address'
 		];
 
 		for (const field of fields) {
@@ -218,6 +225,45 @@
 
 		<Separator />
 	{/if}
+
+	<!-- BIR / Tax Information -->
+	<section>
+		<h3 class="mb-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+			BIR / Tax Information
+		</h3>
+		<dl class="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
+			<div>
+				<dt class="mb-1 text-xs text-muted-foreground">TIN</dt>
+				{#if isEditing}
+					<Input bind:value={editData.tin} class="text-sm" placeholder="e.g. 123-456-789-000" />
+				{:else}
+					<dd class="font-medium">{data.tin ?? '—'}</dd>
+				{/if}
+			</div>
+			<div>
+				<dt class="mb-1 text-xs text-muted-foreground">Business Style</dt>
+				{#if isEditing}
+					<Input bind:value={editData.business_style} class="text-sm" />
+				{:else}
+					<dd class="font-medium">{data.business_style ?? '—'}</dd>
+				{/if}
+			</div>
+			<div class="sm:col-span-2">
+				<dt class="mb-1 text-xs text-muted-foreground">Registered Address</dt>
+				{#if isEditing}
+					<textarea
+						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+						rows="2"
+						bind:value={editData.registered_address}
+					></textarea>
+				{:else}
+					<dd class="font-medium">{data.registered_address ?? '—'}</dd>
+				{/if}
+			</div>
+		</dl>
+	</section>
+
+	<Separator />
 
 	<!-- Record Information -->
 	<section>

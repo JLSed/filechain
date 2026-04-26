@@ -1,4 +1,9 @@
-import { APPLICATION_STATUS } from '$lib/constants/SchemaData';
+import {
+	APPLICATION_STATUS,
+	INVOICE_STATUSES,
+	LINE_ITEM_TYPES,
+	PAYMENT_METHODS
+} from '$lib/constants/SchemaData';
 import type { User } from '@supabase/supabase-js';
 import * as z from 'zod';
 
@@ -41,7 +46,10 @@ export const ClientProfileSchema = z.object({
 	company_name: z.string().nullable(),
 	company_address: z.string().nullable(),
 	created_at: z.string(),
-	updated_at: z.string()
+	updated_at: z.string(),
+	tin: z.string().nullable().optional(),
+	business_style: z.string().nullable().optional(),
+	registered_address: z.string().nullable().optional()
 });
 
 export type ClientProfile = z.infer<typeof ClientProfileSchema>;
@@ -86,13 +94,13 @@ export const IpApplicationSchema = z.object({
 	status: z.enum(APPLICATION_STATUS),
 	filling_date: z.string().nullable(),
 	paper_document_no: z.string().nullable(),
-	fees: z.number().nullable(),
+	fees: z.coerce.number().nullable(),
 	deadline: z.string().nullable(),
 	mailing_date: z.string().nullable(),
 	publication_date: z.string().nullable(),
 	inventor_names: z.array(z.string()),
 	contact_details: z.string().nullable(),
-	link_to_folder: z.string(),
+	link_to_folder: z.string().nullable(),
 	remarks: z.string().nullable(),
 	created_at: z.string(),
 	updated_at: z.string(),
@@ -184,3 +192,104 @@ export interface DecryptedFileView {
 	data: Uint8Array;
 	blobUrl: string;
 }
+
+// ── Invoice Schemas ──
+
+export const InvoiceSchema = z.object({
+	invoice_id: z.uuid(),
+	invoice_number: z.string(),
+	client_id: z.uuid(),
+	application_id: z.uuid(),
+	issue_date: z.string(),
+	due_date: z.string().nullable(),
+	status: z.enum(INVOICE_STATUSES),
+	notes: z.string().nullable(),
+	vatable_sales: z.coerce.number(),
+	vat_amount: z.coerce.number(),
+	vat_exempt_sales: z.coerce.number(),
+	zero_rated_sales: z.coerce.number(),
+	total_amount: z.coerce.number(),
+	amount_paid: z.coerce.number(),
+	ewt_amount: z.coerce.number(),
+	created_by: z.uuid(),
+	created_at: z.string(),
+	updated_at: z.string(),
+	// Joined relations (optional, present when fetched with joins)
+	client_profiles: z
+		.object({
+			first_name: z.string(),
+			last_name: z.string(),
+			middle_name: z.string().nullable().optional(),
+			company_name: z.string().nullable().optional(),
+			is_individual: z.boolean().optional(),
+			tin: z.string().nullable().optional(),
+			registered_address: z.string().nullable().optional(),
+			business_style: z.string().nullable().optional(),
+			email: z.string().nullable().optional(),
+			mobile_number: z.string().nullable().optional()
+		})
+		.optional(),
+	ip_applications: z
+		.object({
+			title_of_invention: z.string(),
+			application_number: z.string().nullable().optional()
+		})
+		.optional()
+});
+
+export type Invoice = z.infer<typeof InvoiceSchema>;
+
+export const InvoiceLineItemSchema = z.object({
+	line_item_id: z.uuid(),
+	invoice_id: z.uuid(),
+	description: z.string(),
+	quantity: z.number(),
+	unit_cost: z.coerce.number(),
+	total_amount: z.coerce.number(),
+	line_type: z.enum(LINE_ITEM_TYPES),
+	is_vatable: z.boolean(),
+	sort_order: z.number(),
+	created_at: z.string()
+});
+
+export type InvoiceLineItem = z.infer<typeof InvoiceLineItemSchema>;
+
+export const InvoicePaymentSchema = z.object({
+	payment_id: z.uuid(),
+	invoice_id: z.uuid(),
+	receipt_number: z.string(),
+	amount: z.coerce.number(),
+	payment_date: z.string(),
+	payment_method: z.enum(PAYMENT_METHODS),
+	ewt_amount: z.coerce.number(),
+	ewt_rate: z.coerce.number().nullable(),
+	notes: z.string().nullable(),
+	recorded_by: z.uuid(),
+	created_at: z.string(),
+	// Joined relation (optional)
+	user_profiles: z
+		.object({
+			first_name: z.string().nullable(),
+			last_name: z.string().nullable()
+		})
+		.nullable()
+		.optional()
+});
+
+export type InvoicePayment = z.infer<typeof InvoicePaymentSchema>;
+
+export const CompanySettingsSchema = z.object({
+	id: z.number(),
+	company_name: z.string(),
+	registered_address: z.string(),
+	tin: z.string(),
+	vat_status: z.string(),
+	contact_info: z.string(),
+	printer_name: z.string().nullable(),
+	printer_tin: z.string().nullable(),
+	atp_number: z.string().nullable(),
+	atp_date_issued: z.string().nullable(),
+	updated_at: z.string()
+});
+
+export type CompanySettings = z.infer<typeof CompanySettingsSchema>;

@@ -168,6 +168,8 @@
 					</li>
 				{/each}
 			</ul>
+		{:else if form.skip_files}
+			<p class="text-sm text-muted-foreground">No documents — skipped by user.</p>
 		{:else}
 			<p class="text-sm text-muted-foreground">No documents uploaded.</p>
 		{/if}

@@ -1,9 +1,4 @@
-import {
-	APPLICATION_STATUS,
-	FILE_CATEGORIES,
-	TEAM_ROLES,
-	USER_ROLES
-} from '$lib/constants/SchemaData';
+import { FILE_CATEGORIES, TEAM_ROLES, USER_ROLES } from '$lib/constants/SchemaData';
 import * as z from 'zod';
 
 export const AddUserFormSchema = z.object({
@@ -61,7 +56,8 @@ export const IpApplicationFormSchema = z
 				file: z.file(),
 				category: z.enum(FILE_CATEGORIES)
 			})
-		)
+		),
+		skip_files: z.boolean().default(false)
 	})
 	.superRefine(({ client_profiles }, ctx) => {
 		if (!client_profiles.mobile_number.trim()) {

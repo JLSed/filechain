@@ -63,12 +63,16 @@
 	}
 </script>
 
-{#snippet RowContent(file: FileMetadata, hasAccess: boolean, triggerProps: Record<string, unknown> = {})}
+{#snippet RowContent(
+	file: FileMetadata,
+	hasAccess: boolean,
+	triggerProps: Record<string, unknown> = {}
+)}
 	<Table.Row
 		{...triggerProps}
 		class={mergeProps(triggerProps, {
 			class: `group cursor-pointer hover:bg-muted/50 ${
-				!hasAccess ? 'bg-red-500/5 hover:bg-red-500/10 cursor-help' : ''
+				!hasAccess ? 'cursor-help bg-red-500/5 hover:bg-red-500/10' : ''
 			}`
 		}).class}
 		onclick={() => onfileclick(file)}
@@ -83,24 +87,16 @@
 			{/if}
 			<span class="truncate text-sm {!hasAccess ? 'text-red-400' : ''}">{file.file_name}</span>
 			{#if getVersion(file)}
-				<Badge variant="secondary" class="text-[10px] leading-tight"
-					>{getVersion(file)}</Badge
-				>
+				<Badge variant="secondary" class="text-[10px] leading-tight">{getVersion(file)}</Badge>
 			{/if}
 		</Table.Cell>
-		<Table.Cell
-			class="hidden w-36 text-center text-sm text-muted-foreground sm:table-cell"
-		>
+		<Table.Cell class="hidden w-36 text-center text-sm text-muted-foreground sm:table-cell">
 			{getUploaderName(file)}
 		</Table.Cell>
-		<Table.Cell
-			class="hidden w-28 text-center text-sm text-muted-foreground sm:table-cell"
-		>
+		<Table.Cell class="hidden w-28 text-center text-sm text-muted-foreground sm:table-cell">
 			{formatDate(file.uploaded_at)}
 		</Table.Cell>
-		<Table.Cell
-			class="hidden w-20 text-center text-sm text-muted-foreground sm:table-cell"
-		>
+		<Table.Cell class="hidden w-20 text-center text-sm text-muted-foreground sm:table-cell">
 			{formatFileSize(file.size)}
 		</Table.Cell>
 		<Table.Cell class="w-10 pr-4">
@@ -196,7 +192,8 @@
 								</Tooltip.Trigger>
 								<Tooltip.Content side="top">
 									<p class="max-w-56 text-xs text-balance">
-										You don't have access to this file. Request an access key from users who have access.
+										You don't have access to this file. Request an access key from users who have
+										access.
 									</p>
 								</Tooltip.Content>
 							</Tooltip.Root>

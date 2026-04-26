@@ -33,6 +33,25 @@ export const FILE_CATEGORIES = [
 	'Other'
 ] as const;
 
+export const INVOICE_STATUSES = [
+	'Draft',
+	'Sent',
+	'Partially Paid',
+	'Paid',
+	'Overdue',
+	'Cancelled'
+] as const;
+
+export const LINE_ITEM_TYPES = ['professional_fee', 'disbursement'] as const;
+
+export const PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Check', 'Online'] as const;
+
+export const EWT_RATES = [
+	{ label: 'None', value: 0 },
+	{ label: '2% EWT', value: 0.02 },
+	{ label: '10% EWT', value: 0.1 }
+] as const;
+
 export const AUDIT_EVENT_TYPES = [
 	'Added Application',
 	'Edited Application',
@@ -50,7 +69,11 @@ export const AUDIT_EVENT_TYPES = [
 	'Edited Remarks',
 	'Updated Status',
 	'Edited Client',
-	'Changed Password'
+	'Changed Password',
+	'Created Invoice',
+	'Edited Invoice',
+	'Cancelled Invoice',
+	'Recorded Payment'
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;
@@ -59,5 +82,7 @@ export const NOTIFICATION_TYPES = [
 	'New Application Submitted',
 	'Application Updated',
 	'File Uploaded',
-	'Task Completed'
+	'Task Completed',
+	'Invoice Created',
+	'Payment Recorded'
 ] as const;

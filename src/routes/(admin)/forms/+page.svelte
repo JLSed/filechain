@@ -154,6 +154,11 @@
 			});
 		}
 
+		// Documents step: complete if skip_files is true OR files are uploaded
+		if (stepIndex === 2) {
+			if ($form.skip_files) return true;
+		}
+
 		const requiredFields = STEP_REQUIRED_FIELDS[stepIndex];
 		if (!requiredFields || requiredFields.length === 0) return false;
 		return requiredFields.every((field) => {

@@ -35,7 +35,10 @@
 			mobile_number: client.mobile_number,
 			nationality: client.nationality,
 			company_name: client.company_name,
-			company_address: client.company_address
+			company_address: client.company_address,
+			tin: client.tin ?? '',
+			business_style: client.business_style ?? '',
+			registered_address: client.registered_address ?? ''
 		};
 	}
 
@@ -66,7 +69,10 @@
 				mobile_number: editData.mobile_number || null,
 				nationality: editData.nationality || null,
 				company_name: editData.company_name || null,
-				company_address: editData.company_address || null
+				company_address: editData.company_address || null,
+				tin: editData.tin || null,
+				business_style: editData.business_style || null,
+				registered_address: editData.registered_address || null
 			};
 
 			// Compute changes diff from the ClientDetails component
@@ -114,7 +120,7 @@
 <main class="p-4 lg:p-6">
 	<!-- Header -->
 	<div class="mb-6 flex items-center gap-3">
-		<Button variant="outline" size="icon" href="/files">
+		<Button variant="outline" size="icon" onclick={() => history.back()}>
 			<ArrowLeft class="size-4" />
 		</Button>
 		<div class="flex-1">

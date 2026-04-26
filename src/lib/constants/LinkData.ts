@@ -7,7 +7,9 @@ import {
 	FileUser,
 	FolderOpen,
 	ChartArea,
-	FileQuestion
+	FileQuestion,
+	Receipt,
+	Settings
 } from '@lucide/svelte';
 import type { USER_ROLES } from '$lib/constants/SchemaData';
 
@@ -21,9 +23,12 @@ export const pageTitles: Record<string, string> = {
 	'/application': 'Client Applications',
 	'/application/no-app-num': 'No Application Number',
 	'/application/timeline': 'Application Timeline',
+	'/invoices': 'Invoices',
 	'/files': 'File Storage',
-	'/client': 'Client Details',
-	'/users': 'User Management'
+	'/client': 'Client Profiles',
+	'/users': 'User Management',
+	'/settings': 'Settings',
+	'/settings/company': 'Company Settings'
 };
 
 // ── Route protection ──
@@ -38,7 +43,8 @@ export const protectedRoutes = [
 	'/audit-logs',
 	'/application',
 	'/application/no-app-num',
-	'/application/timeline'
+	'/application/timeline',
+	'/invoices'
 ];
 export const authRoutes = ['/login', '/register'];
 
@@ -47,7 +53,7 @@ export const authRoutes = ['/login', '/register'];
 // System Admin has access to everything, so it is not listed here.
 const roleAllowedRoutes: Record<Exclude<UserRole, 'System Admin'>, string[]> = {
 	'User Admin': ['/users'],
-	'Finance Officer': ['/reports'],
+	'Finance Officer': ['/reports', '/invoices'],
 	'Patent Team': ['/application', '/files', '/client'],
 	'UM Team': ['/application', '/files', '/client'],
 	'TM Team': ['/application', '/files', '/client'],
@@ -58,6 +64,9 @@ const roleAllowedRoutes: Record<Exclude<UserRole, 'System Admin'>, string[]> = {
 /** Routes accessible to every authenticated user regardless of role. */
 const universalRoutes = ['/settings'];
 
+/** Routes restricted to System Admin only — checked before universalRoutes. */
+const systemAdminOnlyRoutes = ['/settings/company'];
+
 /**
  * Returns true if the given role is authorized to access `pathname`.
  * System Admin can access everything. Other roles may access universal routes
@@ -66,6 +75,12 @@ const universalRoutes = ['/settings'];
  */
 export function canAccessRoute(role: string | null, pathname: string): boolean {
 	if (role === 'System Admin') return true;
+
+	// Block non-admins from system-admin-only routes before the universal check
+	if (systemAdminOnlyRoutes.some((r) => pathname === r || pathname.startsWith(`${r}/`))) {
+		return false;
+	}
+
 	if (universalRoutes.some((r) => pathname === r || pathname.startsWith(`${r}/`))) return true;
 
 	const allowed = roleAllowedRoutes[role as Exclude<UserRole, 'System Admin'>];
@@ -96,16 +111,19 @@ export const overviewGroup: Sidebar.Item[] = [
 		title: 'Filing Forms',
 		url: '/forms',
 		icon: FileText
-	},
+	}
+];
+
+export const analyticsGroup: Sidebar.Item[] = [
 	{
 		title: 'Reports',
 		url: '/reports',
 		icon: ChartArea
 	},
 	{
-		title: 'Audit Logs',
-		url: '/audit-logs',
-		icon: BookA
+		title: 'Invoices',
+		url: '/invoices',
+		icon: Receipt
 	}
 ];
 
@@ -128,14 +146,36 @@ export const patentingGroups: Sidebar.Item[] = [
 
 export const managementGroups: Sidebar.Item[] = [
 	{
-		title: 'File Storage',
-		url: '/files',
-		icon: FolderOpen
+		title: 'Client Management',
+		url: '/client',
+		icon: Users,
+		children: [
+			{ title: 'Client Profiles', url: '/client' },
+			{ title: 'Client Files', url: '/files', icon: FolderOpen }
+		]
 	},
 	{
 		title: 'User Management',
 		url: '/users',
 		icon: Users
+	},
+	{
+		title: 'Audit Logs',
+		url: '/audit-logs',
+		icon: BookA
+	}
+];
+
+export const settingsGroup: Sidebar.Item[] = [
+	{
+		title: 'Account Settings',
+		url: '/settings',
+		icon: Settings
+	},
+	{
+		title: 'Company Settings',
+		url: '/settings/company',
+		icon: Building2
 	}
 ];
 
@@ -145,18 +185,27 @@ export const sidebarGroups: Sidebar.Group[] = [
 		items: overviewGroup
 	},
 	{
+		label: 'Analytics',
+		items: analyticsGroup
+	},
+	{
 		label: 'Patenting',
 		items: patentingGroups
 	},
 	{
 		label: 'Management',
 		items: managementGroups
+	},
+	{
+		label: 'Settings',
+		items: settingsGroup
 	}
 ];
 
 /**
  * Filters sidebar groups so only items the user's role can access are included.
  * Groups with no remaining items are omitted entirely.
+ * For items with children, only children whose routes the role can access are kept.
  */
 export function getSidebarGroupsForRole(role: string | null): Sidebar.Group[] {
 	if (role === 'System Admin') return sidebarGroups;
@@ -164,7 +213,15 @@ export function getSidebarGroupsForRole(role: string | null): Sidebar.Group[] {
 	return sidebarGroups
 		.map((group) => ({
 			...group,
-			items: group.items.filter((item) => canAccessRoute(role, item.url))
+			items: group.items
+				.filter((item) => canAccessRoute(role, item.url))
+				.map((item) => {
+					if (!item.children) return item;
+					return {
+						...item,
+						children: item.children.filter((child) => canAccessRoute(role, child.url))
+					};
+				})
 		}))
 		.filter((group) => group.items.length > 0);
 }

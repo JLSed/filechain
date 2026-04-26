@@ -190,7 +190,11 @@
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Application Number</dt>
 				{#if isEditing}
-					<Input bind:value={editData.application_number} placeholder="Enter application number" class="font-mono text-sm" />
+					<Input
+						bind:value={editData.application_number}
+						placeholder="Enter application number"
+						class="font-mono text-sm"
+					/>
 				{:else}
 					<dd class="font-medium">
 						{#if data.application_number}
@@ -518,7 +522,7 @@
 				{/if}
 			</div>
 			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">Fees</dt>
+				<dt class="mb-1 text-xs text-muted-foreground">IPOPHL Fees</dt>
 				{#if isEditing}
 					<Input
 						type="number"

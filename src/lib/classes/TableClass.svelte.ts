@@ -142,3 +142,12 @@ export class AuditLogTableState extends TableState<AuditLog> {
 		this.MAX_PAGE_SIZE = 10;
 	}
 }
+
+export class ClientTableState extends TableState<ClientProfile> {
+	constructor(rows: ClientProfile[]) {
+		super(rows, ['first_name', 'last_name', 'company_name', 'email']);
+		this.sortColumn = 'created_at';
+		this.sortDirection = 'desc';
+		this.MAX_PAGE_SIZE = 10;
+	}
+}

@@ -4,7 +4,7 @@
 	import * as Collapsible from '$lib/shadcn/components/ui/collapsible/index.js';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import Logo from '$lib/assets/dmv-logo-light.svg';
-	import { SquareUser, ChevronsUpDown, Settings, LogOut, ChevronRight } from '@lucide/svelte';
+	import { SquareUser, ChevronsUpDown, LogOut, ChevronRight } from '@lucide/svelte';
 	import { getSidebarGroupsForRole, getDefaultRouteForRole } from '$lib/constants/LinkData';
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
 	import { formatName } from '$lib/utils/formatter';
@@ -58,10 +58,7 @@
 									<Sidebar.MenuItem>
 										<Collapsible.Trigger>
 											{#snippet child({ props })}
-												<Sidebar.MenuButton
-													tooltipContent={item.title}
-													{...props}
-												>
+												<Sidebar.MenuButton tooltipContent={item.title} {...props}>
 													<item.icon />
 													<span>{item.title}</span>
 													<ChevronRight
@@ -74,9 +71,7 @@
 											<Sidebar.MenuSub>
 												{#each item.children as subItem (subItem.url)}
 													<Sidebar.MenuSubItem>
-														<Sidebar.MenuSubButton
-															isActive={page.url.pathname === subItem.url}
-														>
+														<Sidebar.MenuSubButton isActive={page.url.pathname === subItem.url}>
 															{#snippet child({ props })}
 																<a href={subItem.url} {...props}>
 																	<span>{subItem.title}</span>
@@ -145,13 +140,6 @@
 								</div>
 							</div>
 						</DropdownMenu.Label>
-						<DropdownMenu.Separator />
-						<DropdownMenu.Item>
-							<a href="/settings" class="flex w-full items-center gap-2">
-								<Settings />
-								Settings
-							</a>
-						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
 							<form action="/?/logout" method="POST" class="w-full">

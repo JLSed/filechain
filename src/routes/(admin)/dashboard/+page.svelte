@@ -68,12 +68,12 @@
 	// --- Overdue Cases ---
 	const overdueCount = $derived(data.overdueApplications.length);
 
-	// --- Revenue This Month ---
+	// --- Revenue This Month (from invoice payments) ---
 	const revenueChart = $derived(() => {
 		const dailyTotals: Record<string, number> = {};
-		for (const app of data.revenueData) {
-			const dateStr = new Date(app.created_at).toISOString().split('T')[0];
-			dailyTotals[dateStr] = (dailyTotals[dateStr] ?? 0) + Number(app.fees);
+		for (const payment of data.revenueData) {
+			const dateStr = payment.payment_date;
+			dailyTotals[dateStr] = (dailyTotals[dateStr] ?? 0) + Number(payment.amount);
 		}
 
 		return Object.entries(dailyTotals)
@@ -85,7 +85,7 @@
 	});
 
 	const totalRevenue = $derived(
-		data.revenueData.reduce((sum, app) => sum + Number(app.fees ?? 0), 0)
+		data.revenueData.reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0)
 	);
 
 	// --- Application Breakdown by Type ---
