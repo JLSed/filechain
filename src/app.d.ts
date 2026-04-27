@@ -27,6 +27,7 @@ declare global {
 			title: string;
 			url: string;
 			icon: LucideIcon;
+			children?: { title: string; url: string; icon?: LucideIcon }[];
 		}
 
 		/** Represents a group of sidebar items */

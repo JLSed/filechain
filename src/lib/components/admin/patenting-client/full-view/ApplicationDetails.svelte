@@ -22,6 +22,7 @@
 	} from '@internationalized/date';
 
 	interface EditData {
+		application_number: string;
 		title_of_invention: string;
 		type_of_invention_id: number | null;
 		pre_protection_status_id: number | null;
@@ -85,6 +86,7 @@
 
 		// Simple string/number/null fields
 		const simpleFields: (keyof EditData)[] = [
+			'application_number',
 			'title_of_invention',
 			'inventor_names',
 			'contact_details',
@@ -187,9 +189,21 @@
 			</div>
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Application Number</dt>
-				<dd class="font-medium">
-					<Badge variant="outline" class="font-mono text-xs">{data.application_number}</Badge>
-				</dd>
+				{#if isEditing}
+					<Input
+						bind:value={editData.application_number}
+						placeholder="Enter application number"
+						class="font-mono text-sm"
+					/>
+				{:else}
+					<dd class="font-medium">
+						{#if data.application_number}
+							<Badge variant="outline" class="font-mono text-xs">{data.application_number}</Badge>
+						{:else}
+							<span class="text-muted-foreground italic">Not assigned</span>
+						{/if}
+					</dd>
+				{/if}
 			</div>
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Status</dt>
@@ -508,7 +522,7 @@
 				{/if}
 			</div>
 			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">Fees</dt>
+				<dt class="mb-1 text-xs text-muted-foreground">IPOPHL Fees</dt>
 				{#if isEditing}
 					<Input
 						type="number"

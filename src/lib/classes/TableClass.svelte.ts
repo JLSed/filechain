@@ -16,7 +16,7 @@ export class TableState<T extends Record<string, unknown>> {
 	isRefreshing = $state(false);
 	searchValue = $state('');
 	activeStatus = $state('all');
-	sortColumn = $state('filling_date');
+	sortColumn = $state('created_at');
 	sortDirection = $state<'asc' | 'desc'>('desc');
 	currentPage = $state(1);
 	pageNumbers = $derived(this.getPageNumbers());
@@ -138,6 +138,15 @@ export class AuditLogTableState extends TableState<AuditLog> {
 	constructor(rows: AuditLog[]) {
 		super(rows, ['details', 'event_type']);
 		this.sortColumn = 'timestamp';
+		this.sortDirection = 'desc';
+		this.MAX_PAGE_SIZE = 10;
+	}
+}
+
+export class ClientTableState extends TableState<ClientProfile> {
+	constructor(rows: ClientProfile[]) {
+		super(rows, ['first_name', 'last_name', 'company_name', 'email']);
+		this.sortColumn = 'created_at';
 		this.sortDirection = 'desc';
 		this.MAX_PAGE_SIZE = 10;
 	}

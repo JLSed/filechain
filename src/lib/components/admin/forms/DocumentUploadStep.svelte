@@ -5,6 +5,7 @@
 	import type { SuperForm } from 'sveltekit-superforms';
 	import type { Infer } from 'sveltekit-superforms';
 	import type { IpApplicationFormSchema } from '$lib/types/FormTypes';
+	import { FileX } from '@lucide/svelte';
 
 	let {
 		form
@@ -22,6 +23,8 @@
 		}));
 		form.update(($form) => {
 			$form.files = [...$form.files, ...newFiles];
+			// If user adds files, automatically turn off skip
+			$form.skip_files = false;
 			return $form;
 		});
 	}
@@ -54,6 +57,17 @@
 			return $form;
 		});
 	}
+
+	function toggleSkipFiles() {
+		form.update(($form) => {
+			$form.skip_files = !$form.skip_files;
+			if ($form.skip_files) {
+				// Clear files when skipping
+				$form.files = [];
+			}
+			return $form;
+		});
+	}
 </script>
 
 <div class="space-y-6">
@@ -62,46 +76,77 @@
 		<p class="text-sm text-muted-foreground">Upload the required documents for this application.</p>
 	</div>
 
-	<div
-		class="flex min-h-48 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors {dragging
-			? 'border-primary bg-primary/5'
-			: 'border-muted-foreground/30 hover:border-muted-foreground/50'}"
-		ondragover={(e) => {
-			e.preventDefault();
-			dragging = true;
-		}}
-		ondragleave={() => (dragging = false)}
-		ondrop={(e) => {
-			e.preventDefault();
-			handleDrop(e);
-		}}
-		onclick={() => fileInput?.click()}
-		onkeydown={(e) => {
-			if (e.key === 'Enter' || e.key === ' ') fileInput?.click();
-		}}
-		role="button"
-		tabindex="0"
-	>
-		<div class="text-center">
-			<svg
-				class="mx-auto mb-2 h-10 w-10 text-muted-foreground/50"
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-				stroke="currentColor"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-				/>
-			</svg>
-			<p class="text-sm font-medium text-muted-foreground">
-				{dragging ? 'Drop files here' : 'Drag & drop files here or click to browse'}
+	{#if $form.skip_files}
+		<!-- Skip files state -->
+		<div
+			class="flex min-h-48 flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/30 p-8"
+		>
+			<FileX class="mb-3 size-10 text-muted-foreground/50" />
+			<p class="text-sm font-medium text-muted-foreground">No documents to upload</p>
+			<p class="mt-1 text-xs text-muted-foreground/70">
+				This step has been marked as complete without any files.
 			</p>
+			<Button type="button" variant="outline" size="sm" class="mt-4" onclick={toggleSkipFiles}>
+				Upload Files Instead
+			</Button>
 		</div>
-	</div>
+	{:else}
+		<div
+			class="flex min-h-48 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors {dragging
+				? 'border-primary bg-primary/5'
+				: 'border-muted-foreground/30 hover:border-muted-foreground/50'}"
+			ondragover={(e) => {
+				e.preventDefault();
+				dragging = true;
+			}}
+			ondragleave={() => (dragging = false)}
+			ondrop={(e) => {
+				e.preventDefault();
+				handleDrop(e);
+			}}
+			onclick={() => fileInput?.click()}
+			onkeydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') fileInput?.click();
+			}}
+			role="button"
+			tabindex="0"
+		>
+			<div class="text-center">
+				<svg
+					class="mx-auto mb-2 h-10 w-10 text-muted-foreground/50"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+					stroke-width="1.5"
+					stroke="currentColor"
+				>
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+					/>
+				</svg>
+				<p class="text-sm font-medium text-muted-foreground">
+					{dragging ? 'Drop files here' : 'Drag & drop files here or click to browse'}
+				</p>
+			</div>
+		</div>
+
+		{#if $form.files.length === 0}
+			<div class="flex items-center justify-center">
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					class="text-muted-foreground hover:text-foreground"
+					onclick={toggleSkipFiles}
+				>
+					<FileX class="mr-2 size-4" />
+					No file to upload
+				</Button>
+			</div>
+		{/if}
+	{/if}
 
 	<input bind:this={fileInput} type="file" multiple class="hidden" onchange={handleFileInput} />
 
@@ -111,9 +156,9 @@
 	<div>
 		<h3 class="text-sm font-semibold text-foreground">Uploaded Files</h3>
 
-		{#if $form.files.length === 0}
+		{#if $form.files.length === 0 && !$form.skip_files}
 			<p class="mt-2 text-sm text-muted-foreground">No files uploaded yet.</p>
-		{:else}
+		{:else if $form.files.length > 0}
 			<ul class="mt-2 space-y-2">
 				{#each $form.files as file, i (i)}
 					<li

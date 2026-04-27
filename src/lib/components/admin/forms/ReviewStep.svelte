@@ -1,38 +1,32 @@
 <script lang="ts">
 	import type { Infer } from 'sveltekit-superforms';
 	import type { IpApplicationFormSchema } from '$lib/types/FormTypes';
-	import type {
-		TypeOfInvention,
-		PreProtectionStatus,
-		TypeOfOfficeAction
-	} from '$lib/types/DatabaseTypes';
+	import type { TypeOfInvention } from '$lib/types/DatabaseTypes';
 	import { TEAM_ROLES } from '$lib/constants/SchemaData';
 
 	let {
 		form = $bindable(),
-		inventionTypes,
-		protectionStatuses,
-		officeActions
+		inventionTypes
 	}: {
 		form: Infer<typeof IpApplicationFormSchema>;
 		inventionTypes: TypeOfInvention[];
-		protectionStatuses: PreProtectionStatus[];
-		officeActions: TypeOfOfficeAction[];
 	} = $props();
 
 	function getInventionTypeName(id: number): string {
 		return inventionTypes.find((t) => t != null && t.id === id)?.name ?? '—';
 	}
 
-	function getProtectionStatusName(id: number | null): string {
-		if (id === null) return '—';
-		return protectionStatuses.find((s) => s != null && s.id === id)?.name ?? '—';
-	}
-
-	function getOfficeActionName(id: number | null): string {
-		if (id === null) return '—';
-		return officeActions.find((a) => a != null && a.id === id)?.name ?? '—';
-	}
+	const isIndividual = $derived(form.client_profiles.is_individual);
+	const clientName = $derived(
+		[
+			form.client_profiles.first_name,
+			form.client_profiles.middle_name,
+			form.client_profiles.last_name
+		]
+			.map((value) => value?.trim())
+			.filter(Boolean)
+			.join(' ')
+	);
 </script>
 
 <div class="space-y-6">
@@ -83,13 +77,17 @@
 		<h3 class="text-sm font-semibold text-foreground">Client Information</h3>
 		<div class="grid grid-cols-1 gap-x-6 gap-y-2 text-sm md:grid-cols-2 lg:grid-cols-3">
 			<div>
-				<span class="text-muted-foreground">Name:</span>
-				<span class="ml-1 font-medium"
-					>{form.client_profiles.first_name}
-					{form.client_profiles.middle_name}
-					{form.client_profiles.last_name}</span
-				>
+				<span class="text-muted-foreground">Client Type:</span>
+				<span class="ml-1 font-medium">
+					{isIndividual ? 'Individual' : 'Company / Organization'}
+				</span>
 			</div>
+			{#if isIndividual || clientName}
+				<div>
+					<span class="text-muted-foreground">{isIndividual ? 'Name' : 'Contact Person'}:</span>
+					<span class="ml-1 font-medium">{clientName || '—'}</span>
+				</div>
+			{/if}
 			<div>
 				<span class="text-muted-foreground">Email:</span>
 				<span class="ml-1 font-medium">{form.client_profiles.email || '—'}</span>
@@ -98,18 +96,22 @@
 				<span class="text-muted-foreground">Mobile:</span>
 				<span class="ml-1 font-medium">{form.client_profiles.mobile_number || '—'}</span>
 			</div>
-			<div>
-				<span class="text-muted-foreground">Nationality:</span>
-				<span class="ml-1 font-medium">{form.client_profiles.nationality || '—'}</span>
-			</div>
-			<div class="md:col-span-2">
-				<span class="text-muted-foreground">Company:</span>
-				<span class="ml-1 font-medium">{form.client_profiles.company_name || '—'}</span>
-			</div>
-			<div class="md:col-span-2 lg:col-span-3">
-				<span class="text-muted-foreground">Address:</span>
-				<span class="ml-1 font-medium">{form.client_profiles.company_address || '—'}</span>
-			</div>
+			{#if isIndividual}
+				<div>
+					<span class="text-muted-foreground">Nationality:</span>
+					<span class="ml-1 font-medium">{form.client_profiles.nationality || '—'}</span>
+				</div>
+			{/if}
+			{#if !isIndividual}
+				<div class="md:col-span-2">
+					<span class="text-muted-foreground">Company Name:</span>
+					<span class="ml-1 font-medium">{form.client_profiles.company_name || '—'}</span>
+				</div>
+				<div class="md:col-span-2 lg:col-span-3">
+					<span class="text-muted-foreground">Company Address:</span>
+					<span class="ml-1 font-medium">{form.client_profiles.company_address || '—'}</span>
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -117,51 +119,19 @@
 	<div class="space-y-3 rounded-lg border border-border p-4">
 		<h3 class="text-sm font-semibold text-foreground">Application Details</h3>
 		<div class="grid grid-cols-1 gap-x-6 gap-y-2 text-sm md:grid-cols-2 lg:grid-cols-3">
-			<div>
-				<span class="text-muted-foreground">Application No.:</span>
-				<span class="ml-1 font-medium">{form.application.application_number || '—'}</span>
-			</div>
-			<div class="md:col-span-2">
+			<div class="md:col-span-2 lg:col-span-3">
 				<span class="text-muted-foreground">Title:</span>
 				<span class="ml-1 font-medium">{form.application.title_of_invention || '—'}</span>
 			</div>
 			<div>
 				<span class="text-muted-foreground">Status:</span>
-				<span class="ml-1 font-medium">{form.application.status || '—'}</span>
+				<span class="ml-1 font-medium">Client Intake</span>
 			</div>
 			<div>
 				<span class="text-muted-foreground">Type of Invention:</span>
 				<span class="ml-1 font-medium"
 					>{getInventionTypeName(form.application.type_of_invention_id)}</span
 				>
-			</div>
-			<div>
-				<span class="text-muted-foreground">Pre-Protection Status:</span>
-				<span class="ml-1 font-medium"
-					>{getProtectionStatusName(form.application.pre_protection_status_id)}</span
-				>
-			</div>
-			<div>
-				<span class="text-muted-foreground">Office Action:</span>
-				<span class="ml-1 font-medium"
-					>{getOfficeActionName(form.application.type_of_office_action_id)}</span
-				>
-			</div>
-			<div>
-				<span class="text-muted-foreground">Filing Date:</span>
-				<span class="ml-1 font-medium">{form.application.filling_date || '—'}</span>
-			</div>
-			<div>
-				<span class="text-muted-foreground">Deadline:</span>
-				<span class="ml-1 font-medium">{form.application.deadline || '—'}</span>
-			</div>
-			<div>
-				<span class="text-muted-foreground">Fees:</span>
-				<span class="ml-1 font-medium">{form.application.fees ?? '—'}</span>
-			</div>
-			<div class="md:col-span-2 lg:col-span-3">
-				<span class="text-muted-foreground">Link to Folder:</span>
-				<span class="ml-1 font-medium">{form.application.link_to_folder || '—'}</span>
 			</div>
 			{#if form.application.inventor_names.length > 0}
 				<div class="md:col-span-2 lg:col-span-3">
@@ -198,6 +168,8 @@
 					</li>
 				{/each}
 			</ul>
+		{:else if form.skip_files}
+			<p class="text-sm text-muted-foreground">No documents — skipped by user.</p>
 		{:else}
 			<p class="text-sm text-muted-foreground">No documents uploaded.</p>
 		{/if}

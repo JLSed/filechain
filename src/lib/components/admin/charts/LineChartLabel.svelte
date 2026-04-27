@@ -20,7 +20,7 @@
 
 	let {
 		title = 'Revenue This Month',
-		description = 'Daily revenue from application fees',
+		description = 'Daily invoiced revenue',
 		chartData = [],
 		totalRevenue = 0
 	}: LineChartLabelProps = $props();
@@ -105,7 +105,7 @@
 					Total: {formattedTotal}
 				</div>
 				<div class="flex items-center gap-2 leading-none text-muted-foreground">
-					Revenue from application fees
+					Revenue from invoiced services
 				</div>
 			</div>
 		</div>

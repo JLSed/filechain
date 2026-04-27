@@ -5,7 +5,8 @@
 	import type { Component } from 'svelte';
 
 	interface ApplicationItem {
-		application_number: string;
+		application_id: string;
+		application_number?: string | null;
 	}
 
 	interface SectionCardProps {
@@ -84,15 +85,15 @@
 	{#if applications.length > 0}
 		<div class="flex-1 overflow-hidden px-6 pb-4">
 			<div class="no-scrollbar flex max-h-[180px] flex-col gap-1.5 overflow-y-auto">
-				{#each applications as app (app.application_number)}
+				{#each applications as app (app.application_id)}
 					<a
-						href="/application/{app.application_number}"
+						href="/application/{app.application_id}"
 						class="group flex items-center justify-between rounded-md border px-3 py-2 text-sm font-medium tabular-nums transition-all duration-150 hover:shadow-sm
 						{isDestructive
 							? 'border-destructive/20 bg-destructive/5 text-destructive hover:border-destructive/40 hover:bg-destructive/10'
 							: 'border-border bg-background text-foreground hover:border-primary/30 hover:bg-muted'}"
 					>
-						<span>{app.application_number}</span>
+						<span>{app.application_number ?? app.application_id.slice(0, 8)}</span>
 						<ExternalLink
 							class="size-3.5! opacity-40 transition-opacity group-hover:opacity-100
 							{isDestructive ? 'text-destructive' : 'text-muted-foreground'}"

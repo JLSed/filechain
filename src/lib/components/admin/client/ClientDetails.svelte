@@ -7,6 +7,7 @@
 	import phoneFormats from '$lib/constants/phone_format.json';
 
 	interface EditData {
+		is_individual: boolean;
 		first_name: string;
 		last_name: string;
 		middle_name: string | null;
@@ -15,6 +16,9 @@
 		nationality: string;
 		company_name: string | null;
 		company_address: string | null;
+		tin: string;
+		business_style: string;
+		registered_address: string;
 	}
 
 	interface Props {
@@ -24,6 +28,7 @@
 		originalData: EditData;
 	}
 
+	// eslint-disable-next-line svelte/no-unused-props -- is_individual is used in getChanges() for diff computation
 	let { data, isEditing, editData = $bindable(), originalData }: Props = $props();
 
 	/**
@@ -67,6 +72,7 @@
 		const changes: Record<string, { old: unknown; new: unknown }> = {};
 
 		const fields: (keyof EditData)[] = [
+			'is_individual',
 			'first_name',
 			'last_name',
 			'middle_name',
@@ -74,7 +80,10 @@
 			'mobile_number',
 			'nationality',
 			'company_name',
-			'company_address'
+			'company_address',
+			'tin',
+			'business_style',
+			'registered_address'
 		];
 
 		for (const field of fields) {
@@ -90,14 +99,32 @@
 </script>
 
 <div class="flex flex-col gap-8">
+	<section>
+		<h3 class="mb-2 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+			Client Type
+		</h3>
+		<span
+			class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium
+				{data.is_individual
+				? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+				: 'bg-blue-500/10 text-blue-700 dark:text-blue-300'}"
+		>
+			{data.is_individual ? 'Individual' : 'Company / Organization'}
+		</span>
+	</section>
+
+	<Separator />
+
 	<!-- Personal Information -->
 	<section>
 		<h3 class="mb-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-			Personal Information
+			{data.is_individual ? 'Personal Information' : 'Contact Person'}
 		</h3>
 		<dl class="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
 			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">First Name</dt>
+				<dt class="mb-1 text-xs text-muted-foreground">
+					{data.is_individual ? 'First Name' : 'Contact First Name'}
+				</dt>
 				{#if isEditing}
 					<Input bind:value={editData.first_name} class="text-sm" />
 				{:else}
@@ -105,7 +132,9 @@
 				{/if}
 			</div>
 			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">Last Name</dt>
+				<dt class="mb-1 text-xs text-muted-foreground">
+					{data.is_individual ? 'Last Name' : 'Contact Last Name'}
+				</dt>
 				{#if isEditing}
 					<Input bind:value={editData.last_name} class="text-sm" />
 				{:else}
@@ -113,21 +142,25 @@
 				{/if}
 			</div>
 			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">Middle Name</dt>
+				<dt class="mb-1 text-xs text-muted-foreground">
+					{data.is_individual ? 'Middle Name' : 'Contact Middle Name'}
+				</dt>
 				{#if isEditing}
 					<Input bind:value={editData.middle_name} class="text-sm" />
 				{:else}
 					<dd class="font-medium">{data.middle_name ?? '—'}</dd>
 				{/if}
 			</div>
-			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">Nationality</dt>
-				{#if isEditing}
-					<Input bind:value={editData.nationality} class="text-sm" />
-				{:else}
-					<dd class="font-medium">{data.nationality ?? '—'}</dd>
-				{/if}
-			</div>
+			{#if data.is_individual}
+				<div>
+					<dt class="mb-1 text-xs text-muted-foreground">Nationality</dt>
+					{#if isEditing}
+						<Input bind:value={editData.nationality} class="text-sm" />
+					{:else}
+						<dd class="font-medium">{data.nationality ?? '—'}</dd>
+					{/if}
+				</div>
+			{/if}
 		</dl>
 	</section>
 
@@ -161,29 +194,70 @@
 	<Separator />
 
 	<!-- Company Information -->
+	{#if !data.is_individual}
+		<section>
+			<h3 class="mb-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+				Company Information
+			</h3>
+			<dl class="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
+				<div>
+					<dt class="mb-1 text-xs text-muted-foreground">Company Name</dt>
+					{#if isEditing}
+						<Input bind:value={editData.company_name} class="text-sm" />
+					{:else}
+						<dd class="font-medium">{data.company_name ?? '—'}</dd>
+					{/if}
+				</div>
+				<div class="sm:col-span-2">
+					<dt class="mb-1 text-xs text-muted-foreground">Company Address</dt>
+					{#if isEditing}
+						<textarea
+							class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
+							rows="2"
+							bind:value={editData.company_address}
+						></textarea>
+					{:else}
+						<dd class="font-medium">{data.company_address ?? '—'}</dd>
+					{/if}
+				</div>
+			</dl>
+		</section>
+
+		<Separator />
+	{/if}
+
+	<!-- BIR / Tax Information -->
 	<section>
 		<h3 class="mb-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-			Company Information
+			BIR / Tax Information
 		</h3>
 		<dl class="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
 			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">Company Name</dt>
+				<dt class="mb-1 text-xs text-muted-foreground">TIN</dt>
 				{#if isEditing}
-					<Input bind:value={editData.company_name} class="text-sm" />
+					<Input bind:value={editData.tin} class="text-sm" placeholder="e.g. 123-456-789-000" />
 				{:else}
-					<dd class="font-medium">{data.company_name ?? '—'}</dd>
+					<dd class="font-medium">{data.tin ?? '—'}</dd>
+				{/if}
+			</div>
+			<div>
+				<dt class="mb-1 text-xs text-muted-foreground">Business Style</dt>
+				{#if isEditing}
+					<Input bind:value={editData.business_style} class="text-sm" />
+				{:else}
+					<dd class="font-medium">{data.business_style ?? '—'}</dd>
 				{/if}
 			</div>
 			<div class="sm:col-span-2">
-				<dt class="mb-1 text-xs text-muted-foreground">Company Address</dt>
+				<dt class="mb-1 text-xs text-muted-foreground">Registered Address</dt>
 				{#if isEditing}
 					<textarea
 						class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
 						rows="2"
-						bind:value={editData.company_address}
+						bind:value={editData.registered_address}
 					></textarea>
 				{:else}
-					<dd class="font-medium">{data.company_address ?? '—'}</dd>
+					<dd class="font-medium">{data.registered_address ?? '—'}</dd>
 				{/if}
 			</div>
 		</dl>

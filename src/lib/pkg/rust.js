@@ -458,6 +458,112 @@ export class EncryptedMasterKey {
 }
 if (Symbol.dispose) EncryptedMasterKey.prototype[Symbol.dispose] = EncryptedMasterKey.prototype.free;
 
+export class ReEncryptedPrivateKey {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(ReEncryptedPrivateKey.prototype);
+        obj.__wbg_ptr = ptr;
+        ReEncryptedPrivateKeyFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        ReEncryptedPrivateKeyFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_reencryptedprivatekey_free(ptr, 0);
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get encrypted_private_key() {
+        const ret = wasm.reencryptedprivatekey_encrypted_private_key(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {string}
+     */
+    get encrypted_private_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.reencryptedprivatekey_encrypted_private_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get error_message() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.reencryptedprivatekey_error_message(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get nonce() {
+        const ret = wasm.reencryptedprivatekey_nonce(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {string}
+     */
+    get nonce_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.reencryptedprivatekey_nonce_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get salt() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.reencryptedprivatekey_salt(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {boolean}
+     */
+    get success() {
+        const ret = wasm.reencryptedprivatekey_success(this.__wbg_ptr);
+        return ret !== 0;
+    }
+}
+if (Symbol.dispose) ReEncryptedPrivateKey.prototype[Symbol.dispose] = ReEncryptedPrivateKey.prototype.free;
+
 /**
  * Decrypts file data using hybrid decryption (X25519 + AES-256-GCM)
  *
@@ -640,6 +746,29 @@ export function master_key_bytes_to_hex(input, salt) {
     } finally {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
     }
+}
+
+/**
+ * @param {string} old_password
+ * @param {string} old_salt
+ * @param {Uint8Array} encrypted_key
+ * @param {Uint8Array} old_nonce
+ * @param {string} new_password
+ * @returns {ReEncryptedPrivateKey}
+ */
+export function re_encrypt_private_key(old_password, old_salt, encrypted_key, old_nonce, new_password) {
+    const ptr0 = passStringToWasm0(old_password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(old_salt, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArray8ToWasm0(encrypted_key, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ptr3 = passArray8ToWasm0(old_nonce, wasm.__wbindgen_malloc);
+    const len3 = WASM_VECTOR_LEN;
+    const ptr4 = passStringToWasm0(new_password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len4 = WASM_VECTOR_LEN;
+    const ret = wasm.re_encrypt_private_key(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
+    return ReEncryptedPrivateKey.__wrap(ret);
 }
 
 function __wbg_get_imports() {
@@ -921,6 +1050,9 @@ const EncryptedFileResultFinalization = (typeof FinalizationRegistry === 'undefi
 const EncryptedMasterKeyFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_encryptedmasterkey_free(ptr >>> 0, 1));
+const ReEncryptedPrivateKeyFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_reencryptedprivatekey_free(ptr >>> 0, 1));
 
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();

@@ -45,10 +45,8 @@
 
 		try {
 			const supabase = createBrowserClient();
-			// 1. Upload files first
-			await uploadApplicationFiles($form as IpApplicationFormData, supabase);
 
-			// 2. Submit the form data to the server action to save DB records
+			// 1. Submit the form data to the server action to save DB records
 			const formDataPayload = new FormData();
 			const payload = {
 				client_profiles: $form.client_profiles,
@@ -77,8 +75,16 @@
 				return;
 			}
 
+			// 2. Upload files using the server-generated application_id
+			if (result.type === 'success') {
+				const applicationId = (result.data as { applicationId?: string })?.applicationId;
+				if (applicationId) {
+					await uploadApplicationFiles($form as IpApplicationFormData, supabase, applicationId);
+				}
+			}
+
 			toast.success('Application submitted successfully', {
-				description: `Application ${$form.application.application_number} has been submitted.`
+				description: `Application has been submitted.`
 			});
 			goto('/files');
 		} catch (err) {
@@ -105,19 +111,59 @@
 		}, obj);
 	}
 
+	function isValueFilled(value: unknown): boolean {
+		if (value === null || value === undefined) return false;
+		if (Array.isArray(value)) return value.length > 0;
+		if (typeof value === 'string') return value.trim().length > 0;
+		if (typeof value === 'number') return !Number.isNaN(value);
+		return true;
+	}
+
 	/**
 	 * Checks if a step has all required fields filled with non-empty values.
 	 */
 	function isStepComplete(stepIndex: number): boolean {
+		if (stepIndex === 0) {
+			const isIndividual = getNestedValue(
+				$form as unknown as Record<string, unknown>,
+				'client_profiles.is_individual'
+			);
+
+			if (typeof isIndividual !== 'boolean') return false;
+
+			const requiredStepZeroFields = isIndividual
+				? [
+						'client_profiles.is_individual',
+						'client_profiles.first_name',
+						'client_profiles.last_name',
+						'client_profiles.email',
+						'client_profiles.mobile_number',
+						'client_profiles.nationality'
+					]
+				: [
+						'client_profiles.is_individual',
+						'client_profiles.company_name',
+						'client_profiles.company_address',
+						'client_profiles.email',
+						'client_profiles.mobile_number'
+					];
+
+			return requiredStepZeroFields.every((field) => {
+				const value = getNestedValue($form as unknown as Record<string, unknown>, field);
+				return isValueFilled(value);
+			});
+		}
+
+		// Documents step: complete if skip_files is true OR files are uploaded
+		if (stepIndex === 2) {
+			if ($form.skip_files) return true;
+		}
+
 		const requiredFields = STEP_REQUIRED_FIELDS[stepIndex];
 		if (!requiredFields || requiredFields.length === 0) return false;
 		return requiredFields.every((field) => {
 			const value = getNestedValue($form as unknown as Record<string, unknown>, field);
-			if (value === null || value === undefined) return false;
-			if (Array.isArray(value)) return value.length > 0;
-			if (typeof value === 'string') return value.trim().length > 0;
-			if (typeof value === 'number') return !Number.isNaN(value);
-			return true;
+			return isValueFilled(value);
 		});
 	}
 
@@ -185,22 +231,11 @@
 						onClientSelected={nextStep}
 					/>
 				{:else if currentStep === 1}
-					<ApplicationStep
-						{form}
-						{errors}
-						inventionTypes={data.inventionTypes}
-						protectionStatuses={data.protectionStatuses}
-						officeActions={data.officeActions}
-					/>
+					<ApplicationStep {form} {errors} inventionTypes={data.inventionTypes} />
 				{:else if currentStep === 2}
 					<DocumentUploadStep {form} />
 				{:else if currentStep === 3}
-					<ReviewStep
-						bind:form={$form}
-						inventionTypes={data.inventionTypes}
-						protectionStatuses={data.protectionStatuses}
-						officeActions={data.officeActions}
-					/>
+					<ReviewStep bind:form={$form} inventionTypes={data.inventionTypes} />
 				{/if}
 			</div>
 

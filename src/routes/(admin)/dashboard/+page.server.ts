@@ -42,14 +42,18 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 		supabase
 			.schema('api')
 			.from('ip_applications')
-			.select('application_number, status, type_of_invention_id, type_of_invention!left(name)')
+			.select(
+				'application_id, application_number, status, type_of_invention_id, type_of_invention!left(name)'
+			)
 			.neq('status', 'Completed'),
 
 		// 2. Applications filed this month (by filling_date)
 		supabase
 			.schema('api')
 			.from('ip_applications')
-			.select('application_number, type_of_invention_id, type_of_invention!left(name)')
+			.select(
+				'application_id, application_number, type_of_invention_id, type_of_invention!left(name)'
+			)
 			.gte('filling_date', monthStart)
 			.lte('filling_date', monthEnd),
 
@@ -57,7 +61,7 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 		supabase
 			.schema('api')
 			.from('ip_applications')
-			.select('application_number, title_of_invention, deadline')
+			.select('application_id, application_number, title_of_invention, deadline')
 			.gte('deadline', weekStart)
 			.lte('deadline', weekEnd)
 			.order('deadline', { ascending: true }),
@@ -66,18 +70,17 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 		supabase
 			.schema('api')
 			.from('ip_applications')
-			.select('application_number, title_of_invention, deadline, status')
+			.select('application_id, application_number, title_of_invention, deadline, status')
 			.lt('deadline', todayStr)
 			.neq('status', 'Completed'),
 
-		// 5. Revenue this month — daily sum of fees for apps created this month
+		// 5. Revenue this month — daily sum of payments received
 		supabase
 			.schema('api')
-			.from('ip_applications')
-			.select('fees, created_at')
-			.gte('created_at', `${monthStart}T00:00:00Z`)
-			.lte('created_at', `${monthEnd}T23:59:59Z`)
-			.not('fees', 'is', null),
+			.from('invoice_payments')
+			.select('amount, ewt_amount, payment_date')
+			.gte('payment_date', monthStart)
+			.lte('payment_date', monthEnd),
 
 		// 6. Invention types for chart config
 		supabase.schema('api').from('type_of_invention').select('id, name')

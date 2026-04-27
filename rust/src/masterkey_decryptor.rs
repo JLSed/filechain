@@ -1,14 +1,24 @@
 use wasm_bindgen::prelude::*;
 use aes_gcm::{
-    Aes256Gcm, Nonce, aead::{Aead, KeyInit, generic_array::GenericArray}
+    Aes256Gcm, Nonce, aead::{Aead, KeyInit, OsRng, generic_array::GenericArray}
 };
+use argon2::password_hash::SaltString;
 
-pub use crate::{get_key_encryption_key, bytes_to_hex, log};
+pub use crate::{get_key_encryption_key, generate_nonce, bytes_to_hex, log};
 
 #[wasm_bindgen]
 pub struct DecryptedPrivateKey {
     success: bool,
     private_key: Vec<u8>,
+    error_message: String,
+}
+
+#[wasm_bindgen]
+pub struct ReEncryptedPrivateKey {
+    success: bool,
+    encrypted_private_key: Vec<u8>,
+    salt: String,
+    nonce: Vec<u8>,
     error_message: String,
 }
 
@@ -83,6 +93,80 @@ pub fn decrypt_private_key(
     }
 }
 
+#[wasm_bindgen]
+pub fn re_encrypt_private_key(
+    old_password: &str,
+    old_salt: &str,
+    encrypted_key: &[u8],
+    old_nonce: &[u8],
+    new_password: &str,
+) -> ReEncryptedPrivateKey {
+    if old_nonce.len() != 12 {
+        return ReEncryptedPrivateKey {
+            success: false,
+            encrypted_private_key: vec![],
+            salt: String::new(),
+            nonce: vec![],
+            error_message: format!("Nonce must be 12 bytes, got {}", old_nonce.len()),
+        };
+    }
+
+    if encrypted_key.len() != 48 {
+        return ReEncryptedPrivateKey {
+            success: false,
+            encrypted_private_key: vec![],
+            salt: String::new(),
+            nonce: vec![],
+            error_message: format!("Encrypted key must be 48 bytes, got {}", encrypted_key.len()),
+        };
+    }
+
+    let old_encryption_key = get_key_encryption_key(old_password, old_salt);
+    let old_key = GenericArray::from_slice(&old_encryption_key);
+    let old_cipher = Aes256Gcm::new(old_key);
+    let old_nonce = Nonce::from_slice(old_nonce);
+
+    let decrypted_private_key = match old_cipher.decrypt(old_nonce, encrypted_key) {
+        Ok(decrypted) => decrypted,
+        Err(_) => {
+            return ReEncryptedPrivateKey {
+                success: false,
+                encrypted_private_key: vec![],
+                salt: String::new(),
+                nonce: vec![],
+                error_message: "Current password is incorrect".to_string(),
+            };
+        }
+    };
+
+    let new_salt = SaltString::generate(&mut OsRng);
+    let new_encryption_key = get_key_encryption_key(new_password, new_salt.as_str());
+    let new_key = GenericArray::from_slice(&new_encryption_key);
+    let new_cipher = Aes256Gcm::new(new_key);
+    let new_nonce = generate_nonce();
+
+    let encrypted_private_key = match new_cipher.encrypt(&new_nonce, decrypted_private_key.as_ref()) {
+        Ok(ciphertext) => ciphertext,
+        Err(_) => {
+            return ReEncryptedPrivateKey {
+                success: false,
+                encrypted_private_key: vec![],
+                salt: String::new(),
+                nonce: vec![],
+                error_message: "Failed to encrypt private key with new password.".to_string(),
+            };
+        }
+    };
+
+    ReEncryptedPrivateKey {
+        success: true,
+        encrypted_private_key,
+        salt: new_salt.as_str().to_string(),
+        nonce: new_nonce.to_vec(),
+        error_message: String::new(),
+    }
+}
+
 
 #[wasm_bindgen]
 impl DecryptedPrivateKey {
@@ -100,6 +184,52 @@ impl DecryptedPrivateKey {
     pub fn private_key_hex(&self) -> String {
         if self.success {
             bytes_to_hex(&self.private_key)
+        } else {
+            String::new()
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn error_message(&self) -> String {
+        self.error_message.clone()
+    }
+}
+
+#[wasm_bindgen]
+impl ReEncryptedPrivateKey {
+    #[wasm_bindgen(getter)]
+    pub fn success(&self) -> bool {
+        self.success
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn encrypted_private_key(&self) -> Vec<u8> {
+        self.encrypted_private_key.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn encrypted_private_key_hex(&self) -> String {
+        if self.success {
+            bytes_to_hex(&self.encrypted_private_key)
+        } else {
+            String::new()
+        }
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn salt(&self) -> String {
+        self.salt.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn nonce(&self) -> Vec<u8> {
+        self.nonce.clone()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn nonce_hex(&self) -> String {
+        if self.success {
+            bytes_to_hex(&self.nonce)
         } else {
             String::new()
         }

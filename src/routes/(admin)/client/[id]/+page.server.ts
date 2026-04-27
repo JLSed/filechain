@@ -16,7 +16,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 		.schema('api')
 		.from('client_profiles')
 		.select(
-			'client_id, first_name, last_name, middle_name, email, mobile_number, nationality, company_name, company_address, created_at, updated_at'
+			'client_id, is_individual, first_name, last_name, middle_name, email, mobile_number, nationality, company_name, company_address, tin, business_style, registered_address, created_at, updated_at'
 		)
 		.eq('client_id', clientId)
 		.single();
@@ -87,16 +87,23 @@ export const actions = {
 		const { data: targetClient } = await supabase
 			.schema('api')
 			.from('client_profiles')
-			.select('first_name, middle_name, last_name')
+			.select('is_individual, first_name, middle_name, last_name, company_name')
 			.eq('client_id', clientId)
 			.single();
 
 		const targetName = targetClient
-			? formatName(
-					targetClient.first_name ?? '',
-					targetClient.middle_name,
-					targetClient.last_name ?? ''
-				)
+			? targetClient.is_individual
+				? formatName(
+						targetClient.first_name ?? '',
+						targetClient.middle_name,
+						targetClient.last_name ?? ''
+					)
+				: targetClient.company_name?.trim() ||
+					formatName(
+						targetClient.first_name ?? '',
+						targetClient.middle_name,
+						targetClient.last_name ?? ''
+					)
 			: clientId;
 
 		let parsedChanges: Record<string, { old: unknown; new: unknown }> | null = null;

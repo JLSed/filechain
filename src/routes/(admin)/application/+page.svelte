@@ -81,7 +81,7 @@
 						</Table.Cell>
 					</Table.Row>
 				{:else}
-					{#each table.paginatedRows as row (row.application_number)}
+					{#each table.paginatedRows as row (row.application_id)}
 						<ApplicationTableRow app={row} openDetails={table.openDetails} />
 					{/each}
 				{/if}

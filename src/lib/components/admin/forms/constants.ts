@@ -11,6 +11,7 @@ export const STEP_LABELS = [
  */
 export const STEP_FIELD_MAP: Record<number, string[]> = {
 	0: [
+		'client_profiles.is_individual',
 		'client_profiles.first_name',
 		'client_profiles.middle_name',
 		'client_profiles.last_name',
@@ -21,22 +22,12 @@ export const STEP_FIELD_MAP: Record<number, string[]> = {
 		'client_profiles.company_address'
 	],
 	1: [
-		'application.application_number',
 		'application.title_of_invention',
-		'application.status',
-		'application.filling_date',
-		'application.paper_document_no',
-		'application.fees',
-		'application.deadline',
-		'application.mailing_date',
-		'application.publication_date',
 		'application.inventor_names',
 		'application.contact_details',
 		'application.link_to_folder',
 		'application.remarks',
-		'application.type_of_invention_id',
-		'application.pre_protection_status_id',
-		'application.type_of_office_action_id'
+		'application.type_of_invention_id'
 	],
 	2: ['files'],
 	3: ['application.team_assigned']
@@ -48,18 +39,14 @@ export const STEP_FIELD_MAP: Record<number, string[]> = {
  */
 export const STEP_REQUIRED_FIELDS: Record<number, string[]> = {
 	0: [
+		'client_profiles.is_individual',
 		'client_profiles.first_name',
 		'client_profiles.last_name',
 		'client_profiles.email',
 		'client_profiles.mobile_number',
 		'client_profiles.nationality'
 	],
-	1: [
-		'application.application_number',
-		'application.title_of_invention',
-		'application.status',
-		'application.type_of_invention_id'
-	],
+	1: ['application.title_of_invention', 'application.type_of_invention_id'],
 	2: ['files'],
 	3: ['application.team_assigned']
 };

@@ -17,7 +17,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 	const session = await safeGetSession();
 	if (!session.session) throw error(401, 'Unauthorized');
 
-	const applicationNumber = params.id;
+	const applicationId = params.id;
 
 	// Fetch the application with joins (include id for dropdowns)
 	const [
@@ -37,16 +37,16 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 				pre_protection_status!left (id, name),
 				type_of_office_action!left (id, name)`
 			)
-			.eq('application_number', applicationNumber)
+			.eq('application_id', applicationId)
 			.single(),
 
 		supabase
 			.schema('api')
 			.from('file_metadata')
 			.select(
-				'file_id, uploader_id, file_name, file_path, file_hash, uploaded_at, size, status, category, application_number, file_ledger(block_id, sequence, signature, previous_block), user_profiles(first_name, last_name)'
+				'file_id, uploader_id, file_name, file_path, file_hash, uploaded_at, size, status, category, application_id, file_ledger(block_id, sequence, signature, previous_block), user_profiles(first_name, last_name)'
 			)
-			.eq('application_number', applicationNumber)
+			.eq('application_id', applicationId)
 			.order('uploaded_at', { ascending: false }),
 
 		supabase.schema('api').from('type_of_invention').select('id, name'),
@@ -75,9 +75,19 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 				.array(PreProtectionStatusSchema)
 				.parse(protectionStatusesResult.data ?? []),
 			officeActions: z.array(TypeOfOfficeActionSchema).parse(officeActionsResult.data ?? []),
+			accessibleFileIds: [],
 			error: 'Failed to load files.'
 		};
 	}
+
+	// Fetch the file IDs the current user has a DEK for (i.e. has access to)
+	const { data: dekData } = await supabase
+		.schema('api')
+		.from('file_dek')
+		.select('file_id')
+		.eq('owner_id', session.session.user.id);
+
+	const accessibleFileIds = (dekData ?? []).map((d: { file_id: string }) => d.file_id);
 
 	return {
 		application: appParsed.data,
@@ -87,6 +97,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 			.array(PreProtectionStatusSchema)
 			.parse(protectionStatusesResult.data ?? []),
 		officeActions: z.array(TypeOfOfficeActionSchema).parse(officeActionsResult.data ?? []),
+		accessibleFileIds,
 		error: null
 	};
 }) satisfies PageServerLoad;
@@ -97,11 +108,11 @@ export const actions = {
 		if (!session.session) return fail(401, { message: 'Unauthorized' });
 
 		const formData = await request.formData();
-		const applicationNumber = formData.get('application_number') as string;
+		const applicationId = formData.get('application_id') as string;
 		const payloadJson = formData.get('payload') as string;
 		const changesJson = formData.get('changes') as string | null;
 
-		if (!applicationNumber || !payloadJson) {
+		if (!applicationId || !payloadJson) {
 			return fail(400, { message: 'Missing required fields.' });
 		}
 
@@ -117,7 +128,7 @@ export const actions = {
 			.schema('api')
 			.from('ip_applications')
 			.update(updatePayload)
-			.eq('application_number', applicationNumber);
+			.eq('application_id', applicationId);
 
 		if (updateError) {
 			return fail(500, { message: `Failed to save: ${updateError.message}` });
@@ -149,7 +160,7 @@ export const actions = {
 
 		await insertAuditLog(supabase, {
 			actorId: session.session.user.id,
-			details: `${actorName} Edited Application ${applicationNumber}`,
+			details: `${actorName} Edited Application ${applicationId}`,
 			changes: parsedChanges,
 			severityLevel: 'notice',
 			ipAddress,

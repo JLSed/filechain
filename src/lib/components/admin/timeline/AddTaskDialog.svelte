@@ -46,7 +46,7 @@
 				.schema('api')
 				.from('application_tasks')
 				.insert({
-					application_number: applicationNumber,
+					application_id: applicationNumber,
 					title: title.trim(),
 					description: description.trim() || null,
 					created_by: userId

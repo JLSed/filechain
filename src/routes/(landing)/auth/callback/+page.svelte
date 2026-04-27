@@ -9,6 +9,25 @@
 	let error = $state('');
 
 	/**
+	 * Logs a "Logged In" audit event via the server-side API endpoint.
+	 * Fire-and-forget — does not block navigation on failure.
+	 */
+	async function logLoginEvent(): Promise<void> {
+		try {
+			await fetch('/api/audit-log', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					details: '[actor] First Time Logged In',
+					eventType: 'Logged In'
+				})
+			});
+		} catch (err) {
+			console.error('Auth callback: Failed to log audit event:', err);
+		}
+	}
+
+	/**
 	 * Auth callback route for Supabase invite flow.
 	 *
 	 * Supabase uses the implicit grant flow for invites — tokens arrive
@@ -27,12 +46,14 @@
 					access_token: accessToken,
 					refresh_token: refreshToken
 				})
-				.then(({ error: sessionError }) => {
+				.then(async ({ error: sessionError }) => {
 					if (sessionError) {
 						console.error('Auth callback: Failed to set session:', sessionError.message);
 						error = 'Failed to authenticate. Please try the invite link again.';
 						return;
 					}
+
+					await logLoginEvent();
 
 					// Redirect to setup page for password + master key setup
 					if (type === 'invite') {
@@ -45,12 +66,13 @@
 			// Check if there's a code in query params (PKCE flow fallback)
 			const code = new URLSearchParams(window.location.search).get('code');
 			if (code) {
-				supabase.auth.exchangeCodeForSession(code).then(({ error: codeError }) => {
+				supabase.auth.exchangeCodeForSession(code).then(async ({ error: codeError }) => {
 					if (codeError) {
 						console.error('Auth callback: Failed to exchange code:', codeError.message);
 						error = 'Failed to authenticate. Please try the invite link again.';
 						return;
 					}
+					await logLoginEvent();
 					goto('/setup', { replaceState: true });
 				});
 			} else {

@@ -35,6 +35,7 @@
 	/** Build a fresh editData snapshot from the current application. */
 	function buildEditData() {
 		return {
+			application_number: app.application_number ?? '',
 			title_of_invention: app.title_of_invention,
 			type_of_invention_id: app.type_of_invention?.id ?? null,
 			pre_protection_status_id: app.pre_protection_status?.id ?? null,
@@ -71,6 +72,7 @@
 		saving = true;
 		try {
 			const updatePayload: Record<string, unknown> = {
+				application_number: editData.application_number || null,
 				title_of_invention: editData.title_of_invention,
 				type_of_invention_id: editData.type_of_invention_id,
 				pre_protection_status_id: editData.pre_protection_status_id,
@@ -95,7 +97,7 @@
 
 			// Submit to server action for DB update + audit logging
 			const formData = new FormData();
-			formData.set('application_number', app.application_number);
+			formData.set('application_id', app.application_id);
 			formData.set('payload', JSON.stringify(updatePayload));
 			if (changes) {
 				formData.set('changes', JSON.stringify(changes));
@@ -274,7 +276,7 @@
 	<main class="p-4 lg:p-6">
 		<!-- Header -->
 		<div class="mb-6 flex items-center gap-3">
-			<Button variant="outline" size="icon" href="/application">
+			<Button variant="outline" size="icon" onclick={() => history.back()}>
 				<ArrowLeft class="size-4" />
 			</Button>
 			<div class="flex-1">
@@ -282,7 +284,11 @@
 				<div class="mt-0.5 flex items-center gap-2">
 					<span class="text-sm text-muted-foreground">{clientName}</span>
 					<span class="text-muted-foreground/40">·</span>
-					<Badge variant="outline" class="font-mono text-xs">{app.application_number}</Badge>
+					{#if app.application_number}
+						<Badge variant="outline" class="font-mono text-xs">{app.application_number}</Badge>
+					{:else}
+						<span class="text-xs text-muted-foreground italic">No app number</span>
+					{/if}
 				</div>
 			</div>
 		</div>
@@ -308,6 +314,7 @@
 					<ApplicationFiles
 						files={latestFiles}
 						currentUserId={data.profile.user_id}
+						accessibleFileIds={data.accessibleFileIds}
 						{isEditing}
 						onfileclick={handleFileClick}
 						onaddrevision={handleAddRevision}
@@ -341,7 +348,7 @@
 />
 
 <AddFileDialog
-	applicationNumber={app.application_number}
+	applicationNumber={app.application_id}
 	applicationTeam={app.team_assigned ?? null}
 	bind:open={addFileDialogOpen}
 	onuploaded={handleFileUploaded}

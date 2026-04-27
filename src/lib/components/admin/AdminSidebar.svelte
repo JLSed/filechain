@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import * as Sidebar from '$lib/shadcn/components/ui/sidebar/index.js';
+	import * as Collapsible from '$lib/shadcn/components/ui/collapsible/index.js';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import Logo from '$lib/assets/dmv-logo-light.svg';
-	import { SquareUser, ChevronsUpDown, Settings, LogOut } from '@lucide/svelte';
+	import { SquareUser, ChevronsUpDown, LogOut, ChevronRight } from '@lucide/svelte';
 	import { getSidebarGroupsForRole, getDefaultRouteForRole } from '$lib/constants/LinkData';
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
 	import { formatName } from '$lib/utils/formatter';
@@ -49,19 +50,55 @@
 				<Sidebar.GroupContent>
 					<Sidebar.Menu>
 						{#each group.items as item (item.title)}
-							<Sidebar.MenuItem>
-								<Sidebar.MenuButton
-									isActive={page.url.pathname === item.url}
-									tooltipContent={item.title}
+							{#if item.children && item.children.length > 0}
+								<Collapsible.Root
+									open={page.url.pathname.startsWith(item.url)}
+									class="group/collapsible"
 								>
-									{#snippet child({ props })}
-										<a href={item.url} {...props}>
-											<item.icon />
-											<span>{item.title}</span>
-										</a>
-									{/snippet}
-								</Sidebar.MenuButton>
-							</Sidebar.MenuItem>
+									<Sidebar.MenuItem>
+										<Collapsible.Trigger>
+											{#snippet child({ props })}
+												<Sidebar.MenuButton tooltipContent={item.title} {...props}>
+													<item.icon />
+													<span>{item.title}</span>
+													<ChevronRight
+														class="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+													/>
+												</Sidebar.MenuButton>
+											{/snippet}
+										</Collapsible.Trigger>
+										<Collapsible.Content>
+											<Sidebar.MenuSub>
+												{#each item.children as subItem (subItem.url)}
+													<Sidebar.MenuSubItem>
+														<Sidebar.MenuSubButton isActive={page.url.pathname === subItem.url}>
+															{#snippet child({ props })}
+																<a href={subItem.url} {...props}>
+																	<span>{subItem.title}</span>
+																</a>
+															{/snippet}
+														</Sidebar.MenuSubButton>
+													</Sidebar.MenuSubItem>
+												{/each}
+											</Sidebar.MenuSub>
+										</Collapsible.Content>
+									</Sidebar.MenuItem>
+								</Collapsible.Root>
+							{:else}
+								<Sidebar.MenuItem>
+									<Sidebar.MenuButton
+										isActive={page.url.pathname === item.url}
+										tooltipContent={item.title}
+									>
+										{#snippet child({ props })}
+											<a href={item.url} {...props}>
+												<item.icon />
+												<span>{item.title}</span>
+											</a>
+										{/snippet}
+									</Sidebar.MenuButton>
+								</Sidebar.MenuItem>
+							{/if}
 						{/each}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
@@ -103,13 +140,6 @@
 								</div>
 							</div>
 						</DropdownMenu.Label>
-						<DropdownMenu.Separator />
-						<DropdownMenu.Item>
-							<a href="/settings" class="flex w-full items-center gap-2">
-								<Settings />
-								Settings
-							</a>
-						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item>
 							<form action="/?/logout" method="POST" class="w-full">

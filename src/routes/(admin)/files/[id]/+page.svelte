@@ -14,10 +14,15 @@
 
 	let { data }: PageProps = $props();
 
-	const clientName = $derived(
+	const personalName = $derived(
 		[data.client.first_name, data.client.middle_name, data.client.last_name]
 			.filter(Boolean)
 			.join(' ')
+	);
+	const clientName = $derived(
+		data.client.is_individual
+			? personalName || '—'
+			: data.client.company_name?.trim() || personalName || '—'
 	);
 
 	const currentUserId = $derived(data.profile.user_id);
@@ -40,8 +45,8 @@
 	 * Returns only the newest file (highest sequence) per revision chain.
 	 * A file is the newest if no other file's previous_block points to its block_id.
 	 */
-	function getFilesForApplication(applicationNumber: string): FileMetadata[] {
-		const appFiles = data.files.filter((f) => f.application_number === applicationNumber);
+	function getFilesForApplication(applicationId: string): FileMetadata[] {
+		const appFiles = data.files.filter((f) => f.application_id === applicationId);
 
 		// Collect all block_ids that are referenced as previous_block by another file
 		const referencedBlockIds = new SvelteSet<string>();
@@ -65,7 +70,7 @@
 	 * Returns an array ordered from oldest (genesis, seq 0) to newest.
 	 */
 	function buildRevisionChain(file: FileMetadata): FileMetadata[] {
-		const allFiles = data.files.filter((f) => f.application_number === file.application_number);
+		const allFiles = data.files.filter((f) => f.application_id === file.application_id);
 
 		// Build a map: block_id -> FileMetadata
 		const blockIdToFile = new SvelteMap<string, FileMetadata>();
@@ -112,7 +117,7 @@
 
 	function handleAddRevision(file: FileMetadata): void {
 		revisionFile = file;
-		const app = data.applications.find((a) => a.application_number === file.application_number);
+		const app = data.applications.find((a) => a.application_id === file.application_id);
 		revisionTeam = app?.team_assigned ?? null;
 		revisionDialogOpen = true;
 	}
@@ -162,7 +167,9 @@
 			</Button>
 			<div>
 				<h1 class="text-lg font-semibold">{clientName}</h1>
-				<p class="text-sm text-muted-foreground">{data.client.company_name}</p>
+				{#if !data.client.is_individual && data.client.company_name}
+					<p class="text-sm text-muted-foreground">{data.client.company_name}</p>
+				{/if}
 			</div>
 		</div>
 
@@ -175,11 +182,12 @@
 			<p class="py-12 text-center text-muted-foreground">No applications found for this client.</p>
 		{:else}
 			<div class="flex flex-col">
-				{#each data.applications as app (app.application_number)}
+				{#each data.applications as app (app.application_id)}
 					<ApplicationSection
 						{app}
-						files={getFilesForApplication(app.application_number)}
+						files={getFilesForApplication(app.application_id)}
 						{currentUserId}
+						accessibleFileIds={data.accessibleFileIds}
 						onfileclick={handleFileClick}
 						onaddrevision={handleAddRevision}
 						onviewrevisions={handleViewRevisions}
