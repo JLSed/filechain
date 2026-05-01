@@ -73,7 +73,8 @@ export const AUDIT_EVENT_TYPES = [
 	'Created Invoice',
 	'Edited Invoice',
 	'Cancelled Invoice',
-	'Recorded Payment'
+	'Recorded Payment',
+	'Verified Integrity'
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;

@@ -15,6 +15,7 @@
 		Circle
 	} from '@lucide/svelte';
 	import { createBrowserClient } from '$lib/services/supabase/client';
+	import { logAuditEvent } from '$lib/services/audit-log-client';
 	import {
 		createInitialSteps,
 		runIntegrityCheck,
@@ -80,8 +81,30 @@
 			});
 
 			overallPassed = result.overallPassed;
+
+			// Build per-step results for the audit log changes payload
+			const stepResults: Record<string, { old: unknown; new: unknown }> = {};
+			for (const step of result.steps) {
+				stepResults[step.label] = {
+					old: step.status,
+					new: step.detail ?? ''
+				};
+			}
+
+			logAuditEvent({
+				details: `[actor] verified integrity of file "${file.file_name}" — ${result.overallPassed ? 'passed' : 'failed'}`,
+				eventType: 'Verified Integrity',
+				severityLevel: result.overallPassed ? 'notice' : 'warning',
+				changes: stepResults
+			});
 		} catch {
 			overallPassed = false;
+
+			logAuditEvent({
+				details: `[actor] attempted to verify integrity of file "${file.file_name}" — error occurred`,
+				eventType: 'Verified Integrity',
+				severityLevel: 'warning'
+			});
 		} finally {
 			running = false;
 		}
@@ -127,7 +150,7 @@
 </script>
 
 <Dialog.Root {open} onOpenChange={handleOpenChange}>
-	<Dialog.Content class="sm:max-w-md">
+	<Dialog.Content class="overflow-hidden sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
 				{#if overallPassed === true}
@@ -139,14 +162,14 @@
 				{/if}
 				Verify File Integrity
 			</Dialog.Title>
-			<Dialog.Description>
+			<Dialog.Description class="text-wrap">
 				{#if file}
-					Checking integrity of <span class="font-medium">{file.file_name}</span>
+					Checking integrity of <span class="font-medium break-all">{file.file_name}</span>
 				{/if}
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<div class="grid gap-4 py-2">
+		<div class="grid gap-4 overflow-hidden py-2">
 			<!-- Progress bar -->
 			<div class="space-y-2">
 				<Progress value={progress()} max={100} class="h-2" />
@@ -159,7 +182,7 @@
 			</div>
 
 			<!-- Steps checklist -->
-			<div class="space-y-1">
+			<div class="space-y-1 overflow-y-auto">
 				{#each steps as step (step.id)}
 					{@const IconComponent = getStatusIcon(step.status)}
 					<div
@@ -175,9 +198,9 @@
 									: ''}"
 							/>
 						</div>
-						<div class="min-w-0 flex-1">
+						<div class="min-w-0 flex-1 overflow-hidden">
 							<p
-								class="text-sm font-medium {step.status === 'pending'
+								class="truncate text-sm font-medium {step.status === 'pending'
 									? 'text-muted-foreground/50'
 									: 'text-foreground'}"
 							>

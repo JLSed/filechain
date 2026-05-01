@@ -123,17 +123,35 @@
 									</p>
 									<div class="grid grid-cols-[auto_1fr] items-start gap-x-3 gap-y-1.5 text-sm">
 										<span
-											class="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground"
+											class="inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium {data.event_type === 'Verified Integrity'
+												? change.old === 'passed'
+													? 'bg-emerald-500/10 text-emerald-600'
+													: change.old === 'failed'
+														? 'bg-destructive/10 text-destructive'
+														: change.old === 'warning'
+															? 'bg-amber-500/10 text-amber-600'
+															: 'bg-muted text-muted-foreground'
+												: 'bg-muted text-muted-foreground'}"
 										>
-											Old
+											{data.event_type === 'Verified Integrity' ? 'Result' : 'Old'}
 										</span>
-										<span class="font-mono text-sm break-all">
+										<span
+											class="font-mono text-sm break-all {data.event_type === 'Verified Integrity'
+												? change.old === 'passed'
+													? 'text-emerald-600'
+													: change.old === 'failed'
+														? 'text-destructive'
+														: change.old === 'warning'
+															? 'text-amber-600'
+															: ''
+												: ''}"
+										>
 											{String(change.old ?? '—')}
 										</span>
 										<span
 											class="inline-flex items-center rounded-md bg-secondary/20 px-1.5 py-0.5 text-xs font-medium text-secondary"
 										>
-											New
+											{data.event_type === 'Verified Integrity' ? 'Data' : 'New'}
 										</span>
 										<span class="font-mono text-sm break-all text-secondary">
 											{String(change.new ?? '—')}

@@ -116,9 +116,14 @@ export const overviewGroup: Sidebar.Item[] = [
 
 export const analyticsGroup: Sidebar.Item[] = [
 	{
-		title: 'Reports',
+		title: 'Generate Report',
 		url: '/reports',
 		icon: ChartArea
+	},
+	{
+		title: 'Audit Logs',
+		url: '/audit-logs',
+		icon: BookA
 	},
 	{
 		title: 'Invoices',
@@ -158,11 +163,6 @@ export const managementGroups: Sidebar.Item[] = [
 		title: 'User Management',
 		url: '/users',
 		icon: Users
-	},
-	{
-		title: 'Audit Logs',
-		url: '/audit-logs',
-		icon: BookA
 	}
 ];
 
