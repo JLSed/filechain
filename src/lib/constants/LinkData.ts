@@ -11,9 +11,10 @@ import {
 	Receipt,
 	Settings
 } from '@lucide/svelte';
-import type { USER_ROLES } from '$lib/constants/SchemaData';
-
-type UserRole = (typeof USER_ROLES)[number];
+import {
+	canAccessRouteByPermissions,
+	getDefaultRouteForPermissions
+} from '$lib/services/permissions';
 
 export const pageTitles: Record<string, string> = {
 	'/dashboard': 'Dashboard',
@@ -28,7 +29,8 @@ export const pageTitles: Record<string, string> = {
 	'/client': 'Client Profiles',
 	'/users': 'User Management',
 	'/settings': 'Settings',
-	'/settings/company': 'Company Settings'
+	'/settings/company': 'Company Settings',
+	'/settings/permissions': 'Role Permissions'
 };
 
 // ── Route protection ──
@@ -48,56 +50,26 @@ export const protectedRoutes = [
 ];
 export const authRoutes = ['/login', '/register'];
 
-// ── Role-based route access ──
-// Routes each role is allowed to visit (beyond /dashboard and /settings which are always allowed).
-// System Admin has access to everything, so it is not listed here.
-const roleAllowedRoutes: Record<Exclude<UserRole, 'System Admin'>, string[]> = {
-	'User Admin': ['/users'],
-	'Finance Officer': ['/reports', '/invoices'],
-	'Patent Team': ['/application', '/files', '/client'],
-	'UM Team': ['/application', '/files', '/client'],
-	'TM Team': ['/application', '/files', '/client'],
-	'Application Officer': ['/forms'],
-	Auditor: ['/audit-logs']
-};
-
-/** Routes accessible to every authenticated user regardless of role. */
-const universalRoutes = ['/settings'];
-
-/** Routes restricted to System Admin only — checked before universalRoutes. */
-const systemAdminOnlyRoutes = ['/settings/company'];
+// ── Permission-based route access ──
 
 /**
- * Returns true if the given role is authorized to access `pathname`.
- * System Admin can access everything. Other roles may access universal routes
- * plus their specifically allowed routes. Sub-routes (e.g. /application/[id])
- * are permitted if any allowed route is a prefix.
+ * Returns true if the given role + permissions are authorized to access `pathname`.
+ * Delegates to the permission service for database-driven access control.
  */
-export function canAccessRoute(role: string | null, pathname: string): boolean {
-	if (role === 'System Admin') return true;
-
-	// Block non-admins from system-admin-only routes before the universal check
-	if (systemAdminOnlyRoutes.some((r) => pathname === r || pathname.startsWith(`${r}/`))) {
-		return false;
-	}
-
-	if (universalRoutes.some((r) => pathname === r || pathname.startsWith(`${r}/`))) return true;
-
-	const allowed = roleAllowedRoutes[role as Exclude<UserRole, 'System Admin'>];
-	if (!allowed) return false;
-
-	return allowed.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+export function canAccessRoute(
+	role: string | null,
+	pathname: string,
+	permissions: string[] = []
+): boolean {
+	return canAccessRouteByPermissions(role, permissions, pathname);
 }
 
 /**
  * Returns the first route the given role has access to.
  * Used for redirecting users who land on an unauthorized page.
  */
-export function getDefaultRouteForRole(role: string | null): string {
-	if (role === 'System Admin') return '/dashboard';
-
-	const allowed = roleAllowedRoutes[role as Exclude<UserRole, 'System Admin'>];
-	return allowed?.[0] ?? '/settings';
+export function getDefaultRouteForRole(role: string | null, permissions: string[] = []): string {
+	return getDefaultRouteForPermissions(role, permissions);
 }
 
 // ── Sidebar items ──
@@ -116,9 +88,14 @@ export const overviewGroup: Sidebar.Item[] = [
 
 export const analyticsGroup: Sidebar.Item[] = [
 	{
-		title: 'Reports',
+		title: 'Generate Report',
 		url: '/reports',
 		icon: ChartArea
+	},
+	{
+		title: 'Audit Logs',
+		url: '/audit-logs',
+		icon: BookA
 	},
 	{
 		title: 'Invoices',
@@ -158,11 +135,6 @@ export const managementGroups: Sidebar.Item[] = [
 		title: 'User Management',
 		url: '/users',
 		icon: Users
-	},
-	{
-		title: 'Audit Logs',
-		url: '/audit-logs',
-		icon: BookA
 	}
 ];
 
@@ -203,24 +175,35 @@ export const sidebarGroups: Sidebar.Group[] = [
 ];
 
 /**
- * Filters sidebar groups so only items the user's role can access are included.
+ * Filters sidebar groups so only items the user's permissions allow are included.
  * Groups with no remaining items are omitted entirely.
- * For items with children, only children whose routes the role can access are kept.
+ * For items with children, only children whose routes the permissions grant are kept.
  */
-export function getSidebarGroupsForRole(role: string | null): Sidebar.Group[] {
+export function getSidebarGroupsForRole(
+	role: string | null,
+	permissions: string[] = []
+): Sidebar.Group[] {
 	if (role === 'System Admin') return sidebarGroups;
 
 	return sidebarGroups
 		.map((group) => ({
 			...group,
 			items: group.items
-				.filter((item) => canAccessRoute(role, item.url))
 				.map((item) => {
 					if (!item.children) return item;
+					// For items with children, filter children first, then keep the parent
+					// if at least one child is accessible
 					return {
 						...item,
-						children: item.children.filter((child) => canAccessRoute(role, child.url))
+						children: item.children.filter((child) => canAccessRoute(role, child.url, permissions))
 					};
+				})
+				.filter((item) => {
+					if (item.children) {
+						// Keep parent if any child survived the filter
+						return item.children.length > 0;
+					}
+					return canAccessRoute(role, item.url, permissions);
 				})
 		}))
 		.filter((group) => group.items.length > 0);

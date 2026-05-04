@@ -11,6 +11,7 @@
 		files: FileMetadata[];
 		currentUserId: string;
 		accessibleFileIds: string[];
+		canRevision?: boolean;
 		onfileclick: (file: FileMetadata) => void;
 		onaddrevision: (file: FileMetadata) => void;
 		onviewrevisions: (file: FileMetadata) => void;
@@ -22,6 +23,7 @@
 		files,
 		currentUserId,
 		accessibleFileIds,
+		canRevision = true,
 		onfileclick,
 		onaddrevision,
 		onviewrevisions,
@@ -75,6 +77,7 @@
 							{file}
 							{currentUserId}
 							hasAccess={accessibleSet.has(file.file_id)}
+							{canRevision}
 							{onfileclick}
 							{onaddrevision}
 							{onviewrevisions}

@@ -25,6 +25,8 @@
 		currentUserId: string;
 		accessibleFileIds: string[];
 		isEditing: boolean;
+		canUpload?: boolean;
+		canRevision?: boolean;
 		onfileclick: (file: FileMetadata) => void;
 		onaddrevision: (file: FileMetadata) => void;
 		onviewrevisions: (file: FileMetadata) => void;
@@ -37,6 +39,8 @@
 		currentUserId,
 		accessibleFileIds,
 		isEditing,
+		canUpload = true,
+		canRevision = true,
 		onfileclick,
 		onaddrevision,
 		onviewrevisions,
@@ -101,7 +105,7 @@
 		</Table.Cell>
 		<Table.Cell class="w-10 pr-4">
 			<div class="flex items-center gap-1">
-				{#if isEditing}
+				{#if isEditing && canRevision}
 					<button
 						class="rounded-md p-1 text-xs transition-opacity hover:bg-muted"
 						aria-label="Add revision"
@@ -125,6 +129,7 @@
 					<DropdownMenu.Content align="end">
 						<DropdownMenu.Item><Share2 /> Share</DropdownMenu.Item>
 						<DropdownMenu.Item
+							disabled={!canRevision}
 							onclick={(e: MouseEvent) => {
 								e.stopPropagation();
 								onaddrevision(file);
@@ -157,7 +162,13 @@
 		<h3 class="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
 			Application Files
 		</h3>
-		<Button variant="outline" size="sm" class="gap-1.5 text-xs" onclick={onaddfile}>
+		<Button
+			variant="outline"
+			size="sm"
+			class="gap-1.5 text-xs"
+			onclick={onaddfile}
+			disabled={!canUpload}
+		>
 			<Plus class="size-3.5" />
 			Add New File
 		</Button>

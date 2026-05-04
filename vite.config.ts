@@ -4,10 +4,9 @@ import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
 import wasm from 'vite-plugin-wasm';
-import topLevelAwait from 'vite-plugin-top-level-await';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit(), devtoolsJson(), wasm(), topLevelAwait()],
+	plugins: [tailwindcss(), sveltekit(), devtoolsJson(), wasm()],
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

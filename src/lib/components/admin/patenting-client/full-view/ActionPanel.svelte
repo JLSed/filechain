@@ -6,11 +6,12 @@
 	interface Props {
 		isEditing: boolean;
 		saving?: boolean;
+		canEdit?: boolean;
 		ontoggleedit: () => void;
 		onsave: () => void;
 	}
 
-	let { isEditing, saving = false, ontoggleedit, onsave }: Props = $props();
+	let { isEditing, saving = false, canEdit = true, ontoggleedit, onsave }: Props = $props();
 </script>
 
 <aside class="h-fit rounded-lg border bg-background lg:sticky lg:top-6 lg:w-72 lg:shrink-0">
@@ -40,7 +41,13 @@
 				Cancel
 			</Button>
 		{:else}
-			<Button variant="outline" size="sm" class="w-full gap-1.5" onclick={ontoggleedit}>
+			<Button
+				variant="outline"
+				size="sm"
+				class="w-full gap-1.5"
+				onclick={ontoggleedit}
+				disabled={!canEdit}
+			>
 				<Pencil class="size-3.5" />
 				Edit Application
 			</Button>

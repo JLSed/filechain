@@ -8,8 +8,12 @@
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
+	import { hasPermission } from '$lib/services/permissions';
 
 	let { data }: PageProps = $props();
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canEditClient = $derived(hasPermission(permissions, 'clients.edit'));
 
 	const client = $derived(data.client);
 	const personalName = $derived(
@@ -161,6 +165,12 @@
 		</div>
 
 		<!-- Right: Action Panel -->
-		<ClientActionPanel {isEditing} {saving} ontoggleedit={toggleEdit} onsave={handleSave} />
+		<ClientActionPanel
+			{isEditing}
+			{saving}
+			canEdit={canEditClient}
+			ontoggleedit={toggleEdit}
+			onsave={handleSave}
+		/>
 	</div>
 </main>

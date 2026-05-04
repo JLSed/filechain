@@ -11,14 +11,15 @@
 
 	interface ComponentProps {
 		user: UserProfile;
+		permissions: string[];
 	}
 
-	let { user }: ComponentProps = $props();
+	let { user, permissions }: ComponentProps = $props();
 
 	const sidebar = Sidebar.useSidebar();
 
-	const filteredGroups = $derived(getSidebarGroupsForRole(user.role));
-	const defaultRoute = $derived(getDefaultRouteForRole(user.role));
+	const filteredGroups = $derived(getSidebarGroupsForRole(user.role, permissions));
+	const defaultRoute = $derived(getDefaultRouteForRole(user.role, permissions));
 
 	const formattedName = $derived(
 		formatName(user.first_name ?? '', user.middle_name, user.last_name ?? '')

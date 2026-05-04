@@ -122,6 +122,7 @@
 	<EditRoleDialog
 		user={table.selectedUser}
 		currentUserRole={data.profile?.role}
+		availableRoles={data.availableRoles}
 		bind:open={table.editRoleOpen}
 	/>
 	<ArchiveUserDialog user={table.selectedUser} bind:open={table.archiveOpen} />
@@ -137,7 +138,12 @@
 			</div>
 		</div>
 		<div class="flex-1">
-			<AddUserForm {data} onCancel={switchToList} onSuccess={switchToList} />
+			<AddUserForm
+				{data}
+				availableRoles={data.availableRoles}
+				onCancel={switchToList}
+				onSuccess={switchToList}
+			/>
 		</div>
 	</main>
 {/if}

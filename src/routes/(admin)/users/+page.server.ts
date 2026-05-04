@@ -8,6 +8,7 @@ import z from 'zod';
 import { createAdminClient } from '$lib/services/supabase/admin';
 import { insertAuditLog } from '$lib/services/audit-log';
 import { formatName } from '$lib/utils/formatter';
+import { fetchRolePermissions, hasPermission } from '$lib/services/permissions';
 
 // TODO: refresh button on page does not fetch data in database
 
@@ -19,6 +20,7 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 		console.error('Database error:', dbError);
 		return {
 			users: [],
+			availableRoles: [] as string[],
 			error:
 				'We encountered an error while fetching data. The server might be temporarily unavailable. Please refresh the page.',
 			form: await superValidate(zod4(AddUserFormSchema))
@@ -30,21 +32,48 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 		console.error('Validation error:', cleanData.error.flatten());
 		return {
 			users: [],
+			availableRoles: [] as string[],
 			error: 'The data received is invalid or corrupted.',
 			form: await superValidate(zod4(AddUserFormSchema))
 		};
 	}
 
+	// Fetch available roles from database (includes custom roles)
+	const { data: rolesData } = await supabase
+		.schema('api')
+		.from('roles')
+		.select('name')
+		.order('name');
+
+	const availableRoles = (rolesData ?? []).map((r: { name: string }) => r.name);
+
 	return {
 		users: cleanData.data,
+		availableRoles,
 		error: null,
 		form: await superValidate(zod4(AddUserFormSchema))
 	};
 }) satisfies PageServerLoad;
 
 export const actions = {
-	archiveUser: async ({ request, locals: { supabase } }) => {
+	archiveUser: async ({ request, locals: { supabase, safeGetSession } }) => {
 		if (!supabase) throw error(500, 'Unable to connect to the database.');
+
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Unauthorized.' });
+
+		// Permission check
+		const { data: currentProfile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('role')
+			.eq('user_id', session.user.id)
+			.single();
+
+		const perms = await fetchRolePermissions(supabase, currentProfile?.role);
+		if (!hasPermission(perms, 'users.archive')) {
+			return fail(403, { error: 'You do not have permission to archive users.' });
+		}
 
 		const formData = await request.formData();
 		const userId = formData.get('user_id')?.toString();
@@ -86,7 +115,13 @@ export const actions = {
 			.eq('user_id', session.user.id)
 			.single();
 
-		if (currentUserData?.role === 'User Admin') {
+		// Permission check
+		const perms = await fetchRolePermissions(supabase, currentUserData?.role);
+		if (!hasPermission(perms, 'users.edit')) {
+			return fail(403, { error: 'You do not have permission to edit user roles.' });
+		}
+
+		if (currentUserData?.role !== 'System Admin') {
 			const { data: targetUserData } = await supabase
 				.schema('api')
 				.from('user_profiles')

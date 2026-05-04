@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
-	import { USER_ROLES } from '$lib/constants/SchemaData';
 	import Separator from '$lib/shadcn/components/ui/separator/separator.svelte';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
@@ -23,9 +22,10 @@
 		isEditing: boolean;
 		editData: EditData;
 		originalData: EditData;
+		availableRoles: string[];
 	}
 
-	let { data, isEditing, editData = $bindable(), originalData }: Props = $props();
+	let { data, isEditing, editData = $bindable(), originalData, availableRoles }: Props = $props();
 
 	/**
 	 * Parse an existing contact_number string like "+63 912 345 6789" into
@@ -132,7 +132,7 @@
 						}}
 					>
 						<option value="" disabled>Select role…</option>
-						{#each USER_ROLES as role (role)}
+						{#each availableRoles as role (role)}
 							<option value={role}>{role}</option>
 						{/each}
 					</select>

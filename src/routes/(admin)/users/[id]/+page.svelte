@@ -126,7 +126,14 @@
 		<!-- Left: Details -->
 		<div class="min-w-0 flex-1">
 			<div class="rounded-lg border bg-background p-6">
-				<UserDetails bind:this={detailsRef} data={user} {isEditing} bind:editData {originalData} />
+				<UserDetails
+					bind:this={detailsRef}
+					data={user}
+					{isEditing}
+					bind:editData
+					{originalData}
+					availableRoles={data.availableRoles}
+				/>
 			</div>
 		</div>
 

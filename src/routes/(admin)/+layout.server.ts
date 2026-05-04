@@ -2,6 +2,7 @@ import type { LayoutServerLoad } from './$types';
 import { UserProfileSchema } from '$lib/types/DatabaseTypes';
 import { redirect, error } from '@sveltejs/kit';
 import { canAccessRoute, getDefaultRouteForRole } from '$lib/constants/LinkData';
+import { fetchRolePermissions } from '$lib/services/permissions';
 
 export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSession }, url }) => {
 	const { session } = await safeGetSession();
@@ -31,10 +32,13 @@ export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSessio
 		throw error(500, 'Unable to retrieve user profile');
 	}
 
-	// ── Role-based route guard ──
+	// ── Fetch role permissions from database ──
 	const role = user_profile.data.role;
-	if (!canAccessRoute(role, url.pathname)) {
-		throw redirect(303, getDefaultRouteForRole(role));
+	const permissions = await fetchRolePermissions(supabase, role);
+
+	// ── Permission-based route guard ──
+	if (!canAccessRoute(role, url.pathname, permissions)) {
+		throw redirect(303, getDefaultRouteForRole(role, permissions));
 	}
 
 	const { data: secretData, error: secretError } = await supabase
@@ -52,5 +56,5 @@ export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSessio
 
 	const hasMasterPassword = !!secretData;
 
-	return { profile: user_profile.data, hasMasterPassword };
+	return { profile: user_profile.data, hasMasterPassword, permissions };
 };

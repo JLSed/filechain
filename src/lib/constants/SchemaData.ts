@@ -13,13 +13,13 @@ export const USER_ROLES = [
 	'User Admin',
 	'Finance Officer',
 	'Patent Team',
-	'UM Team',
+	'Copyright Team',
 	'TM Team',
 	'Application Officer',
 	'Auditor'
 ] as const;
 
-export const TEAM_ROLES = ['Patent Team', 'UM Team', 'TM Team'] as const;
+export const TEAM_ROLES = ['Patent Team', 'Copyright Team', 'TM Team'] as const;
 
 export const FILE_CATEGORIES = [
 	'Specification',
@@ -73,7 +73,8 @@ export const AUDIT_EVENT_TYPES = [
 	'Created Invoice',
 	'Edited Invoice',
 	'Cancelled Invoice',
-	'Recorded Payment'
+	'Recorded Payment',
+	'Verified Integrity'
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;
@@ -86,3 +87,32 @@ export const NOTIFICATION_TYPES = [
 	'Invoice Created',
 	'Payment Recorded'
 ] as const;
+
+export const PERMISSION_KEYS = [
+	'dashboard.view',
+	'applications.view',
+	'applications.edit',
+	'files.view',
+	'files.upload',
+	'files.download',
+	'files.revision',
+	'clients.view',
+	'clients.edit',
+	'invoices.view',
+	'invoices.create',
+	'invoices.edit',
+	'reports.view',
+	'reports.generate',
+	'users.view',
+	'users.create',
+	'users.edit',
+	'users.archive',
+	'forms.view',
+	'forms.submit',
+	'audit_logs.view',
+	'settings.view',
+	'settings.company',
+	'permissions.manage'
+] as const;
+
+export type PermissionKey = (typeof PERMISSION_KEYS)[number];
