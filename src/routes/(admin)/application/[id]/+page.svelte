@@ -19,8 +19,15 @@
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
 	import { page } from '$app/stores';
+	import { hasPermission } from '$lib/services/permissions';
 
 	let { data }: PageProps = $props();
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canEditApp = $derived(hasPermission(permissions, 'applications.edit'));
+	const canUpload = $derived(hasPermission(permissions, 'files.upload'));
+	const canDownload = $derived(hasPermission(permissions, 'files.download'));
+	const canRevision = $derived(hasPermission(permissions, 'files.revision'));
 
 	const app = $derived(data.application);
 	const clientName = $derived(
@@ -270,7 +277,7 @@
 
 {#if activeFileView}
 	<div class="h-full">
-		<FileViewer fileView={activeFileView} onclose={handleViewerClose} />
+		<FileViewer fileView={activeFileView} {canDownload} onclose={handleViewerClose} />
 	</div>
 {:else}
 	<main class="p-4 lg:p-6">
@@ -316,6 +323,8 @@
 						currentUserId={data.profile.user_id}
 						accessibleFileIds={data.accessibleFileIds}
 						{isEditing}
+						{canUpload}
+						{canRevision}
 						onfileclick={handleFileClick}
 						onaddrevision={handleAddRevision}
 						onviewrevisions={handleViewRevisions}
@@ -326,7 +335,13 @@
 			</div>
 
 			<!-- Right: Action Panel -->
-			<ActionPanel {isEditing} {saving} ontoggleedit={toggleEdit} onsave={handleSave} />
+			<ActionPanel
+				{isEditing}
+				{saving}
+				canEdit={canEditApp}
+				ontoggleedit={toggleEdit}
+				onsave={handleSave}
+			/>
 		</div>
 	</main>
 {/if}

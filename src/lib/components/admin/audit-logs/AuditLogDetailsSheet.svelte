@@ -123,7 +123,8 @@
 									</p>
 									<div class="grid grid-cols-[auto_1fr] items-start gap-x-3 gap-y-1.5 text-sm">
 										<span
-											class="inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium {data.event_type === 'Verified Integrity'
+											class="inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium {data.event_type ===
+											'Verified Integrity'
 												? change.old === 'passed'
 													? 'bg-emerald-500/10 text-emerald-600'
 													: change.old === 'failed'

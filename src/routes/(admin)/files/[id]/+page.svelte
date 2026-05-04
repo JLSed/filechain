@@ -14,6 +14,13 @@
 
 	let { data }: PageProps = $props();
 
+	import { page } from '$app/stores';
+	import { hasPermission } from '$lib/services/permissions';
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canDownload = $derived(hasPermission(permissions, 'files.download'));
+	const canRevision = $derived(hasPermission(permissions, 'files.revision'));
+
 	const personalName = $derived(
 		[data.client.first_name, data.client.middle_name, data.client.last_name]
 			.filter(Boolean)
@@ -157,7 +164,7 @@
 
 {#if activeFileView}
 	<div class="h-full">
-		<FileViewer fileView={activeFileView} onclose={handleViewerClose} />
+		<FileViewer fileView={activeFileView} {canDownload} onclose={handleViewerClose} />
 	</div>
 {:else}
 	<main class="p-4">
@@ -188,6 +195,7 @@
 						files={getFilesForApplication(app.application_id)}
 						{currentUserId}
 						accessibleFileIds={data.accessibleFileIds}
+						{canRevision}
 						onfileclick={handleFileClick}
 						onaddrevision={handleAddRevision}
 						onviewrevisions={handleViewRevisions}

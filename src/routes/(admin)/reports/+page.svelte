@@ -21,7 +21,9 @@
 			? 'monthly-filing-report'
 			: selectedReport === 'client'
 				? 'client-statistics-report'
-				: ''
+				: selectedReport === 'integrity'
+					? 'data-integrity-report'
+					: ''
 	);
 
 	const pdfFilename = $derived(() => {
@@ -30,7 +32,9 @@
 				? 'monthly_filing_report'
 				: selectedReport === 'client'
 					? 'client_statistics_report'
-					: 'report';
+					: selectedReport === 'integrity'
+						? 'data_integrity_security_report'
+						: 'report';
 		return `${base}_${data.periodLabel.replace(/[\s,–]/g, '_')}`;
 	});
 
@@ -115,7 +119,13 @@
 				generatedAt={data.generatedAt}
 			/>
 		{:else if selectedReport === 'integrity'}
-			<DataIntegrityReport />
+			<DataIntegrityReport
+				auditLogs={data.auditLogs}
+				auditTrendData={data.auditTrendData}
+				companySettings={data.companySettings}
+				periodLabel={data.periodLabel}
+				generatedAt={data.generatedAt}
+			/>
 		{/if}
 	{:else}
 		<div

@@ -45,7 +45,9 @@ export const load = (async ({ locals: { supabase }, depends, url }) => {
 		clientsResult,
 		clientFilingsResult,
 		companySettingsResult,
-		inventionTypesResult
+		inventionTypesResult,
+		currentAuditLogsResult,
+		trendAuditLogsResult
 	] = await Promise.all([
 		// 1. Current period applications
 		supabase
@@ -110,7 +112,27 @@ export const load = (async ({ locals: { supabase }, depends, url }) => {
 		supabase.schema('api').from('company_settings').select('*').single(),
 
 		// 9. Invention types
-		supabase.schema('api').from('type_of_invention').select('id, name')
+		supabase.schema('api').from('type_of_invention').select('id, name'),
+
+		// 10. Current period audit logs
+		supabase
+			.schema('api')
+			.from('audit_logs')
+			.select(
+				'log_id, actor_id, details, severity_level, ip_address, timestamp, event_type, user_profiles ( first_name, last_name, role )'
+			)
+			.gte('timestamp', rangeStart)
+			.lte('timestamp', rangeEnd + 'T23:59:59')
+			.order('timestamp', { ascending: false }),
+
+		// 11. 6-month trend audit logs
+		supabase
+			.schema('api')
+			.from('audit_logs')
+			.select('log_id, severity_level, timestamp, event_type')
+			.gte('timestamp', trendStart)
+			.lte('timestamp', rangeEnd + 'T23:59:59')
+			.order('timestamp', { ascending: true })
 	]);
 
 	// Compute 6-month trend data
@@ -137,6 +159,22 @@ export const load = (async ({ locals: { supabase }, depends, url }) => {
 					year: 'numeric'
 				});
 
+	// Compute 6-month audit log trend data
+	const auditTrendData: { month: string; count: number }[] = [];
+	for (let i = 5; i >= 0; i--) {
+		const m = new Date(Date.UTC(selectedYear, selectedMonth - i, 1));
+		const monthLabel = m.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+		const mStart = m.toISOString().split('T')[0];
+		const mEnd = new Date(Date.UTC(m.getFullYear(), m.getMonth() + 1, 0))
+			.toISOString()
+			.split('T')[0];
+		const count = (trendAuditLogsResult.data ?? []).filter((log) => {
+			const logDate = log.timestamp?.split('T')[0];
+			return logDate && logDate >= mStart && logDate <= mEnd;
+		}).length;
+		auditTrendData.push({ month: monthLabel, count });
+	}
+
 	return {
 		currentApplications: currentAppsResult.data ?? [],
 		prevApplications: prevAppsResult.data ?? [],
@@ -152,6 +190,8 @@ export const load = (async ({ locals: { supabase }, depends, url }) => {
 			tin: ''
 		},
 		inventionTypes: inventionTypesResult.data ?? [],
+		auditLogs: currentAuditLogsResult.data ?? [],
+		auditTrendData,
 		periodLabel,
 		selectedMonth,
 		selectedYear,

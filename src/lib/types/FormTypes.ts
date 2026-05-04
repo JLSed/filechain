@@ -1,4 +1,4 @@
-import { FILE_CATEGORIES, TEAM_ROLES, USER_ROLES } from '$lib/constants/SchemaData';
+import { FILE_CATEGORIES, TEAM_ROLES } from '$lib/constants/SchemaData';
 import * as z from 'zod';
 
 export const AddUserFormSchema = z.object({
@@ -8,7 +8,7 @@ export const AddUserFormSchema = z.object({
 	email: z.email({ message: 'Please enter a valid email address' }),
 	contact_number: z.string().optional().default(''),
 	address: z.string().optional().default(''),
-	role: z.enum(USER_ROLES, { message: 'Please select a role' })
+	role: z.string().min(1, { message: 'Please select a role' })
 });
 
 export type AddUserFormData = z.infer<typeof AddUserFormSchema>;

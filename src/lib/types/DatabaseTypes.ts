@@ -293,3 +293,36 @@ export const CompanySettingsSchema = z.object({
 });
 
 export type CompanySettings = z.infer<typeof CompanySettingsSchema>;
+
+// ── RBAC Schemas ──
+
+export const PermissionSchema = z.object({
+	permission_id: z.uuid(),
+	key: z.string(),
+	label: z.string(),
+	description: z.string().nullable(),
+	category: z.string(),
+	sort_order: z.number()
+});
+
+export type Permission = z.infer<typeof PermissionSchema>;
+
+export const RoleSchema = z.object({
+	role_id: z.uuid(),
+	name: z.string(),
+	description: z.string().nullable(),
+	is_system: z.boolean(),
+	created_at: z.string(),
+	updated_at: z.string()
+});
+
+export type Role = z.infer<typeof RoleSchema>;
+
+export const RolePermissionSchema = z.object({
+	role: z.string(),
+	permission_id: z.uuid(),
+	granted_at: z.string(),
+	granted_by: z.uuid().nullable()
+});
+
+export type RolePermission = z.infer<typeof RolePermissionSchema>;

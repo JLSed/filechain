@@ -6,10 +6,11 @@
 
 	interface Props {
 		fileView: DecryptedFileView;
+		canDownload?: boolean;
 		onclose: () => void;
 	}
 
-	let { fileView, onclose }: Props = $props();
+	let { fileView, canDownload = true, onclose }: Props = $props();
 
 	function handleDownload(): void {
 		const blob = new Blob([fileView.data.buffer as ArrayBuffer], { type: fileView.mimeType });
@@ -40,7 +41,7 @@
 			</h2>
 		</div>
 		<div class="flex shrink-0 items-center gap-2">
-			<Button variant="default" size="sm" onclick={handleDownload}>
+			<Button variant="default" size="sm" onclick={handleDownload} disabled={!canDownload}>
 				<Download class="size-4" />
 				Download
 			</Button>
@@ -86,7 +87,7 @@
 				<p class="mb-6 max-w-sm text-sm text-muted-foreground">
 					This file type cannot be previewed in the browser. You can download it instead.
 				</p>
-				<Button onclick={handleDownload}>
+				<Button onclick={handleDownload} disabled={!canDownload}>
 					<Download class="size-5" />
 					Download File
 				</Button>

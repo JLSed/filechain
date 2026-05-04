@@ -2,17 +2,17 @@
 	import * as Dialog from '$lib/shadcn/components/ui/dialog/index.js';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
-	import { USER_ROLES } from '$lib/constants/SchemaData';
 	import { enhance } from '$app/forms';
 	import { invalidate } from '$app/navigation';
 
 	interface ComponentProps {
 		user: UserProfile | null;
 		currentUserRole?: string | null;
+		availableRoles: string[];
 		open: boolean;
 	}
 
-	let { user, currentUserRole, open = $bindable(false) }: ComponentProps = $props();
+	let { user, currentUserRole, availableRoles, open = $bindable(false) }: ComponentProps = $props();
 	let selectedRole = $state('');
 	let submitting = $state(false);
 	let errorMessage = $state<string | null>(null);
@@ -55,7 +55,7 @@
 				<input type="hidden" name="role" value={selectedRole} />
 
 				<div class="grid gap-2 py-4">
-					{#each USER_ROLES as role (role)}
+					{#each availableRoles as role (role)}
 						{#if !(currentUserRole === 'User Admin' && role === 'System Admin')}
 							<label
 								class="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors hover:bg-muted

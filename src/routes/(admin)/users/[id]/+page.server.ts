@@ -28,8 +28,18 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 		throw error(500, 'Invalid user data received.');
 	}
 
+	// Fetch available roles
+	const { data: rolesData } = await supabase
+		.schema('api')
+		.from('roles')
+		.select('name')
+		.order('name');
+
+	const availableRoles = (rolesData ?? []).map((r: { name: string }) => r.name);
+
 	return {
-		user: parsed.data
+		user: parsed.data,
+		availableRoles
 	};
 }) satisfies PageServerLoad;
 

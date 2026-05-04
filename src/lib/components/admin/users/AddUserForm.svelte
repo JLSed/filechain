@@ -2,7 +2,6 @@
 	import { superForm, type SuperValidated } from 'sveltekit-superforms';
 	import { zod4 } from 'sveltekit-superforms/adapters';
 	import { AddUserFormSchema, type AddUserFormData } from '$lib/types/FormTypes';
-	import { USER_ROLES } from '$lib/constants/SchemaData';
 	import { untrack } from 'svelte';
 	import { invalidate } from '$app/navigation';
 
@@ -12,11 +11,12 @@
 
 	interface ComponentProps {
 		data: { form: SuperValidated<AddUserFormData> };
+		availableRoles: string[];
 		onCancel: () => void;
 		onSuccess: () => void;
 	}
 
-	let { data, onCancel, onSuccess }: ComponentProps = $props();
+	let { data, availableRoles, onCancel, onSuccess }: ComponentProps = $props();
 
 	const { form, errors, enhance, submitting, message } = superForm(
 		untrack(() => data.form),
@@ -179,7 +179,7 @@
 			</div>
 
 			<div class="grid gap-2">
-				{#each USER_ROLES as role (role)}
+				{#each availableRoles as role (role)}
 					<label
 						class="flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 transition-colors hover:bg-muted
 							{$form.role === role ? 'border-primary bg-primary/5' : 'border-border'}"

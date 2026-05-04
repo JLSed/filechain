@@ -22,6 +22,7 @@
 		file: FileMetadata;
 		currentUserId: string;
 		hasAccess?: boolean;
+		canRevision?: boolean;
 		onfileclick: (file: FileMetadata) => void;
 		onaddrevision: (file: FileMetadata) => void;
 		onviewrevisions: (file: FileMetadata) => void;
@@ -32,6 +33,7 @@
 		file,
 		currentUserId,
 		hasAccess = true,
+		canRevision = true,
 		onfileclick,
 		onaddrevision,
 		onviewrevisions,
@@ -100,6 +102,7 @@
 				<DropdownMenu.Content align="end">
 					<DropdownMenu.Item><Share2 /> Share</DropdownMenu.Item>
 					<DropdownMenu.Item
+						disabled={!canRevision}
 						onclick={(e: MouseEvent) => {
 							e.stopPropagation();
 							onaddrevision(file);

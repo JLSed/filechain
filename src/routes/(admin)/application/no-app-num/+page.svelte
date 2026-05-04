@@ -9,7 +9,12 @@
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import ApplicationSheet from '$lib/components/admin/patenting-client/ApplicationSheet.svelte';
 	import { untrack } from 'svelte';
+	import { page } from '$app/stores';
+	import { hasPermission } from '$lib/services/permissions';
 	let { data }: PageProps = $props();
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canEditApp = $derived(hasPermission(permissions, 'applications.edit'));
 
 	const table = new ApplicationTableState(untrack(() => data.applications));
 </script>
@@ -81,7 +86,7 @@
 					</Table.Row>
 				{:else}
 					{#each table.paginatedRows as row (row.application_id)}
-						<ApplicationTableRow app={row} openDetails={table.openDetails} />
+						<ApplicationTableRow app={row} canEdit={canEditApp} openDetails={table.openDetails} />
 					{/each}
 				{/if}
 			</Table.Body>

@@ -8,10 +8,11 @@
 
 	interface PageProps {
 		app: IpApplication;
+		canEdit?: boolean;
 		openDetails: (app: IpApplication) => void;
 	}
 
-	let { app, openDetails }: PageProps = $props();
+	let { app, canEdit = true, openDetails }: PageProps = $props();
 </script>
 
 <DropdownMenu.Root>
@@ -37,7 +38,9 @@
 		<DropdownMenu.Item onclick={() => goto(`/application/${app.application_id}`)}
 			><FolderOpen /> View Application</DropdownMenu.Item
 		>
-		<DropdownMenu.Item onclick={() => goto(`/application/${app.application_id}?edit=true`)}
+		<DropdownMenu.Item
+			disabled={!canEdit}
+			onclick={() => goto(`/application/${app.application_id}?edit=true`)}
 			><Edit /> Edit Application</DropdownMenu.Item
 		>
 		<DropdownMenu.Separator />

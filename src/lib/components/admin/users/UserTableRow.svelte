@@ -65,7 +65,7 @@
 		>
 			<Shield /> Edit Role
 		</DropdownMenu.Item>
-		<DropdownMenu.Item disabled>
+		<DropdownMenu.Item onclick={() => goto('/settings/permissions')}>
 			<KeyRound /> Edit Access
 		</DropdownMenu.Item>
 		<DropdownMenu.Separator />
