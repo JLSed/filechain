@@ -12,9 +12,11 @@
 		openDetails: (user: UserProfile) => void;
 		openEditRole: (user: UserProfile) => void;
 		openArchive: (user: UserProfile) => void;
+		canEditUser?: boolean;
+		canArchiveUser?: boolean;
 	}
 
-	let { user, currentUserRole, openDetails, openEditRole, openArchive }: ComponentProps = $props();
+	let { user, currentUserRole, openDetails, openEditRole, openArchive, canEditUser = true, canArchiveUser = true }: ComponentProps = $props();
 
 	function formatName(profile: UserProfile): string {
 		const parts = [profile.first_name, profile.last_name].filter(Boolean);
@@ -61,7 +63,7 @@
 		</DropdownMenu.Item>
 		<DropdownMenu.Item
 			onclick={() => openEditRole(user)}
-			disabled={user.role === 'System Admin' && currentUserRole === 'User Admin'}
+			disabled={!canEditUser || (user.role === 'System Admin' && currentUserRole === 'User Admin')}
 		>
 			<Shield /> Edit Role
 		</DropdownMenu.Item>
@@ -69,7 +71,7 @@
 			<KeyRound /> Edit Access
 		</DropdownMenu.Item>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item variant="destructive" onclick={() => openArchive(user)}>
+		<DropdownMenu.Item variant="destructive" onclick={() => openArchive(user)} disabled={!canArchiveUser}>
 			<Archive /> Archive User
 		</DropdownMenu.Item>
 	</DropdownMenu.Content>

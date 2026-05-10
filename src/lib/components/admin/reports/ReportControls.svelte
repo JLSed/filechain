@@ -11,6 +11,7 @@
 		dateTo: string;
 		onGenerate: (params: { month: number; year: number; dateFrom: string; dateTo: string }) => void;
 		isGenerating?: boolean;
+		disabled?: boolean;
 	}
 
 	const props: ReportControlsProps = $props();
@@ -23,6 +24,7 @@
 
 	const onGenerate = $derived(props.onGenerate);
 	const isGenerating = $derived(props.isGenerating ?? false);
+	const isDisabled = $derived(props.disabled ?? false);
 
 	const months = [
 		'January',
@@ -109,7 +111,7 @@
 			</div>
 		{/if}
 
-		<Button size="sm" class="gap-2" onclick={handleGenerate} disabled={isGenerating}>
+		<Button size="sm" class="gap-2" onclick={handleGenerate} disabled={isGenerating || isDisabled}>
 			<Play class="size-3.5!" />
 			Generate Report
 		</Button>

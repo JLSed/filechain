@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { page } from '$app/stores';
 	import { invalidate, goto } from '$app/navigation';
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
@@ -11,8 +12,12 @@
 	import * as Card from '$lib/shadcn/components/ui/card/index';
 	import * as Dialog from '$lib/shadcn/components/ui/dialog/index';
 	import { PAYMENT_METHODS, EWT_RATES } from '$lib/constants/SchemaData';
+	import { hasPermission } from '$lib/services/permissions';
 
 	let { data }: PageProps = $props();
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canEditInvoice = $derived(hasPermission(permissions, 'invoices.edit'));
 	let actionLoading = $state(false);
 
 	// Payment dialog state
@@ -185,7 +190,7 @@
 						size="sm"
 						class="gap-2"
 						onclick={handleSendInvoice}
-						disabled={actionLoading}
+						disabled={actionLoading || !canEditInvoice}
 					>
 						<Send class="size-4!" />
 						Mark as Sent
@@ -200,7 +205,7 @@
 							paymentAmount = balance > 0 ? balance : 0;
 							paymentDialogOpen = true;
 						}}
-						disabled={actionLoading}
+						disabled={actionLoading || !canEditInvoice}
 					>
 						<BanknoteArrowDown class="size-4!" />
 						Record Payment
@@ -211,7 +216,7 @@
 					size="sm"
 					class="gap-2 text-destructive hover:text-destructive"
 					onclick={handleCancelInvoice}
-					disabled={actionLoading}
+					disabled={actionLoading || !canEditInvoice}
 				>
 					<XCircle class="size-4!" />
 					Cancel

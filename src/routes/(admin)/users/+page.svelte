@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { UserTableState } from '$lib/classes/TableClass.svelte';
 	import type { PageProps } from './$types';
+	import { page } from '$app/stores';
 	import * as Table from '$lib/shadcn/components/ui/table/index.js';
 	import UserTableRow from '$lib/components/admin/users/UserTableRow.svelte';
 	import UserDetailsSheet from '$lib/components/admin/users/UserDetailsSheet.svelte';
@@ -12,8 +13,14 @@
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { AlertCircle, RefreshCcw, Search, UserPlus, ArrowLeft } from '@lucide/svelte';
 	import { untrack } from 'svelte';
+	import { hasPermission } from '$lib/services/permissions';
 
 	let { data }: PageProps = $props();
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canCreateUser = $derived(hasPermission(permissions, 'users.create'));
+	const canEditUser = $derived(hasPermission(permissions, 'users.edit'));
+	const canArchiveUser = $derived(hasPermission(permissions, 'users.archive'));
 
 	const table = new UserTableState(untrack(() => data.users));
 
@@ -57,7 +64,7 @@
 				/>
 			</div>
 			<div class="flex-1"></div>
-			<Button class="gap-2" onclick={switchToForm}>
+			<Button class="gap-2" onclick={switchToForm} disabled={!canCreateUser}>
 				<UserPlus class="size-4" />
 				Add User
 			</Button>
@@ -109,6 +116,8 @@
 								openDetails={table.openDetails}
 								openEditRole={table.openEditRole}
 								openArchive={table.openArchive}
+								{canEditUser}
+								{canArchiveUser}
 							/>
 						{/each}
 					{/if}

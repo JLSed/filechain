@@ -1,13 +1,18 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { page } from '$app/stores';
 	import { invalidate, goto } from '$app/navigation';
 	import { RefreshCw, Plus, Receipt, TrendingUp, Send, AlertTriangle } from '@lucide/svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
 	import * as Card from '$lib/shadcn/components/ui/card/index';
+	import { hasPermission } from '$lib/services/permissions';
 
 	let { data }: PageProps = $props();
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canCreateInvoice = $derived(hasPermission(permissions, 'invoices.create'));
 	let isRefreshing = $state(false);
 	let searchQuery = $state('');
 	let statusFilter = $state('all');
@@ -83,7 +88,7 @@
 				<RefreshCw class="size-4! {isRefreshing ? 'animate-spin' : ''}" />
 				{isRefreshing ? 'Refreshing...' : 'Refresh'}
 			</Button>
-			<Button size="sm" class="gap-2" onclick={() => goto('/invoices/new')}>
+			<Button size="sm" class="gap-2" onclick={() => goto('/invoices/new')} disabled={!canCreateInvoice}>
 				<Plus class="size-4!" />
 				New Invoice
 			</Button>
