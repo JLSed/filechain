@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { PermissionKey } from '$lib/constants/SchemaData';
+import { PERMISSION_KEYS, type PermissionKey } from '$lib/constants/SchemaData';
 
 // ──────────────────────────────────────────────────────────
 // Permission ↔ Route mapping
@@ -53,7 +53,7 @@ export async function fetchRolePermissions(
 
 	// System Admin bypasses — return all known keys
 	if (role === 'System Admin') {
-		return Object.keys(PERMISSION_ROUTE_MAP);
+		return [...PERMISSION_KEYS];
 	}
 
 	// Step 1: get permission_ids for this role

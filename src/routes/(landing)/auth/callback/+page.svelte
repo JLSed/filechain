@@ -55,16 +55,22 @@
 
 					await logLoginEvent();
 
-					// Redirect to setup page for password + master key setup
+					// Redirect based on the auth type
 					if (type === 'invite') {
 						goto('/setup', { replaceState: true });
+					} else if (type === 'recovery') {
+						goto('/reset-password', { replaceState: true });
 					} else {
 						goto('/dashboard', { replaceState: true });
 					}
 				});
 		} else {
-			// Check if there's a code in query params (PKCE flow fallback)
-			const code = new URLSearchParams(window.location.search).get('code');
+			// PKCE flow should be handled by +server.ts,
+			// but keep this as a client-side fallback
+			const searchParams = new URLSearchParams(window.location.search);
+			const code = searchParams.get('code');
+			const queryType = searchParams.get('type');
+			console.log(code, queryType, searchParams);
 			if (code) {
 				supabase.auth.exchangeCodeForSession(code).then(async ({ error: codeError }) => {
 					if (codeError) {
@@ -73,7 +79,14 @@
 						return;
 					}
 					await logLoginEvent();
-					goto('/setup', { replaceState: true });
+
+					if (queryType === 'recovery') {
+						goto('/reset-password', { replaceState: true });
+					} else if (queryType === 'invite') {
+						goto('/setup', { replaceState: true });
+					} else {
+						goto('/dashboard', { replaceState: true });
+					}
 				});
 			} else {
 				error = 'No authentication tokens found. Please check your invite link.';

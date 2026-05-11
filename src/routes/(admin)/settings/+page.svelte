@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import ChangePasswordForm from '$lib/components/admin/settings/ChangePasswordForm.svelte';
+	import GenerateRecoveryKeyCard from '$lib/components/admin/settings/GenerateRecoveryKeyCard.svelte';
 
 	let { data }: PageProps = $props();
 </script>
@@ -14,4 +15,6 @@
 	</div>
 
 	<ChangePasswordForm {data} />
+
+	<GenerateRecoveryKeyCard hasRecoveryKey={data.hasRecoveryKey} userSecret={data.userSecret} />
 </div>

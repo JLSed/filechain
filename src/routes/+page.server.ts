@@ -28,7 +28,10 @@ export const actions: Actions = {
 			encrypted_private_key: form.data.encrypted_private_key,
 			public_key: form.data.public_key,
 			pk_salt: form.data.pk_salt,
-			pk_nonce: form.data.pk_nonce
+			pk_nonce: form.data.pk_nonce,
+			recovery_encrypted_private_key: form.data.recovery_encrypted_private_key || null,
+			recovery_salt: form.data.recovery_salt || null,
+			recovery_nonce: form.data.recovery_nonce || null
 		});
 
 		if (insertError) {

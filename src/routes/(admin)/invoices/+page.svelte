@@ -88,7 +88,12 @@
 				<RefreshCw class="size-4! {isRefreshing ? 'animate-spin' : ''}" />
 				{isRefreshing ? 'Refreshing...' : 'Refresh'}
 			</Button>
-			<Button size="sm" class="gap-2" onclick={() => goto('/invoices/new')} disabled={!canCreateInvoice}>
+			<Button
+				size="sm"
+				class="gap-2"
+				onclick={() => goto('/invoices/new')}
+				disabled={!canCreateInvoice}
+			>
 				<Plus class="size-4!" />
 				New Invoice
 			</Button>

@@ -7,6 +7,7 @@
 	import UserDetailsSheet from '$lib/components/admin/users/UserDetailsSheet.svelte';
 	import EditRoleDialog from '$lib/components/admin/users/EditRoleDialog.svelte';
 	import ArchiveUserDialog from '$lib/components/admin/users/ArchiveUserDialog.svelte';
+	import ResetPasswordDialog from '$lib/components/admin/users/ResetPasswordDialog.svelte';
 	import AddUserForm from '$lib/components/admin/users/AddUserForm.svelte';
 	import Pagination from '$lib/components/global/Pagination.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
@@ -21,6 +22,7 @@
 	const canCreateUser = $derived(hasPermission(permissions, 'users.create'));
 	const canEditUser = $derived(hasPermission(permissions, 'users.edit'));
 	const canArchiveUser = $derived(hasPermission(permissions, 'users.archive'));
+	const canResetPassword = $derived(hasPermission(permissions, 'users.reset_password'));
 
 	const table = new UserTableState(untrack(() => data.users));
 
@@ -116,8 +118,10 @@
 								openDetails={table.openDetails}
 								openEditRole={table.openEditRole}
 								openArchive={table.openArchive}
+								openResetPassword={table.openResetPassword}
 								{canEditUser}
 								{canArchiveUser}
+								{canResetPassword}
 							/>
 						{/each}
 					{/if}
@@ -135,6 +139,7 @@
 		bind:open={table.editRoleOpen}
 	/>
 	<ArchiveUserDialog user={table.selectedUser} bind:open={table.archiveOpen} />
+	<ResetPasswordDialog user={table.selectedUser} bind:open={table.resetPasswordOpen} />
 {:else}
 	<main class="flex h-full flex-col">
 		<div class="flex items-center gap-3 border-b border-border p-4">

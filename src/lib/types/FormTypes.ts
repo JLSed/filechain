@@ -18,7 +18,10 @@ export const SetupAccountFormSchema = z.object({
 	encrypted_private_key: z.string({ message: 'Missing encrypted private key' }).min(1),
 	public_key: z.string({ message: 'Missing public key' }).min(1),
 	pk_salt: z.string({ message: 'Missing salt' }).min(1),
-	pk_nonce: z.string({ message: 'Missing nonce' }).min(1)
+	pk_nonce: z.string({ message: 'Missing nonce' }).min(1),
+	recovery_encrypted_private_key: z.string().optional(),
+	recovery_salt: z.string().optional(),
+	recovery_nonce: z.string().optional()
 });
 
 export type SetupAccountFormData = z.infer<typeof SetupAccountFormSchema>;
@@ -117,7 +120,10 @@ export const SetupMasterPasswordSchema = z.object({
 	encrypted_private_key: z.string({ message: 'Missing encrypted private key' }).min(1),
 	public_key: z.string({ message: 'Missing public key' }).min(1),
 	pk_salt: z.string({ message: 'Missing salt' }).min(1),
-	pk_nonce: z.string({ message: 'Missing nonce' }).min(1)
+	pk_nonce: z.string({ message: 'Missing nonce' }).min(1),
+	recovery_encrypted_private_key: z.string().optional(),
+	recovery_salt: z.string().optional(),
+	recovery_nonce: z.string().optional()
 });
 
 export type SetupMasterPasswordData = z.infer<typeof SetupMasterPasswordSchema>;
@@ -131,3 +137,43 @@ export const ChangePasswordSchema = z.object({
 });
 
 export type ChangePasswordData = z.infer<typeof ChangePasswordSchema>;
+
+export const ForgotPasswordSchema = z.object({
+	email: z.email({ message: 'Please enter a valid email address' })
+});
+
+export type ForgotPasswordData = z.infer<typeof ForgotPasswordSchema>;
+
+export const ResetPasswordSchema = z.object({
+	new_password: z.string().min(7, { message: 'Password must be at least 7 characters' }),
+	encrypted_private_key: z.string({ message: 'Missing encrypted private key' }).min(1),
+	public_key: z.string({ message: 'Missing public key' }).min(1),
+	pk_salt: z.string({ message: 'Missing salt' }).min(1),
+	pk_nonce: z.string({ message: 'Missing nonce' }).min(1),
+	recovery_encrypted_private_key: z.string().optional(),
+	recovery_salt: z.string().optional(),
+	recovery_nonce: z.string().optional()
+});
+
+export type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
+
+export const RecoverWithKeySchema = z.object({
+	recovery_key: z.string().min(1, { message: 'Recovery key is required' }),
+	new_password: z.string().min(7, { message: 'Password must be at least 7 characters' }),
+	encrypted_private_key: z.string({ message: 'Missing encrypted private key' }).min(1),
+	pk_salt: z.string({ message: 'Missing salt' }).min(1),
+	pk_nonce: z.string({ message: 'Missing nonce' }).min(1),
+	recovery_encrypted_private_key: z.string({ message: 'Missing recovery encrypted key' }).min(1),
+	recovery_salt: z.string({ message: 'Missing recovery salt' }).min(1),
+	recovery_nonce: z.string({ message: 'Missing recovery nonce' }).min(1)
+});
+
+export type RecoverWithKeyData = z.infer<typeof RecoverWithKeySchema>;
+
+export const GenerateRecoveryKeySchema = z.object({
+	recovery_encrypted_private_key: z.string({ message: 'Missing recovery encrypted key' }).min(1),
+	recovery_salt: z.string({ message: 'Missing recovery salt' }).min(1),
+	recovery_nonce: z.string({ message: 'Missing recovery nonce' }).min(1)
+});
+
+export type GenerateRecoveryKeyData = z.infer<typeof GenerateRecoveryKeySchema>;

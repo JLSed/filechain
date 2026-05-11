@@ -74,7 +74,8 @@ export const AUDIT_EVENT_TYPES = [
 	'Edited Invoice',
 	'Cancelled Invoice',
 	'Recorded Payment',
-	'Verified Integrity'
+	'Verified Integrity',
+	'Password Reset'
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;
@@ -107,6 +108,7 @@ export const PERMISSION_KEYS = [
 	'users.create',
 	'users.edit',
 	'users.archive',
+	'users.reset_password',
 	'forms.view',
 	'forms.submit',
 	'audit_logs.view',
