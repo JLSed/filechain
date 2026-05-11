@@ -458,6 +458,277 @@ export class EncryptedMasterKey {
 }
 if (Symbol.dispose) EncryptedMasterKey.prototype[Symbol.dispose] = EncryptedMasterKey.prototype.free;
 
+export class EncryptedMasterKeyWithRecovery {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(EncryptedMasterKeyWithRecovery.prototype);
+        obj.__wbg_ptr = ptr;
+        EncryptedMasterKeyWithRecoveryFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        EncryptedMasterKeyWithRecoveryFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_encryptedmasterkeywithrecovery_free(ptr, 0);
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get encrypted_private_key() {
+        const ret = wasm.encryptedmasterkeywithrecovery_encrypted_private_key(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {string}
+     */
+    get encrypted_private_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encryptedmasterkeywithrecovery_encrypted_private_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get nonce() {
+        const ret = wasm.encryptedmasterkeywithrecovery_nonce(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {string}
+     */
+    get nonce_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encryptedmasterkeywithrecovery_nonce_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    get public_key() {
+        const ret = wasm.encryptedmasterkeywithrecovery_public_key(this.__wbg_ptr);
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {string}
+     */
+    get public_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encryptedmasterkeywithrecovery_public_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_encrypted_private_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encryptedmasterkeywithrecovery_recovery_encrypted_private_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encryptedmasterkeywithrecovery_recovery_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_nonce_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encryptedmasterkeywithrecovery_recovery_nonce_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_salt() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encryptedmasterkeywithrecovery_recovery_salt(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get salt() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.encryptedmasterkeywithrecovery_salt(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+}
+if (Symbol.dispose) EncryptedMasterKeyWithRecovery.prototype[Symbol.dispose] = EncryptedMasterKeyWithRecovery.prototype.free;
+
+export class GeneratedRecoveryKey {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(GeneratedRecoveryKey.prototype);
+        obj.__wbg_ptr = ptr;
+        GeneratedRecoveryKeyFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        GeneratedRecoveryKeyFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_generatedrecoverykey_free(ptr, 0);
+    }
+    /**
+     * @returns {string}
+     */
+    get error_message() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.generatedrecoverykey_error_message(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_encrypted_private_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.generatedrecoverykey_recovery_encrypted_private_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.generatedrecoverykey_recovery_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_nonce_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.generatedrecoverykey_recovery_nonce_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_salt() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.generatedrecoverykey_recovery_salt(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {boolean}
+     */
+    get success() {
+        const ret = wasm.generatedrecoverykey_success(this.__wbg_ptr);
+        return ret !== 0;
+    }
+}
+if (Symbol.dispose) GeneratedRecoveryKey.prototype[Symbol.dispose] = GeneratedRecoveryKey.prototype.free;
+
 export class ReEncryptedPrivateKey {
     static __wrap(ptr) {
         ptr = ptr >>> 0;
@@ -563,6 +834,154 @@ export class ReEncryptedPrivateKey {
     }
 }
 if (Symbol.dispose) ReEncryptedPrivateKey.prototype[Symbol.dispose] = ReEncryptedPrivateKey.prototype.free;
+
+export class RecoveredPrivateKey {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(RecoveredPrivateKey.prototype);
+        obj.__wbg_ptr = ptr;
+        RecoveredPrivateKeyFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        RecoveredPrivateKeyFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_recoveredprivatekey_free(ptr, 0);
+    }
+    /**
+     * @returns {string}
+     */
+    get encrypted_private_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.recoveredprivatekey_encrypted_private_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get error_message() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.recoveredprivatekey_error_message(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get new_recovery_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.recoveredprivatekey_new_recovery_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get nonce_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.recoveredprivatekey_nonce_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_encrypted_private_key_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.recoveredprivatekey_recovery_encrypted_private_key_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_nonce_hex() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.recoveredprivatekey_recovery_nonce_hex(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get recovery_salt() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.recoveredprivatekey_recovery_salt(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {string}
+     */
+    get salt() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.recoveredprivatekey_salt(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
+    }
+    /**
+     * @returns {boolean}
+     */
+    get success() {
+        const ret = wasm.recoveredprivatekey_success(this.__wbg_ptr);
+        return ret !== 0;
+    }
+}
+if (Symbol.dispose) RecoveredPrivateKey.prototype[Symbol.dispose] = RecoveredPrivateKey.prototype.free;
 
 /**
  * Decrypts file data using hybrid decryption (X25519 + AES-256-GCM)
@@ -679,6 +1098,20 @@ export function encrypt_master_key(input) {
 }
 
 /**
+ * Encrypts a master key using AES-256-GCM with both a password-derived KEK
+ * and a randomly generated recovery key. The recovery key is returned once
+ * and must be saved by the user offline.
+ * @param {string} input
+ * @returns {EncryptedMasterKeyWithRecovery}
+ */
+export function encrypt_master_key_with_recovery(input) {
+    const ptr0 = passStringToWasm0(input, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.encrypt_master_key_with_recovery(ptr0, len0);
+    return EncryptedMasterKeyWithRecovery.__wrap(ret);
+}
+
+/**
  * Generates a SHA-256 block signature for a file ledger entry.
  *
  * # Arguments
@@ -722,6 +1155,28 @@ export function generate_nonce_hex() {
     }
 }
 
+/**
+ * Generates a recovery key for an existing user who already has a password-encrypted private key.
+ * Requires the current password to decrypt the private key first.
+ * @param {string} password
+ * @param {string} salt
+ * @param {Uint8Array} encrypted_key
+ * @param {Uint8Array} nonce_bytes
+ * @returns {GeneratedRecoveryKey}
+ */
+export function generate_recovery_key_for_existing(password, salt, encrypted_key, nonce_bytes) {
+    const ptr0 = passStringToWasm0(password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(salt, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArray8ToWasm0(encrypted_key, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ptr3 = passArray8ToWasm0(nonce_bytes, wasm.__wbindgen_malloc);
+    const len3 = WASM_VECTOR_LEN;
+    const ret = wasm.generate_recovery_key_for_existing(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3);
+    return GeneratedRecoveryKey.__wrap(ret);
+}
+
 export function greet() {
     wasm.greet();
 }
@@ -749,6 +1204,24 @@ export function master_key_bytes_to_hex(input, salt) {
 }
 
 /**
+ * Re-encrypts a file's DEK for a new recipient.
+ *
+ * Flow:
+ * 1. Decrypt the sharer's private key using their password
+ * 2. ECDH(sharer_private_key, file_ephemeral_public_key) → shared secret
+ * 3. Decrypt the DEK using the shared secret
+ * 4. Generate a new ephemeral key pair
+ * 5. ECDH(new_ephemeral_private, target_public_key) → new shared secret
+ * 6. Encrypt the DEK with the new shared secret
+ * @param {any} input_js
+ * @returns {any}
+ */
+export function re_encrypt_dek_for_recipient(input_js) {
+    const ret = wasm.re_encrypt_dek_for_recipient(input_js);
+    return ret;
+}
+
+/**
  * @param {string} old_password
  * @param {string} old_salt
  * @param {Uint8Array} encrypted_key
@@ -769,6 +1242,32 @@ export function re_encrypt_private_key(old_password, old_salt, encrypted_key, ol
     const len4 = WASM_VECTOR_LEN;
     const ret = wasm.re_encrypt_private_key(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
     return ReEncryptedPrivateKey.__wrap(ret);
+}
+
+/**
+ * Recovers a private key using a recovery key, then re-encrypts it with a new password.
+ * Also generates a fresh recovery key and re-encrypts the private key with it.
+ * This is the core function for the "forgot password with recovery key" flow.
+ * @param {string} recovery_key
+ * @param {string} recovery_salt_str
+ * @param {Uint8Array} recovery_encrypted_key
+ * @param {Uint8Array} recovery_nonce_bytes
+ * @param {string} new_password
+ * @returns {RecoveredPrivateKey}
+ */
+export function recover_and_reencrypt_private_key(recovery_key, recovery_salt_str, recovery_encrypted_key, recovery_nonce_bytes, new_password) {
+    const ptr0 = passStringToWasm0(recovery_key, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(recovery_salt_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ptr2 = passArray8ToWasm0(recovery_encrypted_key, wasm.__wbindgen_malloc);
+    const len2 = WASM_VECTOR_LEN;
+    const ptr3 = passArray8ToWasm0(recovery_nonce_bytes, wasm.__wbindgen_malloc);
+    const len3 = WASM_VECTOR_LEN;
+    const ptr4 = passStringToWasm0(new_password, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len4 = WASM_VECTOR_LEN;
+    const ret = wasm.recover_and_reencrypt_private_key(ptr0, len0, ptr1, len1, ptr2, len2, ptr3, len3, ptr4, len4);
+    return RecoveredPrivateKey.__wrap(ret);
 }
 
 function __wbg_get_imports() {
@@ -1050,9 +1549,18 @@ const EncryptedFileResultFinalization = (typeof FinalizationRegistry === 'undefi
 const EncryptedMasterKeyFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_encryptedmasterkey_free(ptr >>> 0, 1));
+const EncryptedMasterKeyWithRecoveryFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_encryptedmasterkeywithrecovery_free(ptr >>> 0, 1));
+const GeneratedRecoveryKeyFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_generatedrecoverykey_free(ptr >>> 0, 1));
 const ReEncryptedPrivateKeyFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_reencryptedprivatekey_free(ptr >>> 0, 1));
+const RecoveredPrivateKeyFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_recoveredprivatekey_free(ptr >>> 0, 1));
 
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();

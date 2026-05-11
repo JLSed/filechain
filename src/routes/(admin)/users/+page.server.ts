@@ -56,6 +56,117 @@ export const load = (async ({ locals: { supabase }, depends }) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
+	resetUserPassword: async ({
+		request,
+		url,
+		locals: { supabase, safeGetSession },
+		getClientAddress
+	}) => {
+		if (!supabase) throw error(500, 'Unable to connect to the database.');
+
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Unauthorized.' });
+
+		// Permission check
+		const { data: currentProfile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('role, first_name, middle_name, last_name')
+			.eq('user_id', session.user.id)
+			.single();
+
+		const perms = await fetchRolePermissions(supabase, currentProfile?.role);
+		if (!hasPermission(perms, 'users.reset_password')) {
+			return fail(403, { error: 'You do not have permission to reset user passwords.' });
+		}
+
+		const formData = await request.formData();
+		const userId = formData.get('user_id')?.toString();
+		if (!userId) return fail(400, { error: 'User ID is required.' });
+
+		// Get target user's email for the reset link
+		const admin = createAdminClient();
+
+		const {
+			data: { user: targetUser },
+			error: getUserError
+		} = await admin.auth.admin.getUserById(userId);
+
+		if (getUserError || !targetUser?.email) {
+			console.error('Failed to get user for password reset:', getUserError);
+			return fail(500, { error: 'Failed to find user account.' });
+		}
+
+		// Send password reset email using the SSR supabase client (PKCE flow)
+		// The admin client uses the implicit flow (hash fragments) which the
+		// server-side /auth/confirm endpoint cannot read.
+		const redirectTo = `${url.origin}/auth/confirm?type=recovery`;
+		const { error: resetError } = await supabase.auth.resetPasswordForEmail(targetUser.email, {
+			redirectTo
+		});
+
+		if (resetError) {
+			console.error('Failed to send reset email:', resetError);
+			return fail(500, { error: `Failed to send reset email: ${resetError.message}` });
+		}
+
+		// Delete encryption keys using admin client (bypasses RLS)
+		const { error: dekDeleteError } = await admin
+			.schema('api')
+			.from('file_dek')
+			.delete()
+			.eq('owner_id', userId);
+		if (dekDeleteError) {
+			console.error('Failed to delete file DEKs:', dekDeleteError);
+		}
+
+		const { error: secretDeleteError } = await admin
+			.schema('api')
+			.from('user_secrets')
+			.delete()
+			.eq('user_id', userId);
+		if (secretDeleteError) {
+			console.error('Failed to delete user secret:', secretDeleteError);
+		}
+
+		// Get target user name for audit log
+		const { data: targetProfile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('first_name, middle_name, last_name')
+			.eq('user_id', userId)
+			.single();
+
+		const actorName = currentProfile
+			? formatName(
+					currentProfile.first_name ?? '',
+					currentProfile.middle_name,
+					currentProfile.last_name ?? ''
+				)
+			: (session.user.email ?? 'Unknown');
+
+		const targetName = targetProfile
+			? formatName(
+					targetProfile.first_name ?? '',
+					targetProfile.middle_name,
+					targetProfile.last_name ?? ''
+				)
+			: targetUser.email;
+
+		let ipAddress = getClientAddress();
+		if (ipAddress === '::1') ipAddress = '127.0.0.1';
+
+		await insertAuditLog(supabase, {
+			actorId: session.user.id,
+			details: `${actorName} reset password and encryption keys for ${targetName}`,
+			severityLevel: 'warning',
+			ipAddress,
+			eventType: 'Password Reset'
+		});
+
+		return { success: true };
+	},
+
 	archiveUser: async ({ request, locals: { supabase, safeGetSession } }) => {
 		if (!supabase) throw error(500, 'Unable to connect to the database.');
 

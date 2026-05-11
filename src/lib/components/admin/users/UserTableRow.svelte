@@ -2,7 +2,7 @@
 	import * as Table from '$lib/shadcn/components/ui/table/index.js';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import type { UserProfile } from '$lib/types/DatabaseTypes';
-	import { Archive, Eye, Shield, KeyRound, ExternalLink } from '@lucide/svelte';
+	import { Archive, Eye, Shield, KeyRound, ExternalLink, RotateCcw } from '@lucide/svelte';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import { goto } from '$app/navigation';
 
@@ -12,9 +12,23 @@
 		openDetails: (user: UserProfile) => void;
 		openEditRole: (user: UserProfile) => void;
 		openArchive: (user: UserProfile) => void;
+		openResetPassword?: (user: UserProfile) => void;
+		canEditUser?: boolean;
+		canArchiveUser?: boolean;
+		canResetPassword?: boolean;
 	}
 
-	let { user, currentUserRole, openDetails, openEditRole, openArchive }: ComponentProps = $props();
+	let {
+		user,
+		currentUserRole,
+		openDetails,
+		openEditRole,
+		openArchive,
+		openResetPassword,
+		canEditUser = true,
+		canArchiveUser = true,
+		canResetPassword = false
+	}: ComponentProps = $props();
 
 	function formatName(profile: UserProfile): string {
 		const parts = [profile.first_name, profile.last_name].filter(Boolean);
@@ -61,15 +75,24 @@
 		</DropdownMenu.Item>
 		<DropdownMenu.Item
 			onclick={() => openEditRole(user)}
-			disabled={user.role === 'System Admin' && currentUserRole === 'User Admin'}
+			disabled={!canEditUser || (user.role === 'System Admin' && currentUserRole === 'User Admin')}
 		>
 			<Shield /> Edit Role
 		</DropdownMenu.Item>
 		<DropdownMenu.Item onclick={() => goto('/settings/permissions')}>
 			<KeyRound /> Edit Access
 		</DropdownMenu.Item>
+		{#if canResetPassword && openResetPassword}
+			<DropdownMenu.Item onclick={() => openResetPassword(user)} class="text-amber-600">
+				<RotateCcw /> Reset Password
+			</DropdownMenu.Item>
+		{/if}
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item variant="destructive" onclick={() => openArchive(user)}>
+		<DropdownMenu.Item
+			variant="destructive"
+			onclick={() => openArchive(user)}
+			disabled={!canArchiveUser}
+		>
 			<Archive /> Archive User
 		</DropdownMenu.Item>
 	</DropdownMenu.Content>

@@ -1,15 +1,22 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+	import { page } from '$app/stores';
 	import UserDetails from '$lib/components/admin/users/full-view/UserDetails.svelte';
 	import UserActionPanel from '$lib/components/admin/users/full-view/UserActionPanel.svelte';
+	import ArchiveUserDialog from '$lib/components/admin/users/ArchiveUserDialog.svelte';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { ArrowLeft } from '@lucide/svelte';
 	import { invalidate } from '$app/navigation';
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
+	import { hasPermission } from '$lib/services/permissions';
 
 	let { data }: PageProps = $props();
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canEditUser = $derived(hasPermission(permissions, 'users.edit'));
+	const canArchiveUser = $derived(hasPermission(permissions, 'users.archive'));
 
 	const user = $derived(data.user);
 	const displayName = $derived([user.first_name, user.last_name].filter(Boolean).join(' ') || '—');
@@ -17,6 +24,9 @@
 	// Edit state
 	let isEditing = $state(false);
 	let saving = $state(false);
+
+	// Archive state
+	let archiveOpen = $state(false);
 
 	/** Build a fresh editData snapshot from the current user. */
 	function buildEditData() {
@@ -44,6 +54,10 @@
 			originalData = buildEditData();
 		}
 		isEditing = !isEditing;
+	}
+
+	function openArchive(): void {
+		archiveOpen = true;
 	}
 
 	async function handleSave(): Promise<void> {
@@ -138,6 +152,16 @@
 		</div>
 
 		<!-- Right: Action Panel -->
-		<UserActionPanel {isEditing} {saving} ontoggleedit={toggleEdit} onsave={handleSave} />
+		<UserActionPanel
+			{isEditing}
+			{saving}
+			canEdit={canEditUser}
+			canArchive={canArchiveUser}
+			ontoggleedit={toggleEdit}
+			onsave={handleSave}
+			onarchive={openArchive}
+		/>
 	</div>
 </main>
+
+<ArchiveUserDialog user={data.user} bind:open={archiveOpen} />

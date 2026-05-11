@@ -1,16 +1,27 @@
 <script lang="ts">
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import Separator from '$lib/shadcn/components/ui/separator/separator.svelte';
-	import { Pencil, X, Save, Loader2 } from '@lucide/svelte';
+	import { Pencil, X, Save, Loader2, Archive } from '@lucide/svelte';
 
 	interface Props {
 		isEditing: boolean;
 		saving?: boolean;
+		canEdit?: boolean;
+		canArchive?: boolean;
 		ontoggleedit: () => void;
 		onsave: () => void;
+		onarchive?: () => void;
 	}
 
-	let { isEditing, saving = false, ontoggleedit, onsave }: Props = $props();
+	let {
+		isEditing,
+		saving = false,
+		canEdit = true,
+		canArchive = true,
+		ontoggleedit,
+		onsave,
+		onarchive
+	}: Props = $props();
 </script>
 
 <aside class="h-fit rounded-lg border bg-background lg:sticky lg:top-6 lg:w-72 lg:shrink-0">
@@ -40,10 +51,28 @@
 				Cancel
 			</Button>
 		{:else}
-			<Button variant="outline" size="sm" class="w-full gap-1.5" onclick={ontoggleedit}>
+			<Button
+				variant="outline"
+				size="sm"
+				class="w-full gap-1.5"
+				onclick={ontoggleedit}
+				disabled={!canEdit}
+			>
 				<Pencil class="size-3.5" />
 				Edit User
 			</Button>
+			{#if onarchive}
+				<Button
+					variant="outline"
+					size="sm"
+					class="w-full gap-1.5 text-destructive hover:text-destructive"
+					onclick={onarchive}
+					disabled={!canArchive}
+				>
+					<Archive class="size-3.5" />
+					Archive User
+				</Button>
+			{/if}
 		{/if}
 	</div>
 </aside>

@@ -72,6 +72,35 @@ export class EncryptedMasterKey {
     readonly salt: string;
 }
 
+export class EncryptedMasterKeyWithRecovery {
+    private constructor();
+    free(): void;
+    [Symbol.dispose](): void;
+    readonly encrypted_private_key: Uint8Array;
+    readonly encrypted_private_key_hex: string;
+    readonly nonce: Uint8Array;
+    readonly nonce_hex: string;
+    readonly public_key: Uint8Array;
+    readonly public_key_hex: string;
+    readonly recovery_encrypted_private_key_hex: string;
+    readonly recovery_key_hex: string;
+    readonly recovery_nonce_hex: string;
+    readonly recovery_salt: string;
+    readonly salt: string;
+}
+
+export class GeneratedRecoveryKey {
+    private constructor();
+    free(): void;
+    [Symbol.dispose](): void;
+    readonly error_message: string;
+    readonly recovery_encrypted_private_key_hex: string;
+    readonly recovery_key_hex: string;
+    readonly recovery_nonce_hex: string;
+    readonly recovery_salt: string;
+    readonly success: boolean;
+}
+
 export class ReEncryptedPrivateKey {
     private constructor();
     free(): void;
@@ -81,6 +110,21 @@ export class ReEncryptedPrivateKey {
     readonly error_message: string;
     readonly nonce: Uint8Array;
     readonly nonce_hex: string;
+    readonly salt: string;
+    readonly success: boolean;
+}
+
+export class RecoveredPrivateKey {
+    private constructor();
+    free(): void;
+    [Symbol.dispose](): void;
+    readonly encrypted_private_key_hex: string;
+    readonly error_message: string;
+    readonly new_recovery_key_hex: string;
+    readonly nonce_hex: string;
+    readonly recovery_encrypted_private_key_hex: string;
+    readonly recovery_nonce_hex: string;
+    readonly recovery_salt: string;
     readonly salt: string;
     readonly success: boolean;
 }
@@ -152,6 +196,13 @@ export function encrypt_file_multi(file_data: Uint8Array, recipients_js: any): a
 export function encrypt_master_key(input: string): EncryptedMasterKey;
 
 /**
+ * Encrypts a master key using AES-256-GCM with both a password-derived KEK
+ * and a randomly generated recovery key. The recovery key is returned once
+ * and must be saved by the user offline.
+ */
+export function encrypt_master_key_with_recovery(input: string): EncryptedMasterKeyWithRecovery;
+
+/**
  * Generates a SHA-256 block signature for a file ledger entry.
  *
  * # Arguments
@@ -167,16 +218,76 @@ export function generate_block_signature(uploader_id: string, timestamp_ms: numb
 
 export function generate_nonce_hex(): string;
 
+/**
+ * Generates a recovery key for an existing user who already has a password-encrypted private key.
+ * Requires the current password to decrypt the private key first.
+ */
+export function generate_recovery_key_for_existing(password: string, salt: string, encrypted_key: Uint8Array, nonce_bytes: Uint8Array): GeneratedRecoveryKey;
+
 export function greet(): void;
 
 export function master_key_bytes_to_hex(input: string, salt: string): string;
 
+/**
+ * Re-encrypts a file's DEK for a new recipient.
+ *
+ * Flow:
+ * 1. Decrypt the sharer's private key using their password
+ * 2. ECDH(sharer_private_key, file_ephemeral_public_key) → shared secret
+ * 3. Decrypt the DEK using the shared secret
+ * 4. Generate a new ephemeral key pair
+ * 5. ECDH(new_ephemeral_private, target_public_key) → new shared secret
+ * 6. Encrypt the DEK with the new shared secret
+ */
+export function re_encrypt_dek_for_recipient(input_js: any): any;
+
 export function re_encrypt_private_key(old_password: string, old_salt: string, encrypted_key: Uint8Array, old_nonce: Uint8Array, new_password: string): ReEncryptedPrivateKey;
+
+/**
+ * Recovers a private key using a recovery key, then re-encrypts it with a new password.
+ * Also generates a fresh recovery key and re-encrypts the private key with it.
+ * This is the core function for the "forgot password with recovery key" flow.
+ */
+export function recover_and_reencrypt_private_key(recovery_key: string, recovery_salt_str: string, recovery_encrypted_key: Uint8Array, recovery_nonce_bytes: Uint8Array, new_password: string): RecoveredPrivateKey;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
+    readonly __wbg_decryptedprivatekey_free: (a: number, b: number) => void;
+    readonly __wbg_generatedrecoverykey_free: (a: number, b: number) => void;
+    readonly __wbg_recoveredprivatekey_free: (a: number, b: number) => void;
+    readonly __wbg_reencryptedprivatekey_free: (a: number, b: number) => void;
+    readonly decrypt_private_key: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+    readonly decryptedprivatekey_error_message: (a: number) => [number, number];
+    readonly decryptedprivatekey_private_key: (a: number) => [number, number];
+    readonly decryptedprivatekey_private_key_hex: (a: number) => [number, number];
+    readonly decryptedprivatekey_success: (a: number) => number;
+    readonly generate_recovery_key_for_existing: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+    readonly generatedrecoverykey_error_message: (a: number) => [number, number];
+    readonly generatedrecoverykey_recovery_encrypted_private_key_hex: (a: number) => [number, number];
+    readonly generatedrecoverykey_recovery_key_hex: (a: number) => [number, number];
+    readonly generatedrecoverykey_recovery_nonce_hex: (a: number) => [number, number];
+    readonly generatedrecoverykey_recovery_salt: (a: number) => [number, number];
+    readonly generatedrecoverykey_success: (a: number) => number;
+    readonly re_encrypt_private_key: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => number;
+    readonly recover_and_reencrypt_private_key: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => number;
+    readonly recoveredprivatekey_encrypted_private_key_hex: (a: number) => [number, number];
+    readonly recoveredprivatekey_error_message: (a: number) => [number, number];
+    readonly recoveredprivatekey_new_recovery_key_hex: (a: number) => [number, number];
+    readonly recoveredprivatekey_nonce_hex: (a: number) => [number, number];
+    readonly recoveredprivatekey_recovery_encrypted_private_key_hex: (a: number) => [number, number];
+    readonly recoveredprivatekey_recovery_nonce_hex: (a: number) => [number, number];
+    readonly recoveredprivatekey_recovery_salt: (a: number) => [number, number];
+    readonly recoveredprivatekey_salt: (a: number) => [number, number];
+    readonly recoveredprivatekey_success: (a: number) => number;
+    readonly reencryptedprivatekey_encrypted_private_key: (a: number) => [number, number];
+    readonly reencryptedprivatekey_encrypted_private_key_hex: (a: number) => [number, number];
+    readonly reencryptedprivatekey_error_message: (a: number) => [number, number];
+    readonly reencryptedprivatekey_nonce: (a: number) => [number, number];
+    readonly reencryptedprivatekey_nonce_hex: (a: number) => [number, number];
+    readonly reencryptedprivatekey_salt: (a: number) => [number, number];
+    readonly reencryptedprivatekey_success: (a: number) => number;
     readonly __wbg_encryptedfileresult_free: (a: number, b: number) => void;
     readonly encrypt_file: (a: number, b: number, c: number, d: number) => number;
     readonly encrypt_file_multi: (a: number, b: number, c: any) => any;
@@ -190,21 +301,32 @@ export interface InitOutput {
     readonly encryptedfileresult_file_nonce_hex: (a: number) => [number, number];
     readonly encryptedfileresult_original_hash_hex: (a: number) => [number, number];
     readonly encryptedfileresult_success: (a: number) => number;
-    readonly __wbg_decryptedprivatekey_free: (a: number, b: number) => void;
-    readonly __wbg_reencryptedprivatekey_free: (a: number, b: number) => void;
-    readonly decrypt_private_key: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-    readonly decryptedprivatekey_error_message: (a: number) => [number, number];
-    readonly decryptedprivatekey_private_key: (a: number) => [number, number];
-    readonly decryptedprivatekey_private_key_hex: (a: number) => [number, number];
-    readonly decryptedprivatekey_success: (a: number) => number;
-    readonly re_encrypt_private_key: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => number;
-    readonly reencryptedprivatekey_encrypted_private_key: (a: number) => [number, number];
-    readonly reencryptedprivatekey_encrypted_private_key_hex: (a: number) => [number, number];
-    readonly reencryptedprivatekey_error_message: (a: number) => [number, number];
-    readonly reencryptedprivatekey_nonce: (a: number) => [number, number];
-    readonly reencryptedprivatekey_nonce_hex: (a: number) => [number, number];
-    readonly reencryptedprivatekey_salt: (a: number) => [number, number];
-    readonly reencryptedprivatekey_success: (a: number) => number;
+    readonly re_encrypt_dek_for_recipient: (a: any) => any;
+    readonly generate_nonce_hex: () => [number, number];
+    readonly master_key_bytes_to_hex: (a: number, b: number, c: number, d: number) => [number, number];
+    readonly greet: () => void;
+    readonly __wbg_encryptedmasterkey_free: (a: number, b: number) => void;
+    readonly __wbg_encryptedmasterkeywithrecovery_free: (a: number, b: number) => void;
+    readonly encrypt_master_key: (a: number, b: number) => number;
+    readonly encrypt_master_key_with_recovery: (a: number, b: number) => number;
+    readonly encryptedmasterkey_encrypted_private_key: (a: number) => [number, number];
+    readonly encryptedmasterkey_encrypted_private_key_hex: (a: number) => [number, number];
+    readonly encryptedmasterkey_nonce: (a: number) => [number, number];
+    readonly encryptedmasterkey_nonce_hex: (a: number) => [number, number];
+    readonly encryptedmasterkey_public_key: (a: number) => [number, number];
+    readonly encryptedmasterkey_public_key_hex: (a: number) => [number, number];
+    readonly encryptedmasterkey_salt: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_encrypted_private_key: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_encrypted_private_key_hex: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_nonce: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_nonce_hex: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_public_key: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_public_key_hex: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_recovery_encrypted_private_key_hex: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_recovery_key_hex: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_recovery_nonce_hex: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_recovery_salt: (a: number) => [number, number];
+    readonly encryptedmasterkeywithrecovery_salt: (a: number) => [number, number];
     readonly __wbg_decryptedfileresult_free: (a: number, b: number) => void;
     readonly decrypt_file: (a: any) => number;
     readonly decryptedfileresult_decrypted_data: (a: number) => [number, number];
@@ -216,18 +338,6 @@ export interface InitOutput {
     readonly blocksignatureresult_signature_hex: (a: number) => [number, number];
     readonly blocksignatureresult_success: (a: number) => number;
     readonly generate_block_signature: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
-    readonly generate_nonce_hex: () => [number, number];
-    readonly master_key_bytes_to_hex: (a: number, b: number, c: number, d: number) => [number, number];
-    readonly greet: () => void;
-    readonly __wbg_encryptedmasterkey_free: (a: number, b: number) => void;
-    readonly encrypt_master_key: (a: number, b: number) => number;
-    readonly encryptedmasterkey_encrypted_private_key: (a: number) => [number, number];
-    readonly encryptedmasterkey_encrypted_private_key_hex: (a: number) => [number, number];
-    readonly encryptedmasterkey_nonce: (a: number) => [number, number];
-    readonly encryptedmasterkey_nonce_hex: (a: number) => [number, number];
-    readonly encryptedmasterkey_public_key: (a: number) => [number, number];
-    readonly encryptedmasterkey_public_key_hex: (a: number) => [number, number];
-    readonly encryptedmasterkey_salt: (a: number) => [number, number];
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_exn_store: (a: number) => void;

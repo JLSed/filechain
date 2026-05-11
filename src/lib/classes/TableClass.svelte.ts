@@ -102,6 +102,7 @@ export class UserTableState extends TableState<UserProfile> {
 	sheetOpen = $state(false);
 	editRoleOpen = $state(false);
 	archiveOpen = $state(false);
+	resetPasswordOpen = $state(false);
 	selectedUser: UserProfile | null = $state(null);
 
 	openDetails = (user: UserProfile) => {
@@ -117,6 +118,11 @@ export class UserTableState extends TableState<UserProfile> {
 	openArchive = (user: UserProfile) => {
 		this.selectedUser = user;
 		this.archiveOpen = true;
+	};
+
+	openResetPassword = (user: UserProfile) => {
+		this.selectedUser = user;
+		this.resetPasswordOpen = true;
 	};
 
 	constructor(rows: UserProfile[]) {

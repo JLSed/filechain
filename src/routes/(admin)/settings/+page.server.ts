@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from './$types';
-import { ChangePasswordSchema } from '$lib/types/FormTypes';
+import { ChangePasswordSchema, GenerateRecoveryKeySchema } from '$lib/types/FormTypes';
 import { superValidate, message } from 'sveltekit-superforms';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { fail, redirect, error } from '@sveltejs/kit';
@@ -15,7 +15,9 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
 	const { data: userSecret, error: secretError } = await supabase
 		.schema('api')
 		.from('user_secrets')
-		.select('encrypted_private_key, pk_salt, pk_nonce')
+		.select(
+			'encrypted_private_key, pk_salt, pk_nonce, recovery_encrypted_private_key, recovery_salt, recovery_nonce'
+		)
 		.eq('user_id', session.user.id)
 		.maybeSingle();
 
@@ -24,9 +26,12 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
 		throw error(500, 'Unable to load account security settings.');
 	}
 
+	const hasRecoveryKey = !!userSecret?.recovery_encrypted_private_key;
+
 	return {
 		form: await superValidate(zod(ChangePasswordSchema)),
-		userSecret
+		userSecret,
+		hasRecoveryKey
 	};
 }) satisfies PageServerLoad;
 
@@ -122,5 +127,39 @@ export const actions = {
 		}
 
 		redirect(303, '/login');
+	},
+
+	generateRecoveryKey: async ({ request, locals: { supabase, safeGetSession } }) => {
+		const form = await superValidate(request, zod(GenerateRecoveryKeySchema));
+		if (!form.valid) {
+			return fail(400, { form, recoveryResult: { success: false, error: 'Invalid form data.' } });
+		}
+
+		const { session } = await safeGetSession();
+		if (!session) {
+			return fail(401, { recoveryResult: { success: false, error: 'Session expired.' } });
+		}
+
+		const { error: updateError } = await supabase
+			.schema('api')
+			.from('user_secrets')
+			.update({
+				recovery_encrypted_private_key: form.data.recovery_encrypted_private_key,
+				recovery_salt: form.data.recovery_salt,
+				recovery_nonce: form.data.recovery_nonce
+			})
+			.eq('user_id', session.user.id);
+
+		if (updateError) {
+			console.error('Failed to save recovery key:', updateError);
+			return fail(500, {
+				recoveryResult: {
+					success: false,
+					error: `Failed to save recovery key: ${updateError.message}`
+				}
+			});
+		}
+
+		return { recoveryResult: { success: true } };
 	}
 } satisfies Actions;

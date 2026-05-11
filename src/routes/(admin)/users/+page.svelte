@@ -1,19 +1,28 @@
 <script lang="ts">
 	import { UserTableState } from '$lib/classes/TableClass.svelte';
 	import type { PageProps } from './$types';
+	import { page } from '$app/stores';
 	import * as Table from '$lib/shadcn/components/ui/table/index.js';
 	import UserTableRow from '$lib/components/admin/users/UserTableRow.svelte';
 	import UserDetailsSheet from '$lib/components/admin/users/UserDetailsSheet.svelte';
 	import EditRoleDialog from '$lib/components/admin/users/EditRoleDialog.svelte';
 	import ArchiveUserDialog from '$lib/components/admin/users/ArchiveUserDialog.svelte';
+	import ResetPasswordDialog from '$lib/components/admin/users/ResetPasswordDialog.svelte';
 	import AddUserForm from '$lib/components/admin/users/AddUserForm.svelte';
 	import Pagination from '$lib/components/global/Pagination.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { AlertCircle, RefreshCcw, Search, UserPlus, ArrowLeft } from '@lucide/svelte';
 	import { untrack } from 'svelte';
+	import { hasPermission } from '$lib/services/permissions';
 
 	let { data }: PageProps = $props();
+
+	const permissions = $derived($page.data.permissions as string[]);
+	const canCreateUser = $derived(hasPermission(permissions, 'users.create'));
+	const canEditUser = $derived(hasPermission(permissions, 'users.edit'));
+	const canArchiveUser = $derived(hasPermission(permissions, 'users.archive'));
+	const canResetPassword = $derived(hasPermission(permissions, 'users.reset_password'));
 
 	const table = new UserTableState(untrack(() => data.users));
 
@@ -57,7 +66,7 @@
 				/>
 			</div>
 			<div class="flex-1"></div>
-			<Button class="gap-2" onclick={switchToForm}>
+			<Button class="gap-2" onclick={switchToForm} disabled={!canCreateUser}>
 				<UserPlus class="size-4" />
 				Add User
 			</Button>
@@ -109,6 +118,10 @@
 								openDetails={table.openDetails}
 								openEditRole={table.openEditRole}
 								openArchive={table.openArchive}
+								openResetPassword={table.openResetPassword}
+								{canEditUser}
+								{canArchiveUser}
+								{canResetPassword}
 							/>
 						{/each}
 					{/if}
@@ -126,6 +139,7 @@
 		bind:open={table.editRoleOpen}
 	/>
 	<ArchiveUserDialog user={table.selectedUser} bind:open={table.archiveOpen} />
+	<ResetPasswordDialog user={table.selectedUser} bind:open={table.resetPasswordOpen} />
 {:else}
 	<main class="flex h-full flex-col">
 		<div class="flex items-center gap-3 border-b border-border p-4">

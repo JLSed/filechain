@@ -414,3 +414,158 @@ pub fn encrypt_file_multi(
 
     serde_wasm_bindgen::to_value(&result).unwrap()
 }
+
+// --- DEK re-encryption for file re-sharing ---
+
+/// Input for re-encrypting a single file's DEK for a new recipient.
+/// Passed from JavaScript via serde.
+#[derive(Deserialize)]
+pub struct ReShareDekInput {
+    /// The sharer's master password
+    pub password: String,
+    /// The sharer's salt for key derivation
+    pub pk_salt: String,
+    /// The sharer's encrypted private key (hex)
+    pub encrypted_private_key: Vec<u8>,
+    /// The sharer's pk_nonce (bytes)
+    pub pk_nonce: Vec<u8>,
+    /// The file's encrypted DEK (bytes)
+    pub encrypted_dek: Vec<u8>,
+    /// The file's DEK nonce (bytes)
+    pub dek_nonce: Vec<u8>,
+    /// The file's ephemeral public key used when the DEK was encrypted for the sharer (bytes)
+    pub ephemeral_public_key: Vec<u8>,
+    /// The target recipient's public key (bytes)
+    pub target_public_key: Vec<u8>,
+}
+
+/// Result of re-encrypting a DEK for a new recipient
+#[derive(Serialize)]
+pub struct ReShareDekResult {
+    pub success: bool,
+    pub encrypted_dek_hex: String,
+    pub dek_nonce_hex: String,
+    pub ephemeral_public_key_hex: String,
+    pub error_message: String,
+}
+
+/// Re-encrypts a file's DEK for a new recipient.
+///
+/// Flow:
+/// 1. Decrypt the sharer's private key using their password
+/// 2. ECDH(sharer_private_key, file_ephemeral_public_key) → shared secret
+/// 3. Decrypt the DEK using the shared secret
+/// 4. Generate a new ephemeral key pair
+/// 5. ECDH(new_ephemeral_private, target_public_key) → new shared secret
+/// 6. Encrypt the DEK with the new shared secret
+#[wasm_bindgen]
+pub fn re_encrypt_dek_for_recipient(input_js: JsValue) -> JsValue {
+    log("[re_encrypt_dek] Starting DEK re-encryption for new recipient...");
+
+    let input: ReShareDekInput = match serde_wasm_bindgen::from_value(input_js) {
+        Ok(i) => i,
+        Err(e) => {
+            let result = ReShareDekResult {
+                success: false,
+                encrypted_dek_hex: String::new(),
+                dek_nonce_hex: String::new(),
+                ephemeral_public_key_hex: String::new(),
+                error_message: format!("Failed to parse input: {}", e),
+            };
+            return serde_wasm_bindgen::to_value(&result).unwrap();
+        }
+    };
+
+    let err_result = |msg: String| -> JsValue {
+        let result = ReShareDekResult {
+            success: false,
+            encrypted_dek_hex: String::new(),
+            dek_nonce_hex: String::new(),
+            ephemeral_public_key_hex: String::new(),
+            error_message: msg,
+        };
+        serde_wasm_bindgen::to_value(&result).unwrap()
+    };
+
+    // Step 1: Decrypt sharer's private key
+    let key_result = crate::masterkey_decryptor::decrypt_private_key(
+        &input.password,
+        &input.pk_salt,
+        &input.encrypted_private_key,
+        &input.pk_nonce,
+    );
+
+    if !key_result.success() {
+        return err_result(format!("Failed to decrypt private key: {}", key_result.error_message()));
+    }
+
+    let private_key_bytes = key_result.private_key();
+    if private_key_bytes.len() != 32 {
+        return err_result(format!("Invalid private key length: {}", private_key_bytes.len()));
+    }
+
+    // Step 2: ECDH to derive the shared secret used to encrypt this DEK
+    if input.ephemeral_public_key.len() != 32 {
+        return err_result(format!("Invalid ephemeral public key length: {}", input.ephemeral_public_key.len()));
+    }
+
+    let pk_array: [u8; 32] = private_key_bytes.as_slice().try_into().unwrap();
+    let eph_array: [u8; 32] = input.ephemeral_public_key.as_slice().try_into().unwrap();
+
+    let sharer_private = StaticSecret::from(pk_array);
+    let file_ephemeral_public = PublicKey::from(eph_array);
+    let shared_secret = sharer_private.diffie_hellman(&file_ephemeral_public);
+
+    // Step 3: Decrypt the DEK
+    if input.dek_nonce.len() != 12 {
+        return err_result(format!("Invalid DEK nonce length: {}", input.dek_nonce.len()));
+    }
+
+    let shared_key = GenericArray::from_slice(shared_secret.as_bytes());
+    let dek_cipher = Aes256Gcm::new(shared_key);
+    let dek_nonce_ga = Nonce::from_slice(&input.dek_nonce);
+
+    let dek = match dek_cipher.decrypt(dek_nonce_ga, input.encrypted_dek.as_slice()) {
+        Ok(d) => d,
+        Err(_) => return err_result("Failed to decrypt DEK. Data may be corrupted.".to_string()),
+    };
+
+    log(&format!("[re_encrypt_dek] DEK decrypted, size: {} bytes", dek.len()));
+
+    // Step 4: Generate new ephemeral key pair for the target recipient
+    if input.target_public_key.len() != 32 {
+        return err_result(format!("Invalid target public key length: {}", input.target_public_key.len()));
+    }
+
+    let target_pk_array: [u8; 32] = input.target_public_key.as_slice().try_into().unwrap();
+    let target_public = PublicKey::from(target_pk_array);
+
+    let new_ephemeral_secret = StaticSecret::random_from_rng(OsRng);
+    let new_ephemeral_public = PublicKey::from(&new_ephemeral_secret);
+
+    // Step 5: ECDH with target's public key
+    let new_shared_secret = new_ephemeral_secret.diffie_hellman(&target_public);
+
+    // Step 6: Encrypt the DEK for the target recipient
+    let new_shared_key = GenericArray::from_slice(new_shared_secret.as_bytes());
+    let new_dek_cipher = Aes256Gcm::new(new_shared_key);
+    let new_dek_nonce = generate_nonce();
+    let new_dek_nonce_ga = Nonce::from_slice(new_dek_nonce.as_slice());
+
+    let new_encrypted_dek = match new_dek_cipher.encrypt(new_dek_nonce_ga, dek.as_ref()) {
+        Ok(ct) => ct,
+        Err(_) => return err_result("Failed to encrypt DEK for target recipient.".to_string()),
+    };
+
+    log("[re_encrypt_dek] DEK re-encrypted for new recipient successfully");
+
+    let result = ReShareDekResult {
+        success: true,
+        encrypted_dek_hex: bytes_to_hex(&new_encrypted_dek),
+        dek_nonce_hex: bytes_to_hex(new_dek_nonce.as_slice()),
+        ephemeral_public_key_hex: bytes_to_hex(new_ephemeral_public.as_bytes()),
+        error_message: String::new(),
+    };
+
+    serde_wasm_bindgen::to_value(&result).unwrap()
+}

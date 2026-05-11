@@ -68,7 +68,7 @@
 	"dependencies": {
 		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.95.3",
-		"html2pdf.js": "^0.14.0"
+		"jspdf": "^4.2.1"
 	},
 	"overrides": {
 		"cookie": "^0.7.0"

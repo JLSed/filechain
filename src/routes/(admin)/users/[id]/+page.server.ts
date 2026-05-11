@@ -3,6 +3,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { UserProfileSchema } from '$lib/types/DatabaseTypes';
 import { insertAuditLog } from '$lib/services/audit-log';
 import { formatName } from '$lib/utils/formatter';
+import { fetchRolePermissions, hasPermission } from '$lib/services/permissions';
 
 export const load = (async ({ params, locals: { supabase, safeGetSession }, depends }) => {
 	depends('db:user-detail');
@@ -123,6 +124,44 @@ export const actions = {
 			ipAddress,
 			eventType: 'Edited Account'
 		});
+
+		return { success: true };
+	},
+
+	archiveUser: async ({ request, locals: { supabase, safeGetSession } }) => {
+		if (!supabase) throw error(500, 'Unable to connect to the database.');
+
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Unauthorized.' });
+
+		// Permission check
+		const { data: currentProfile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('role')
+			.eq('user_id', session.user.id)
+			.single();
+
+		const perms = await fetchRolePermissions(supabase, currentProfile?.role);
+		if (!hasPermission(perms, 'users.archive')) {
+			return fail(403, { error: 'You do not have permission to archive users.' });
+		}
+
+		const formData = await request.formData();
+		const userId = formData.get('user_id')?.toString();
+
+		if (!userId) return fail(400, { error: 'User ID is required.' });
+
+		const { error: dbError } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.update({ is_active: false })
+			.eq('user_id', userId);
+
+		if (dbError) {
+			console.error('Archive error:', dbError);
+			return fail(500, { error: 'Failed to archive user.' });
+		}
 
 		return { success: true };
 	}
