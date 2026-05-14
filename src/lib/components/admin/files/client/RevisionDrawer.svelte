@@ -4,9 +4,10 @@
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import MasterPasswordDialog from './MasterPasswordDialog.svelte';
+	import VerifyChainIntegrityDialog from './VerifyChainIntegrityDialog.svelte';
 	import FileViewer from './FileViewer.svelte';
 	import { formatTimestamp, formatFileSize } from '$lib/utils/formatter';
-	import { GitBranch, File, Eye } from '@lucide/svelte';
+	import { GitBranch, File, Eye, ShieldCheck } from '@lucide/svelte';
 
 	interface Props {
 		files: FileMetadata[];
@@ -27,6 +28,9 @@
 
 	/** File viewer state */
 	let activeFileView = $state<DecryptedFileView | null>(null);
+
+	/** Chain integrity dialog state */
+	let chainIntegrityDialogOpen = $state(false);
 
 	function handleMouseDown(e: MouseEvent): void {
 		if (!container) return;
@@ -93,6 +97,14 @@
 		}
 		activeFileView = null;
 	}
+
+	function handleVerifyChain(): void {
+		chainIntegrityDialogOpen = true;
+	}
+
+	function handleChainIntegrityDialogClose(): void {
+		chainIntegrityDialogOpen = false;
+	}
 </script>
 
 {#if activeFileView}
@@ -104,13 +116,23 @@
 <Drawer.Root bind:open onOpenChange={handleOpenChange} direction="bottom">
 	<Drawer.Content class="max-h-[50vh]">
 		<Drawer.Header>
-			<Drawer.Title class="flex items-center gap-2 text-base">
-				<GitBranch class="size-4" />
-				Revision History
-			</Drawer.Title>
-			<Drawer.Description class="text-sm text-muted-foreground">
-				{files.length} version{files.length !== 1 ? 's' : ''} in this chain
-			</Drawer.Description>
+			<div class="flex items-center justify-between">
+				<div>
+					<Drawer.Title class="flex items-center gap-2 text-base">
+						<GitBranch class="size-4" />
+						Revision History
+					</Drawer.Title>
+					<Drawer.Description class="text-sm text-muted-foreground">
+						{files.length} version{files.length !== 1 ? 's' : ''} in this chain
+					</Drawer.Description>
+				</div>
+				{#if files.length > 1}
+					<Button variant="outline" size="sm" class="gap-1.5 text-xs" onclick={handleVerifyChain}>
+						<ShieldCheck class="size-3.5" />
+						Verify Chain Integrity
+					</Button>
+				{/if}
+			</div>
 		</Drawer.Header>
 
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -217,4 +239,10 @@
 	bind:open={passwordDialogOpen}
 	ondecrypted={handleDecrypted}
 	onclose={handlePasswordDialogClose}
+/>
+
+<VerifyChainIntegrityDialog
+	{files}
+	bind:open={chainIntegrityDialogOpen}
+	onclose={handleChainIntegrityDialogClose}
 />

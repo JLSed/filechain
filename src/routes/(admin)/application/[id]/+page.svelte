@@ -9,6 +9,10 @@
 	import AddFileDialog from '$lib/components/admin/files/client/AddFileDialog.svelte';
 	import RevisionDrawer from '$lib/components/admin/files/client/RevisionDrawer.svelte';
 	import VerifyIntegrityDialog from '$lib/components/admin/files/client/VerifyIntegrityDialog.svelte';
+	import ViewAccessDialog from '$lib/components/admin/files/client/ViewAccessDialog.svelte';
+	import ShareFileDialog from '$lib/components/admin/files/client/ShareFileDialog.svelte';
+	import SharePasswordDialog from '$lib/components/admin/files/client/SharePasswordDialog.svelte';
+	import ShareAllFilesDialog from '$lib/components/admin/files/client/ShareAllFilesDialog.svelte';
 	import FileViewer from '$lib/components/admin/files/client/FileViewer.svelte';
 	import Separator from '$lib/shadcn/components/ui/separator/separator.svelte';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
@@ -155,6 +159,23 @@
 	let verifyFile = $state<FileMetadata | null>(null);
 	let verifyDialogOpen = $state(false);
 
+	let accessFile = $state<FileMetadata | null>(null);
+	let accessDialogOpen = $state(false);
+
+	let shareFile = $state<FileMetadata | null>(null);
+	let shareDialogOpen = $state(false);
+	let sharePasswordDialogOpen = $state(false);
+	let shareSelectedUsers = $state<
+		Array<{
+			user_id: string;
+			first_name: string | null;
+			last_name: string | null;
+			email: string | null;
+			role: string | null;
+			public_key: string;
+		}>
+	>([]);
+
 	// Add file dialog state
 	let addFileDialogOpen = $state(false);
 
@@ -259,6 +280,44 @@
 		verifyFile = null;
 	}
 
+	function handleViewAccess(file: FileMetadata): void {
+		accessFile = file;
+		accessDialogOpen = true;
+	}
+
+	function handleAccessDialogClose(): void {
+		accessDialogOpen = false;
+		accessFile = null;
+	}
+
+	function handleShare(file: FileMetadata): void {
+		shareFile = file;
+		shareDialogOpen = true;
+	}
+
+	function handleShareConfirm(file: FileMetadata, selectedUsers: typeof shareSelectedUsers): void {
+		shareDialogOpen = false;
+		shareSelectedUsers = selectedUsers;
+		sharePasswordDialogOpen = true;
+	}
+
+	function handleShareDialogClose(): void {
+		shareDialogOpen = false;
+		shareFile = null;
+	}
+
+	function handleShareCompleted(): void {
+		sharePasswordDialogOpen = false;
+		shareFile = null;
+		shareSelectedUsers = [];
+		invalidate('db:application-detail');
+	}
+
+	function handleSharePasswordDialogClose(): void {
+		sharePasswordDialogOpen = false;
+		shareSelectedUsers = [];
+	}
+
 	function handleAddFile(): void {
 		addFileDialogOpen = true;
 	}
@@ -273,6 +332,22 @@
 	}
 
 	const latestFiles = $derived(getLatestFiles());
+
+	// Share all files dialog
+	let shareAllDialogOpen = $state(false);
+
+	function handleShareAll(): void {
+		shareAllDialogOpen = true;
+	}
+
+	function handleShareAllCompleted(): void {
+		shareAllDialogOpen = false;
+		invalidate('db:application-detail');
+	}
+
+	function handleShareAllDialogClose(): void {
+		shareAllDialogOpen = false;
+	}
 </script>
 
 {#if activeFileView}
@@ -326,10 +401,13 @@
 						{canUpload}
 						{canRevision}
 						onfileclick={handleFileClick}
+						onshare={handleShare}
 						onaddrevision={handleAddRevision}
 						onviewrevisions={handleViewRevisions}
 						onverifyintegrity={handleVerifyIntegrity}
+						onviewaccess={handleViewAccess}
 						onaddfile={handleAddFile}
+						onshareall={handleShareAll}
 					/>
 				</div>
 			</div>
@@ -380,4 +458,32 @@
 	file={verifyFile}
 	bind:open={verifyDialogOpen}
 	onclose={handleVerifyDialogClose}
+/>
+
+<ViewAccessDialog
+	file={accessFile}
+	bind:open={accessDialogOpen}
+	onclose={handleAccessDialogClose}
+/>
+
+<ShareFileDialog
+	file={shareFile}
+	bind:open={shareDialogOpen}
+	onconfirm={handleShareConfirm}
+	onclose={handleShareDialogClose}
+/>
+
+<SharePasswordDialog
+	file={shareFile}
+	selectedUsers={shareSelectedUsers}
+	bind:open={sharePasswordDialogOpen}
+	onshared={handleShareCompleted}
+	onclose={handleSharePasswordDialogClose}
+/>
+
+<ShareAllFilesDialog
+	files={latestFiles}
+	bind:open={shareAllDialogOpen}
+	onshared={handleShareAllCompleted}
+	onclose={handleShareAllDialogClose}
 />

@@ -110,10 +110,14 @@
 		}
 	}
 
+	let prevOpen = false;
 	$effect(() => {
-		if (open && file) {
+		const isOpen = open;
+		const currentFile = file;
+		if (isOpen && !prevOpen && currentFile) {
 			untrack(() => startVerification());
 		}
+		prevOpen = isOpen;
 	});
 
 	function getStatusIcon(

@@ -6,6 +6,9 @@
 	import AddRevisionDialog from '$lib/components/admin/files/client/AddRevisionDialog.svelte';
 	import RevisionDrawer from '$lib/components/admin/files/client/RevisionDrawer.svelte';
 	import VerifyIntegrityDialog from '$lib/components/admin/files/client/VerifyIntegrityDialog.svelte';
+	import ViewAccessDialog from '$lib/components/admin/files/client/ViewAccessDialog.svelte';
+	import ShareFileDialog from '$lib/components/admin/files/client/ShareFileDialog.svelte';
+	import SharePasswordDialog from '$lib/components/admin/files/client/SharePasswordDialog.svelte';
 	import FileViewer from '$lib/components/admin/files/client/FileViewer.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { AlertCircle, ArrowLeft } from '@lucide/svelte';
@@ -47,6 +50,23 @@
 
 	let verifyFile = $state<FileMetadata | null>(null);
 	let verifyDialogOpen = $state(false);
+
+	let accessFile = $state<FileMetadata | null>(null);
+	let accessDialogOpen = $state(false);
+
+	let shareFile = $state<FileMetadata | null>(null);
+	let shareDialogOpen = $state(false);
+	let sharePasswordDialogOpen = $state(false);
+	let shareSelectedUsers = $state<
+		Array<{
+			user_id: string;
+			first_name: string | null;
+			last_name: string | null;
+			email: string | null;
+			role: string | null;
+			public_key: string;
+		}>
+	>([]);
 
 	/**
 	 * Returns only the newest file (highest sequence) per revision chain.
@@ -160,6 +180,44 @@
 		verifyDialogOpen = false;
 		verifyFile = null;
 	}
+
+	function handleViewAccess(file: FileMetadata): void {
+		accessFile = file;
+		accessDialogOpen = true;
+	}
+
+	function handleAccessDialogClose(): void {
+		accessDialogOpen = false;
+		accessFile = null;
+	}
+
+	function handleShare(file: FileMetadata): void {
+		shareFile = file;
+		shareDialogOpen = true;
+	}
+
+	function handleShareConfirm(file: FileMetadata, selectedUsers: typeof shareSelectedUsers): void {
+		shareDialogOpen = false;
+		shareSelectedUsers = selectedUsers;
+		sharePasswordDialogOpen = true;
+	}
+
+	function handleShareDialogClose(): void {
+		shareDialogOpen = false;
+		shareFile = null;
+	}
+
+	function handleShareCompleted(): void {
+		sharePasswordDialogOpen = false;
+		shareFile = null;
+		shareSelectedUsers = [];
+		invalidate('db:client-files');
+	}
+
+	function handleSharePasswordDialogClose(): void {
+		sharePasswordDialogOpen = false;
+		shareSelectedUsers = [];
+	}
 </script>
 
 {#if activeFileView}
@@ -197,9 +255,11 @@
 						accessibleFileIds={data.accessibleFileIds}
 						{canRevision}
 						onfileclick={handleFileClick}
+						onshare={handleShare}
 						onaddrevision={handleAddRevision}
 						onviewrevisions={handleViewRevisions}
 						onverifyintegrity={handleVerifyIntegrity}
+						onviewaccess={handleViewAccess}
 					/>
 				{/each}
 			</div>
@@ -232,4 +292,25 @@
 	file={verifyFile}
 	bind:open={verifyDialogOpen}
 	onclose={handleVerifyDialogClose}
+/>
+
+<ViewAccessDialog
+	file={accessFile}
+	bind:open={accessDialogOpen}
+	onclose={handleAccessDialogClose}
+/>
+
+<ShareFileDialog
+	file={shareFile}
+	bind:open={shareDialogOpen}
+	onconfirm={handleShareConfirm}
+	onclose={handleShareDialogClose}
+/>
+
+<SharePasswordDialog
+	file={shareFile}
+	selectedUsers={shareSelectedUsers}
+	bind:open={sharePasswordDialogOpen}
+	onshared={handleShareCompleted}
+	onclose={handleSharePasswordDialogClose}
 />
