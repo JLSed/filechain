@@ -13,9 +13,11 @@
 		accessibleFileIds: string[];
 		canRevision?: boolean;
 		onfileclick: (file: FileMetadata) => void;
+		onshare: (file: FileMetadata) => void;
 		onaddrevision: (file: FileMetadata) => void;
 		onviewrevisions: (file: FileMetadata) => void;
 		onverifyintegrity: (file: FileMetadata) => void;
+		onviewaccess: (file: FileMetadata) => void;
 	}
 
 	let {
@@ -25,9 +27,11 @@
 		accessibleFileIds,
 		canRevision = true,
 		onfileclick,
+		onshare,
 		onaddrevision,
 		onviewrevisions,
-		onverifyintegrity
+		onverifyintegrity,
+		onviewaccess
 	}: Props = $props();
 
 	const accessibleSet = $derived(new Set(accessibleFileIds));
@@ -79,9 +83,11 @@
 							hasAccess={accessibleSet.has(file.file_id)}
 							{canRevision}
 							{onfileclick}
+							{onshare}
 							{onaddrevision}
 							{onviewrevisions}
 							{onverifyintegrity}
+							{onviewaccess}
 						/>
 					{/each}
 				</Table.Body>

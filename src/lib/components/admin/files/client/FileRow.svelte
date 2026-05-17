@@ -14,7 +14,8 @@
 		Pencil,
 		History,
 		Archive,
-		LockKeyhole
+		LockKeyhole,
+		Users
 	} from '@lucide/svelte';
 	import { mergeProps } from 'bits-ui';
 
@@ -24,9 +25,11 @@
 		hasAccess?: boolean;
 		canRevision?: boolean;
 		onfileclick: (file: FileMetadata) => void;
+		onshare: (file: FileMetadata) => void;
 		onaddrevision: (file: FileMetadata) => void;
 		onviewrevisions: (file: FileMetadata) => void;
 		onverifyintegrity: (file: FileMetadata) => void;
+		onviewaccess: (file: FileMetadata) => void;
 	}
 
 	let {
@@ -35,9 +38,11 @@
 		hasAccess = true,
 		canRevision = true,
 		onfileclick,
+		onshare,
 		onaddrevision,
 		onviewrevisions,
-		onverifyintegrity
+		onverifyintegrity,
+		onviewaccess
 	}: Props = $props();
 
 	const version = $derived(
@@ -100,7 +105,12 @@
 					</button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end">
-					<DropdownMenu.Item><Share2 /> Share</DropdownMenu.Item>
+					<DropdownMenu.Item
+						onclick={(e: MouseEvent) => {
+							e.stopPropagation();
+							onshare(file);
+						}}><Share2 /> Share</DropdownMenu.Item
+					>
 					<DropdownMenu.Item
 						disabled={!canRevision}
 						onclick={(e: MouseEvent) => {
@@ -120,6 +130,12 @@
 							e.stopPropagation();
 							onviewrevisions(file);
 						}}><History /> View Revisions</DropdownMenu.Item
+					>
+					<DropdownMenu.Item
+						onclick={(e: MouseEvent) => {
+							e.stopPropagation();
+							onviewaccess(file);
+						}}><Users /> View Access</DropdownMenu.Item
 					>
 					<DropdownMenu.Separator />
 					<DropdownMenu.Item><Archive /> Archive File</DropdownMenu.Item>

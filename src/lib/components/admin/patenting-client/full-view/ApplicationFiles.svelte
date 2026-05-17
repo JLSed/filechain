@@ -16,7 +16,8 @@
 		Pencil,
 		History,
 		Archive,
-		LockKeyhole
+		LockKeyhole,
+		Users
 	} from '@lucide/svelte';
 	import { mergeProps } from 'bits-ui';
 
@@ -28,10 +29,13 @@
 		canUpload?: boolean;
 		canRevision?: boolean;
 		onfileclick: (file: FileMetadata) => void;
+		onshare: (file: FileMetadata) => void;
 		onaddrevision: (file: FileMetadata) => void;
 		onviewrevisions: (file: FileMetadata) => void;
 		onverifyintegrity: (file: FileMetadata) => void;
+		onviewaccess: (file: FileMetadata) => void;
 		onaddfile: () => void;
+		onshareall: () => void;
 	}
 
 	let {
@@ -42,10 +46,13 @@
 		canUpload = true,
 		canRevision = true,
 		onfileclick,
+		onshare,
 		onaddrevision,
 		onviewrevisions,
 		onverifyintegrity,
-		onaddfile
+		onviewaccess,
+		onaddfile,
+		onshareall
 	}: Props = $props();
 
 	const accessibleSet = $derived(new Set(accessibleFileIds));
@@ -127,7 +134,12 @@
 						</button>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content align="end">
-						<DropdownMenu.Item><Share2 /> Share</DropdownMenu.Item>
+						<DropdownMenu.Item
+							onclick={(e: MouseEvent) => {
+								e.stopPropagation();
+								onshare(file);
+							}}><Share2 /> Share</DropdownMenu.Item
+						>
 						<DropdownMenu.Item
 							disabled={!canRevision}
 							onclick={(e: MouseEvent) => {
@@ -148,6 +160,12 @@
 								onviewrevisions(file);
 							}}><History /> View Revisions</DropdownMenu.Item
 						>
+						<DropdownMenu.Item
+							onclick={(e: MouseEvent) => {
+								e.stopPropagation();
+								onviewaccess(file);
+							}}><Users /> View Access</DropdownMenu.Item
+						>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item><Archive /> Archive File</DropdownMenu.Item>
 					</DropdownMenu.Content>
@@ -162,16 +180,28 @@
 		<h3 class="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
 			Application Files
 		</h3>
-		<Button
-			variant="outline"
-			size="sm"
-			class="gap-1.5 text-xs"
-			onclick={onaddfile}
-			disabled={!canUpload}
-		>
-			<Plus class="size-3.5" />
-			Add New File
-		</Button>
+		<div class="flex items-center gap-2">
+			<Button
+				variant="outline"
+				size="sm"
+				class="gap-1.5 text-xs"
+				onclick={onshareall}
+				disabled={files.length === 0}
+			>
+				<Share2 class="size-3.5" />
+				Share All Files
+			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				class="gap-1.5 text-xs"
+				onclick={onaddfile}
+				disabled={!canUpload}
+			>
+				<Plus class="size-3.5" />
+				Add New File
+			</Button>
+		</div>
 	</div>
 
 	{#if files.length === 0}

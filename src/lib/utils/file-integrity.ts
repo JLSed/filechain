@@ -52,13 +52,32 @@ export async function runIntegrityCheck(
 		onUpdate([...steps], index);
 	};
 
+	// Re-fetch the latest file metadata from the database so we always validate
+	// against the current state rather than stale in-memory data from page load.
+	const { data: freshData, error: freshError } = await supabase
+		.schema('api')
+		.from('file_metadata')
+		.select(
+			'file_id, uploader_id, file_name, file_path, file_hash, uploaded_at, size, status, category, application_id, file_ledger(block_id, sequence, signature, previous_block), user_profiles(first_name, last_name)'
+		)
+		.eq('file_id', file.file_id)
+		.single();
+
+	if (freshError || !freshData) {
+		setStep(0, 'failed', freshError?.message ?? 'Could not fetch latest file metadata');
+		return finalize(steps);
+	}
+
+	// Use the freshly fetched metadata for all subsequent checks
+	const freshFile = freshData as unknown as FileMetadata;
+
 	// Shared state across steps
 	let encryptedBlob: Blob;
 
 	// ── Step 0: Fetch Storage File ──
 	setStep(0, 'running');
 	try {
-		const { data, error } = await supabase.storage.from('storage').download(file.file_path);
+		const { data, error } = await supabase.storage.from('storage').download(freshFile.file_path);
 
 		if (error || !data) {
 			setStep(0, 'failed', error?.message ?? 'File not found in storage');
@@ -76,7 +95,7 @@ export async function runIntegrityCheck(
 	try {
 		const blobSize = encryptedBlob!.size;
 		// AES-256-GCM adds a 16-byte auth tag to the ciphertext
-		const expectedEncryptedSize = file.size + 16;
+		const expectedEncryptedSize = freshFile.size + 16;
 		if (blobSize === expectedEncryptedSize) {
 			setStep(1, 'passed', `${blobSize.toLocaleString()} bytes matches expected encrypted size`);
 		} else {
@@ -93,7 +112,7 @@ export async function runIntegrityCheck(
 	// ── Step 2: File Hash Verification ──
 	setStep(2, 'running');
 	try {
-		const storedHash = file.file_hash;
+		const storedHash = freshFile.file_hash;
 		if (!storedHash || storedHash.length === 0) {
 			setStep(2, 'failed', 'No file hash recorded in metadata');
 		} else if (!/^[0-9a-f]{64}$/i.test(storedHash)) {
@@ -114,13 +133,17 @@ export async function runIntegrityCheck(
 	// ── Step 3: File Name Validation ──
 	setStep(3, 'running');
 	try {
-		const storedName = file.file_name;
+		const storedName = freshFile.file_name;
 		// The storage path should end with "{file_name}.enc"
 		const expectedSuffix = `${storedName}.enc`;
-		if (file.file_path.endsWith(expectedSuffix)) {
+		if (freshFile.file_path.endsWith(expectedSuffix)) {
 			setStep(3, 'passed', `"${storedName}" matches storage path`);
 		} else {
-			setStep(3, 'failed', `Name "${storedName}" does not match storage path "${file.file_path}"`);
+			setStep(
+				3,
+				'failed',
+				`Name "${storedName}" does not match storage path "${freshFile.file_path}"`
+			);
 		}
 	} catch (err) {
 		setStep(3, 'failed', err instanceof Error ? err.message : 'File name check error');
@@ -129,7 +152,7 @@ export async function runIntegrityCheck(
 	// ── Step 4: Ledger Metadata ──
 	setStep(4, 'running');
 	try {
-		const ledger = file.file_ledger;
+		const ledger = freshFile.file_ledger;
 		if (!ledger || ledger.length === 0) {
 			setStep(4, 'failed', 'No ledger entry found for this file');
 		} else {
@@ -153,7 +176,7 @@ export async function runIntegrityCheck(
 	// ── Step 5: Block Signature ──
 	setStep(5, 'running');
 	try {
-		const ledger = file.file_ledger;
+		const ledger = freshFile.file_ledger;
 		if (!ledger || ledger.length === 0) {
 			setStep(5, 'failed', 'No ledger entry — cannot verify signature');
 		} else {
