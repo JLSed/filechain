@@ -21,7 +21,7 @@ interface InsertNotificationParams {
  *   actorId: session.user.id,
  *   title: 'New Application Submitted',
  *   message: 'J. P. Sedillo submitted application 20290001',
- *   link: '/application/20290001'
+ *   link: '/application/a1de43e6-fbfa-4b77-a897-5d3186520b45'
  * });
  * ```
  */

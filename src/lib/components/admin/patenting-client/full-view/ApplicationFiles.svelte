@@ -114,8 +114,9 @@
 			<div class="flex items-center gap-1">
 				{#if isEditing && canRevision}
 					<button
-						class="rounded-md p-1 text-xs transition-opacity hover:bg-muted"
+						class="rounded-md p-1 text-xs transition-opacity hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
 						aria-label="Add revision"
+						disabled={!hasAccess}
 						onclick={(e) => {
 							e.stopPropagation();
 							onaddrevision(file);
@@ -125,10 +126,11 @@
 					</button>
 				{/if}
 				<DropdownMenu.Root>
-					<DropdownMenu.Trigger>
+					<DropdownMenu.Trigger disabled={!hasAccess}>
 						<button
-							class="rounded-md p-1 transition-opacity hover:bg-muted"
+							class="rounded-md p-1 transition-opacity hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
 							aria-label="File options"
+							disabled={!hasAccess}
 						>
 							<EllipsisVertical class="size-4" />
 						</button>

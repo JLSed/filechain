@@ -52,7 +52,6 @@
 						error = 'Failed to authenticate. Please try the invite link again.';
 						return;
 					}
-
 					await logLoginEvent();
 
 					// Redirect based on the auth type

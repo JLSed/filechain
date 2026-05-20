@@ -5,6 +5,7 @@
 	import * as Tabs from '$lib/shadcn/components/ui/tabs/index.js';
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import type { Notification } from '$lib/types/NotificationTypes';
+	import { untrack } from 'svelte';
 
 	interface Props {
 		userId: string;
@@ -82,7 +83,12 @@
 		return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 	}
 
-	// Fetch notifications when the popover opens
+	// Fetch notifications immediately on mount so the badge count is visible
+	$effect(() => {
+		untrack(() => fetchNotifications());
+	});
+
+	// Refetch when the popover is reopened to get the latest notifications
 	$effect(() => {
 		if (open) {
 			fetchNotifications();
