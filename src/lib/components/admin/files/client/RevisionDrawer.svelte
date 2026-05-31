@@ -22,7 +22,7 @@
 	let startX = $state(0);
 	let scrollLeft = $state(0);
 
-	/** Master password dialog state */
+	/** Password dialog state */
 	let selectedFile = $state<FileMetadata | null>(null);
 	let passwordDialogOpen = $state(false);
 

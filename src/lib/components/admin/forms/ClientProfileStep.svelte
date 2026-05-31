@@ -4,6 +4,7 @@
 	import type { Writable } from 'svelte/store';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
 	import PhoneInput from '$lib/components/global/PhoneInput.svelte';
+	import NationalityInput from '$lib/components/global/NationalityInput.svelte';
 	import * as Table from '$lib/shadcn/components/ui/table/index.js';
 	import { UserPlus, Users, ArrowLeft, Search, Building2 } from '@lucide/svelte';
 
@@ -89,8 +90,6 @@
 		if (nextType === 'individual') {
 			$form.client_profiles.company_name = '';
 			$form.client_profiles.company_address = '';
-		} else {
-			$form.client_profiles.nationality = '';
 		}
 	}
 
@@ -385,13 +384,7 @@
 						<label for="nationality" class="text-sm font-medium text-foreground">
 							Nationality <span class="text-destructive">*</span>
 						</label>
-						<Input
-							id="nationality"
-							bind:value={$form.client_profiles.nationality}
-							placeholder="Nationality"
-							required
-							aria-invalid={$errors.client_profiles?.nationality ? 'true' : undefined}
-						/>
+						<NationalityInput bind:value={$form.client_profiles.nationality} required />
 						{#if $errors.client_profiles?.nationality}
 							<p class="text-xs text-destructive">{$errors.client_profiles.nationality}</p>
 						{/if}
@@ -453,6 +446,16 @@
 						<PhoneInput bind:value={phoneLocalNumber} bind:dialCode={phoneDialCode} required />
 						{#if $errors.client_profiles?.mobile_number}
 							<p class="text-xs text-destructive">{$errors.client_profiles.mobile_number}</p>
+						{/if}
+					</div>
+
+					<div class="space-y-1.5">
+						<label for="nationality" class="text-sm font-medium text-foreground">
+							Company Nationality <span class="text-destructive">*</span>
+						</label>
+						<NationalityInput bind:value={$form.client_profiles.nationality} required />
+						{#if $errors.client_profiles?.nationality}
+							<p class="text-xs text-destructive">{$errors.client_profiles.nationality}</p>
 						{/if}
 					</div>
 

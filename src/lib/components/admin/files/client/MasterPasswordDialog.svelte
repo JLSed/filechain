@@ -41,7 +41,7 @@
 		if (!file) return;
 
 		if (!password.trim()) {
-			error = 'Please enter your master password.';
+			error = 'Enter your password';
 			return;
 		}
 
@@ -80,7 +80,7 @@
 				Decrypt File
 			</Dialog.Title>
 			<Dialog.Description>
-				Enter your master password to decrypt
+				Enter your password to decrypt
 				{#if file}
 					<span class="font-medium">{file.file_name}</span>
 				{/if}
@@ -90,11 +90,11 @@
 		<form onsubmit={handleSubmit}>
 			<div class="grid gap-4 py-2">
 				<div class="grid gap-2">
-					<Label for="master-password">Master Password</Label>
+					<Label for="decrypt-password">Password</Label>
 					<Input
-						id="master-password"
+						id="decrypt-password"
 						type="password"
-						placeholder="Enter your master password"
+						placeholder="Enter your password"
 						bind:value={password}
 						disabled={loading}
 						autocomplete="off"

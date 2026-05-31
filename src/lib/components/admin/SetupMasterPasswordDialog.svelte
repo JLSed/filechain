@@ -99,7 +99,7 @@
 			if (response.redirected) {
 				window.location.href = response.url;
 			} else {
-				successMessage = 'Master password set successfully!';
+				successMessage = 'Password set successfully!';
 				open = false;
 				window.location.reload();
 			}
@@ -118,14 +118,14 @@
 				recoveryKey={generatedRecoveryKey}
 				onAcknowledge={submitPendingForm}
 				title="Save Your Recovery Key"
-				description="This key allows you to recover your account if you forget your master password. Save it now."
+				description="This key allows you to recover your account if you forget your password. Save it now."
 			/>
 		{:else}
 			<Dialog.Header>
-				<Dialog.Title>Set Master Password</Dialog.Title>
+				<Dialog.Title>Set Password</Dialog.Title>
 				<Dialog.Description>
-					Your master password encrypts all your files and generates your client wallet keys. It
-					cannot be recovered if lost. Please keep it safe.
+					Your password encrypts all your files and generates your client wallet keys. It cannot be
+					recovered if lost. Please keep it safe.
 				</Dialog.Description>
 			</Dialog.Header>
 
@@ -136,7 +136,7 @@
 				class="flex flex-col gap-4"
 			>
 				<div class="grid w-full items-center gap-1.5">
-					<Label for="password">Master Password</Label>
+					<Label for="password">Password</Label>
 					<Input type="password" id="password" bind:value={password} required />
 				</div>
 
@@ -173,7 +173,7 @@
 						{:else if successMessage}
 							Done
 						{:else}
-							Save Master Password
+							Save Password
 						{/if}
 					</Button>
 				</Dialog.Footer>

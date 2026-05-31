@@ -71,6 +71,14 @@ export const IpApplicationFormSchema = z
 			});
 		}
 
+		if (!client_profiles.nationality.trim()) {
+			ctx.addIssue({
+				code: 'custom',
+				path: ['client_profiles', 'nationality'],
+				message: 'Nationality is required'
+			});
+		}
+
 		if (client_profiles.is_individual) {
 			if (!client_profiles.first_name.trim()) {
 				ctx.addIssue({
@@ -85,14 +93,6 @@ export const IpApplicationFormSchema = z
 					code: 'custom',
 					path: ['client_profiles', 'last_name'],
 					message: 'Last name is required for individual clients'
-				});
-			}
-
-			if (!client_profiles.nationality.trim()) {
-				ctx.addIssue({
-					code: 'custom',
-					path: ['client_profiles', 'nationality'],
-					message: 'Nationality is required for individual clients'
 				});
 			}
 		} else {

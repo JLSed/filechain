@@ -421,7 +421,7 @@ pub fn encrypt_file_multi(
 /// Passed from JavaScript via serde.
 #[derive(Deserialize)]
 pub struct ReShareDekInput {
-    /// The sharer's master password
+    /// The sharer's password
     pub password: String,
     /// The sharer's salt for key derivation
     pub pk_salt: String,
