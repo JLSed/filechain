@@ -1,4 +1,4 @@
-import { RESEND_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 interface SendAssignmentEmailParams {
 	to: string[];
@@ -16,7 +16,7 @@ interface SendAssignmentEmailParams {
  * when a new intellectual property application has been submitted and assigned.
  */
 export async function sendAssignmentEmail(params: SendAssignmentEmailParams): Promise<void> {
-	if (!RESEND_API_KEY) {
+	if (!env.RESEND_API_KEY) {
 		console.warn('RESEND_API_KEY is not defined. Email notifications will be skipped.');
 		return;
 	}
@@ -157,7 +157,7 @@ export async function sendAssignmentEmail(params: SendAssignmentEmailParams): Pr
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: `Bearer ${RESEND_API_KEY}`
+			Authorization: `Bearer ${env.RESEND_API_KEY}`
 		},
 		body: JSON.stringify({
 			from: 'DMV IP Consulting <notifications@dmvconsulting.app>',
