@@ -141,6 +141,14 @@
 					>
 				</div>
 			{/if}
+			{#if form.application.contact_details.filter(Boolean).length > 0}
+				<div class="md:col-span-2 lg:col-span-3">
+					<span class="text-muted-foreground">Contact Details:</span>
+					<span class="ml-1 font-medium"
+						>{form.application.contact_details.filter(Boolean).join(', ')}</span
+					>
+				</div>
+			{/if}
 			{#if form.application.remarks}
 				<div class="md:col-span-2 lg:col-span-3">
 					<span class="text-muted-foreground">Remarks:</span>

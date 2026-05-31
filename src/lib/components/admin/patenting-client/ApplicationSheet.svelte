@@ -88,7 +88,13 @@
 						</div>
 						<div class="sm:col-span-2">
 							<dt class="text-muted-foreground">Contact Details</dt>
-							<dd class="font-medium">{data.contact_details ?? '—'}</dd>
+							<dd class="font-medium">
+								{#if data.contact_details && data.contact_details.length > 0}
+									{data.contact_details.join(', ')}
+								{:else}
+									—
+								{/if}
+							</dd>
 						</div>
 					</dl>
 				</section>

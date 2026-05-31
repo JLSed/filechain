@@ -26,6 +26,16 @@
 			(_, i) => i !== index
 		);
 	}
+
+	function addContactDetail() {
+		$form.application.contact_details = [...$form.application.contact_details, ''];
+	}
+
+	function removeContactDetail(index: number) {
+		$form.application.contact_details = $form.application.contact_details.filter(
+			(_, i) => i !== index
+		);
+	}
 </script>
 
 <div class="space-y-6">
@@ -76,25 +86,8 @@
 		</div>
 	</div>
 
-	<!-- Contact Details & Remarks -->
+	<!-- Remarks -->
 	<div class="grid grid-cols-1 gap-4">
-		<div class="space-y-1.5">
-			<label for="contact_details" class="text-sm font-medium text-foreground"
-				>Contact Details</label
-			>
-			<textarea
-				id="contact_details"
-				bind:value={$form.application.contact_details}
-				placeholder="Additional contact details..."
-				rows="2"
-				class="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-				aria-invalid={$errors.application?.contact_details ? 'true' : undefined}
-			></textarea>
-			{#if $errors.application?.contact_details}
-				<p class="text-xs text-destructive">{$errors.application.contact_details}</p>
-			{/if}
-		</div>
-
 		<div class="space-y-1.5">
 			<label for="remarks" class="text-sm font-medium text-foreground">Remarks</label>
 			<textarea
@@ -136,6 +129,35 @@
 			</div>
 			{#if $errors.application?.inventor_names?.[i]}
 				<p class="text-xs text-destructive">{$errors.application.inventor_names[i]}</p>
+			{/if}
+		{/each}
+	</div>
+
+	<!-- Contact Details -->
+	<div class="space-y-3">
+		<div class="flex items-center justify-between">
+			<span class="text-sm font-medium text-foreground">Contact Details</span>
+			<Button type="button" variant="outline" size="sm" onclick={addContactDetail}>
+				+ Add Contact Detail
+			</Button>
+		</div>
+		{#if $errors.application?.contact_details?._errors}
+			<p class="text-xs text-destructive">{$errors.application.contact_details._errors}</p>
+		{/if}
+		<!-- eslint-disable-next-line -->
+		{#each $form.application.contact_details as _, i (i)}
+			<div class="flex items-center gap-2">
+				<Input
+					bind:value={$form.application.contact_details[i]}
+					placeholder="Email, phone number, or other contact info"
+					aria-invalid={$errors.application?.contact_details?.[i] ? 'true' : undefined}
+				/>
+				<Button type="button" variant="ghost" size="icon-sm" onclick={() => removeContactDetail(i)}>
+					<X class="size-4" />
+				</Button>
+			</div>
+			{#if $errors.application?.contact_details?.[i]}
+				<p class="text-xs text-destructive">{$errors.application.contact_details[i]}</p>
 			{/if}
 		{/each}
 	</div>

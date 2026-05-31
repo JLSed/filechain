@@ -1,5 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 import { z } from 'zod';
 import { zod4 } from 'sveltekit-superforms/adapters';
 import {
@@ -13,6 +13,7 @@ import type { IpApplicationFormData } from '$lib/types/FormTypes.js';
 import { formatName } from '$lib/utils/formatter';
 import { insertAuditLog } from '$lib/services/audit-log';
 import { insertNotificationBatch } from '$lib/services/notification';
+import { sendAssignmentEmail } from '$lib/services/email';
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	const [inventionTypes, protectionStatuses, officeActions, clientProfilesResult] =
@@ -63,8 +64,8 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
 	};
 };
 
-export const actions = {
-	application: async ({ request, locals: { supabase, safeGetSession }, getClientAddress }) => {
+export const actions: Actions = {
+	application: async ({ request, url, locals: { supabase, safeGetSession }, getClientAddress }) => {
 		const session = await safeGetSession();
 		if (!session.session) return fail(401, { message: 'Unauthorized' });
 
@@ -120,7 +121,7 @@ export const actions = {
 				type_of_invention_id: payload.application.type_of_invention_id,
 				status: 'Client Intake',
 				inventor_names: payload.application.inventor_names,
-				contact_details: payload.application.contact_details || null,
+				contact_details: payload.application.contact_details || [],
 				remarks: payload.application.remarks || null,
 				team_assigned: teamRole
 			})
@@ -161,9 +162,10 @@ export const actions = {
 			const { data: teamMembers } = await supabase
 				.schema('api')
 				.from('user_profiles')
-				.select('user_id')
+				.select('user_id, email, first_name, last_name')
 				.or(`role.eq.${teamRole},role.eq.System Admin`)
-				.neq('user_id', session.session.user.id);
+				.neq('user_id', session.session.user.id)
+				.eq('is_active', true);
 
 			if (teamMembers && teamMembers.length > 0) {
 				const recipientIds = teamMembers.map((m: { user_id: string }) => m.user_id);
@@ -173,6 +175,55 @@ export const actions = {
 					message: `${actorName} assigned your team for application ${applicationId}`,
 					link: `/application/${applicationId}`
 				});
+
+				// Send email notification to all involved users (as a single email send)
+				try {
+					const emailRecipients: string[] = Array.from(
+						new Set(
+							teamMembers
+								.map((m: { email?: string }) => m.email?.trim())
+								.filter((email): email is string => !!email)
+						)
+					);
+
+					if (emailRecipients.length > 0) {
+						// Retrieve human-readable invention type name
+						let typeOfInventionName = 'N/A';
+						if (payload.application.type_of_invention_id) {
+							const { data: inventionType } = await supabase
+								.schema('api')
+								.from('type_of_invention')
+								.select('name')
+								.eq('id', payload.application.type_of_invention_id)
+								.single();
+							if (inventionType) {
+								typeOfInventionName = inventionType.name;
+							}
+						}
+
+						// Construct client name
+						const clientName = payload.client_profiles.is_individual
+							? formatName(
+									payload.client_profiles.first_name ?? '',
+									payload.client_profiles.middle_name,
+									payload.client_profiles.last_name ?? ''
+								)
+							: (payload.client_profiles.company_name ?? 'Unknown');
+
+						await sendAssignmentEmail({
+							to: emailRecipients,
+							applicationId,
+							titleOfInvention: payload.application.title_of_invention?.trim() || '',
+							clientName,
+							typeOfInventionName,
+							teamRole: teamRole || 'Unassigned',
+							actorName,
+							origin: url.origin
+						});
+					}
+				} catch (emailError) {
+					console.error('Failed to send assignment emails:', emailError);
+				}
 			}
 		} catch (notifError) {
 			console.error('Failed to send notifications:', notifError);

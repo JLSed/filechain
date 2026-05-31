@@ -53,7 +53,7 @@
 			type_of_office_action_id: app.type_of_office_action?.id ?? null,
 			team_assigned: app.team_assigned ?? null,
 			inventor_names: app.inventor_names?.join(', ') ?? '',
-			contact_details: app.contact_details ?? '',
+			contact_details: app.contact_details ?? [],
 			filling_date: app.filling_date ?? null,
 			deadline: app.deadline ?? null,
 			mailing_date: app.mailing_date ?? null,
@@ -93,7 +93,7 @@
 					.split(',')
 					.map((n) => n.trim())
 					.filter(Boolean),
-				contact_details: editData.contact_details || null,
+				contact_details: editData.contact_details || [],
 				filling_date: editData.filling_date || null,
 				deadline: editData.deadline || null,
 				mailing_date: editData.mailing_date || null,

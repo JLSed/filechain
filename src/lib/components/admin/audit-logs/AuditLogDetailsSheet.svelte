@@ -23,6 +23,13 @@
 		const applicationEvents = ['Added Application', 'Edited Application', 'Submitted Application'];
 		if (!applicationEvents.includes(log.event_type)) return null;
 
+		// Match UUID first (new behavior)
+		const uuidMatch = log.details.match(
+			/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+		);
+		if (uuidMatch) return uuidMatch[0];
+
+		// Fallback to legacy 10+ digit number
 		const match = log.details.match(/\d{10,}/);
 		return match ? match[0] : null;
 	}

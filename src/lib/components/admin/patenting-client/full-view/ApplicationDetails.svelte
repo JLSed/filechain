@@ -29,7 +29,7 @@
 		type_of_office_action_id: number | null;
 		team_assigned: string | null;
 		inventor_names: string;
-		contact_details: string;
+		contact_details: string[];
 		filling_date: string | null;
 		deadline: string | null;
 		mailing_date: string | null;
@@ -343,9 +343,25 @@
 			<div class="sm:col-span-2">
 				<dt class="mb-1 text-xs text-muted-foreground">Contact Details</dt>
 				{#if isEditing}
-					<Input bind:value={editData.contact_details} class="text-sm" />
+					<Input
+						value={editData.contact_details.join(', ')}
+						oninput={(e) => {
+							editData.contact_details = (e.target as HTMLInputElement).value
+								.split(',')
+								.map((s) => s.trim())
+								.filter(Boolean);
+						}}
+						placeholder="Comma-separated contact details"
+						class="text-sm"
+					/>
 				{:else}
-					<dd class="font-medium">{data.contact_details ?? '—'}</dd>
+					<dd class="font-medium">
+						{#if data.contact_details && data.contact_details.length > 0}
+							{data.contact_details.join(', ')}
+						{:else}
+							—
+						{/if}
+					</dd>
 				{/if}
 			</div>
 		</dl>

@@ -1,8 +1,16 @@
-import type { Actions } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { SetupMasterPasswordSchema } from '$lib/types/FormTypes';
+
+export const load: PageServerLoad = async ({ locals: { safeGetSession } }) => {
+	const { session } = await safeGetSession();
+	if (session) {
+		redirect(303, '/dashboard');
+	}
+	return {};
+};
 
 export const actions: Actions = {
 	logout: async ({ locals: { supabase } }) => {

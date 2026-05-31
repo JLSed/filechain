@@ -48,7 +48,7 @@ export const IpApplicationFormSchema = z
 		application: z.object({
 			title_of_invention: z.string(),
 			inventor_names: z.array(z.string()),
-			contact_details: z.string().nullable(),
+			contact_details: z.array(z.string()),
 			link_to_folder: z.string(),
 			remarks: z.string().nullable(),
 			type_of_invention_id: z.number(),
