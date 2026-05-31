@@ -1,4 +1,4 @@
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import {
 	IpApplicationSchema,
@@ -17,7 +17,24 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 	const session = await safeGetSession();
 	if (!session.session) throw error(401, 'Unauthorized');
 
-	const applicationId = params.id;
+	const idOrNum = params.id;
+	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+	const applicationId = idOrNum;
+
+	if (!uuidRegex.test(idOrNum)) {
+		const { data: appData } = await supabase
+			.schema('api')
+			.from('ip_applications')
+			.select('application_id')
+			.eq('application_number', idOrNum)
+			.maybeSingle();
+
+		if (appData?.application_id) {
+			throw redirect(307, `/application/${appData.application_id}`);
+		} else {
+			throw error(404, 'Application not found.');
+		}
+	}
 
 	// Fetch the application with joins (include id for dropdowns)
 	const [

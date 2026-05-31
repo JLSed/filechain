@@ -43,7 +43,7 @@
 		}
 	}
 
-	async function markAsRead(notification: Notification) {
+	async function markAsRead(notification: Notification): Promise<void> {
 		if (!notification.is_read) {
 			const supabase = createBrowserClient();
 			await supabase
@@ -60,7 +60,39 @@
 
 		if (notification.link) {
 			open = false;
-			goto(notification.link);
+			let targetLink = notification.link;
+
+			// Handle legacy links using application_number instead of application_id
+			const match = targetLink.match(/^\/application\/([^/]+)$/);
+			if (match) {
+				const identifier = match[1];
+				const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+				if (
+					identifier &&
+					identifier !== 'timeline' &&
+					identifier !== 'no-app-num' &&
+					identifier !== 'null' &&
+					!uuidRegex.test(identifier)
+				) {
+					try {
+						const supabase = createBrowserClient();
+						const { data, error } = await supabase
+							.schema('api')
+							.from('ip_applications')
+							.select('application_id')
+							.eq('application_number', identifier)
+							.maybeSingle();
+
+						if (!error && data?.application_id) {
+							targetLink = `/application/${data.application_id}`;
+						}
+					} catch (e) {
+						console.error('Failed to resolve application_number to application_id:', e);
+					}
+				}
+			}
+
+			goto(targetLink);
 		}
 	}
 

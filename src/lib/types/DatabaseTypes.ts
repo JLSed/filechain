@@ -99,7 +99,7 @@ export const IpApplicationSchema = z.object({
 	mailing_date: z.string().nullable(),
 	publication_date: z.string().nullable(),
 	inventor_names: z.array(z.string()),
-	contact_details: z.string().nullable(),
+	contact_details: z.array(z.string()),
 	link_to_folder: z.string().nullable(),
 	remarks: z.string().nullable(),
 	created_at: z.string(),
