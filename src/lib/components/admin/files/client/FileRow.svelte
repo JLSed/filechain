@@ -96,49 +96,55 @@
 		</Table.Cell>
 		<Table.Cell class="w-10 pr-4">
 			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
+				<DropdownMenu.Trigger disabled={!hasAccess}>
 					<button
-						class="rounded-md p-1 transition-opacity hover:bg-muted"
+						class="rounded-md p-1 transition-opacity hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
 						aria-label="File options"
+						disabled={!hasAccess}
+						onclick={(e) => e.stopPropagation()}
 					>
 						<EllipsisVertical class="size-4" />
 					</button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end">
 					<DropdownMenu.Item
+						disabled={!hasAccess}
 						onclick={(e: MouseEvent) => {
 							e.stopPropagation();
 							onshare(file);
 						}}><Share2 /> Share</DropdownMenu.Item
 					>
 					<DropdownMenu.Item
-						disabled={!canRevision}
+						disabled={!hasAccess || !canRevision}
 						onclick={(e: MouseEvent) => {
 							e.stopPropagation();
 							onaddrevision(file);
 						}}><Upload /> Add Revision</DropdownMenu.Item
 					>
 					<DropdownMenu.Item
+						disabled={!hasAccess}
 						onclick={(e: MouseEvent) => {
 							e.stopPropagation();
 							onverifyintegrity(file);
 						}}><ShieldCheck /> Verify Integrity</DropdownMenu.Item
 					>
-					<DropdownMenu.Item><Pencil /> Edit Metadata</DropdownMenu.Item>
+					<DropdownMenu.Item disabled={!hasAccess}><Pencil /> Edit Metadata</DropdownMenu.Item>
 					<DropdownMenu.Item
+						disabled={!hasAccess}
 						onclick={(e: MouseEvent) => {
 							e.stopPropagation();
 							onviewrevisions(file);
 						}}><History /> View Revisions</DropdownMenu.Item
 					>
 					<DropdownMenu.Item
+						disabled={!hasAccess}
 						onclick={(e: MouseEvent) => {
 							e.stopPropagation();
 							onviewaccess(file);
 						}}><Users /> View Access</DropdownMenu.Item
 					>
 					<DropdownMenu.Separator />
-					<DropdownMenu.Item><Archive /> Archive File</DropdownMenu.Item>
+					<DropdownMenu.Item disabled={!hasAccess}><Archive /> Archive File</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		</Table.Cell>

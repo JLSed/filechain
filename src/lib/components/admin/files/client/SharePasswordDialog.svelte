@@ -68,7 +68,7 @@
 		if (!file || selectedUsers.length === 0) return;
 
 		if (!password.trim()) {
-			error = 'Please enter your master password.';
+			error = 'Enter your password';
 			return;
 		}
 
@@ -141,7 +141,7 @@
 					const msg = result.error_message || 'Re-encryption failed';
 					throw new Error(
 						msg.includes('decryption') || msg.includes('password')
-							? 'Incorrect master password.'
+							? 'Incorrect password.'
 							: `Failed to share with ${getUserDisplayName(targetUser)}: ${msg}`
 					);
 				}
@@ -190,7 +190,7 @@
 				Confirm Share
 			</Dialog.Title>
 			<Dialog.Description>
-				Enter your master password to share
+				Enter your password to share
 				{#if file}
 					<span class="font-medium">{file.file_name}</span>
 				{/if}
@@ -215,11 +215,11 @@
 
 				<!-- Password input -->
 				<div class="grid gap-2">
-					<Label for="share-password">Master Password</Label>
+					<Label for="share-password">Password</Label>
 					<Input
 						id="share-password"
 						type="password"
-						placeholder="Enter your master password"
+						placeholder="Enter your password"
 						bind:value={password}
 						disabled={loading}
 						autocomplete="off"

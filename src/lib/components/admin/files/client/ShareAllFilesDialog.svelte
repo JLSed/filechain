@@ -252,7 +252,7 @@
 		if (!selectedUser || filesWithoutAccess.length === 0) return;
 
 		if (!password.trim()) {
-			errorMessage = 'Please enter your master password.';
+			errorMessage = 'Enter your password';
 			return;
 		}
 
@@ -320,7 +320,7 @@
 					const msg = result.error_message || 'Re-encryption failed';
 					throw new Error(
 						msg.includes('decryption') || msg.includes('password')
-							? 'Incorrect master password.'
+							? 'Incorrect password.'
 							: `Failed to share "${file.file_name}": ${msg}`
 					);
 				}
@@ -401,7 +401,7 @@
 				{:else if step === 'confirm-access' && selectedUser}
 					Sharing files with <span class="font-medium">{getUserDisplayName(selectedUser)}</span>
 				{:else if step === 'password' && selectedUser}
-					Enter your master password to share {filesWithoutAccess.length} file{filesWithoutAccess.length !==
+					Enter your password to share {filesWithoutAccess.length} file{filesWithoutAccess.length !==
 					1
 						? 's'
 						: ''} with
@@ -556,11 +556,11 @@
 
 						<!-- Password -->
 						<div class="grid gap-2">
-							<Label for="share-all-password">Master Password</Label>
+							<Label for="share-all-password">Password</Label>
 							<Input
 								id="share-all-password"
 								type="password"
-								placeholder="Enter your master password"
+								placeholder="Enter your password"
 								bind:value={password}
 								disabled={sharing}
 								autocomplete="off"

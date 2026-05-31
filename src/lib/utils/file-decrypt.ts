@@ -12,7 +12,7 @@ interface DecryptFileParams {
 }
 
 /**
- * Decrypts an encrypted file from storage using the user's master password.
+ * Decrypts an encrypted file from storage using the user's password.
  *
  * Steps:
  * 1. Fetches the user's encrypted private key (user_secrets)
@@ -45,9 +45,7 @@ export async function decryptAndViewFile({
 		.single();
 
 	if (secretError || !secret) {
-		throw new Error(
-			'Could not retrieve your encryption keys. Please set up your master key first.'
-		);
+		throw new Error('Could not retrieve your encryption keys. Please set up your password first.');
 	}
 
 	// Fetch file DEK (encrypted data encryption key + nonce + ephemeral key)
@@ -104,9 +102,7 @@ export async function decryptAndViewFile({
 	if (!result.success) {
 		const msg = result.error_message || 'Decryption failed';
 		result.free();
-		throw new Error(
-			msg.includes('decryption') ? 'Incorrect master password or corrupted file.' : msg
-		);
+		throw new Error(msg.includes('decryption') ? 'Incorrect password or corrupted file.' : msg);
 	}
 
 	try {

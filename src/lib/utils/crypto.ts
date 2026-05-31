@@ -97,7 +97,7 @@ export async function getUserEncryptionKey(
 			userId: user.id,
 			errorMessage: secretError?.message
 		});
-		throw new Error('Could not retrieve encryption key. Please set up your master key first.');
+		throw new Error('Could not retrieve encryption key. Please set up your password first.');
 	}
 
 	const publicKeyBytes = hexToBytes(secret.public_key);
@@ -126,7 +126,7 @@ interface RecipientPublicKeyRow {
 /**
  * Fetches public encryption keys for all users in a given team role
  * and all System Admin users. Returns an array of { userId, publicKeyBytes }.
- * Users without a set-up master password (no user_secrets entry) are skipped.
+ * Users without a set-up password (no user_secrets entry) are skipped.
  */
 export async function getTeamAndAdminEncryptionKeys(
 	supabase: SupabaseClient,

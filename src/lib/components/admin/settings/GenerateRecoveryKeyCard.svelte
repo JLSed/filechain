@@ -35,12 +35,12 @@
 		errorMessage = '';
 
 		if (!masterPassword || masterPassword.length < 7) {
-			errorMessage = 'Please enter your current master password (at least 7 characters).';
+			errorMessage = 'Enter your password (at least 7 characters).';
 			return;
 		}
 
 		if (!userSecret) {
-			errorMessage = 'No encryption keys found. Please set up your master password first.';
+			errorMessage = 'No encryption keys found. Please set up your password first.';
 			return;
 		}
 
@@ -132,14 +132,13 @@
 				{#if showPasswordInput}
 					<div class="mt-4 space-y-3">
 						<div>
-							<label
-								for="recovery_master_password"
-								class="mb-1 block text-sm font-medium text-gray-700">Master Password</label
+							<label for="recovery_password" class="mb-1 block text-sm font-medium text-gray-700"
+								>Password</label
 							>
 							<Input
-								id="recovery_master_password"
+								id="recovery_password"
 								type="password"
-								placeholder="Enter your current master password"
+								placeholder="Enter your password"
 								bind:value={masterPassword}
 								disabled={isGenerating}
 							/>

@@ -59,7 +59,7 @@
 		showLogoutPrompt = false;
 
 		if (!data.userSecret) {
-			localError = 'Master password is not configured for your account.';
+			localError = 'Password is not configured for your account.';
 			cancel();
 			return;
 		}
@@ -147,9 +147,7 @@
 			{#if !data.userSecret}
 				<div class="flex items-start gap-2 rounded-md bg-destructive/10 p-3">
 					<AlertCircle class="mt-0.5 size-4 shrink-0 text-destructive" />
-					<p class="text-sm text-destructive">
-						Master password is not configured for this account yet.
-					</p>
+					<p class="text-sm text-destructive">Password is not configured for this account yet.</p>
 				</div>
 			{/if}
 

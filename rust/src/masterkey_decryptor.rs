@@ -25,7 +25,7 @@ pub struct ReEncryptedPrivateKey {
 /// Decrypts the user's private key using password-derived key
 /// 
 /// # Arguments
-/// * `password` - The user's master password
+/// * `password` - The user's password
 /// * `salt` - Salt used for key derivation
 /// * `encrypted_key` - The encrypted private key bytes (48 bytes: 32 key + 16 auth tag)
 /// * `nonce` - The nonce used for encryption (12 bytes)
