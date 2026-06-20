@@ -11,11 +11,14 @@ import z from 'zod';
 import { insertAuditLog } from '$lib/services/audit-log';
 import { formatName } from '$lib/utils/formatter';
 
-export const load = (async ({ params, locals: { supabase, safeGetSession }, depends }) => {
+export const load = (async ({ params, locals: { supabase, safeGetSession }, depends, parent }) => {
 	depends('db:application-detail');
 
 	const session = await safeGetSession();
 	if (!session.session) throw error(401, 'Unauthorized');
+
+	const { profile } = await parent();
+	const isSystemAdmin = profile.role === 'System Admin';
 
 	const idOrNum = params.id;
 	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -73,6 +76,11 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 
 	if (appResult.error || !appResult.data) {
 		throw error(404, 'Application not found.');
+	}
+
+	// Enforce team_assigned permission
+	if (!isSystemAdmin && appResult.data.team_assigned !== profile.role) {
+		throw error(403, 'Forbidden: You do not have permission to view this application.');
 	}
 
 	const appParsed = IpApplicationSchema.safeParse(appResult.data);
@@ -140,6 +148,30 @@ export const actions = {
 			return fail(400, { message: 'Invalid payload.' });
 		}
 
+		// Verify write permission
+		const { data: appData, error: checkError } = await supabase
+			.schema('api')
+			.from('ip_applications')
+			.select('team_assigned')
+			.eq('application_id', applicationId)
+			.maybeSingle();
+
+		if (checkError || !appData) {
+			return fail(404, { message: 'Application not found.' });
+		}
+
+		const { data: profile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('role, first_name, middle_name, last_name')
+			.eq('user_id', session.session.user.id)
+			.single();
+
+		const isSystemAdmin = profile?.role === 'System Admin';
+		if (!isSystemAdmin && appData.team_assigned !== profile?.role) {
+			return fail(403, { message: 'You do not have permission to modify this application.' });
+		}
+
 		// Perform the database update
 		const { error: updateError } = await supabase
 			.schema('api')
@@ -154,13 +186,6 @@ export const actions = {
 		// Log audit entry with IP address
 		let ipAddress = getClientAddress();
 		if (ipAddress === '::1') ipAddress = '127.0.0.1';
-
-		const { data: profile } = await supabase
-			.schema('api')
-			.from('user_profiles')
-			.select('first_name, middle_name, last_name')
-			.eq('user_id', session.session.user.id)
-			.single();
 
 		const actorName = profile
 			? formatName(profile.first_name ?? '', profile.middle_name, profile.last_name ?? '')

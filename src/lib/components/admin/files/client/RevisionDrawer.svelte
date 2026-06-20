@@ -7,15 +7,18 @@
 	import VerifyChainIntegrityDialog from './VerifyChainIntegrityDialog.svelte';
 	import FileViewer from './FileViewer.svelte';
 	import { formatTimestamp, formatFileSize } from '$lib/utils/formatter';
-	import { GitBranch, File, Eye, ShieldCheck } from '@lucide/svelte';
+	import { GitBranch, File, Eye, ShieldCheck, LockKeyhole } from '@lucide/svelte';
 
 	interface Props {
 		files: FileMetadata[];
+		accessibleFileIds?: string[];
 		open: boolean;
 		onclose: () => void;
 	}
 
-	let { files, open = $bindable(), onclose }: Props = $props();
+	let { files, accessibleFileIds = [], open = $bindable(), onclose }: Props = $props();
+
+	const accessibleSet = $derived(new Set(accessibleFileIds));
 
 	let container: HTMLDivElement | undefined = $state();
 	let isDragging = $state(false);
@@ -154,6 +157,7 @@
 					{@const ledger = file.file_ledger?.[0]}
 					{@const isLatest = i === files.length - 1}
 					{@const isGenesis = i === 0}
+					{@const hasAccess = accessibleSet.has(file.file_id)}
 
 					<!-- Revision card -->
 					<div class="flex flex-col items-center">
@@ -170,15 +174,27 @@
 						<!-- Card -->
 						<div
 							class="w-56 rounded-lg border p-3 transition-colors
-								{isLatest ? 'border-primary/40 bg-primary/5' : 'border-border bg-card hover:bg-muted/50'}"
+								{!hasAccess
+								? 'cursor-help border-red-500/20 bg-red-500/5 hover:bg-red-500/10'
+								: isLatest
+									? 'cursor-default border-primary/40 bg-primary/5'
+									: 'cursor-default border-border bg-card hover:bg-muted/50'}"
 						>
 							<!-- File icon + name -->
 							<div class="flex items-center gap-2">
 								<div class="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-									<File class="size-4 text-muted-foreground" />
+									{#if !hasAccess}
+										<LockKeyhole class="size-4 text-red-400" />
+									{:else}
+										<File class="size-4 text-muted-foreground" />
+									{/if}
 								</div>
 								<div class="min-w-0 flex-1">
-									<p class="truncate text-sm font-medium text-foreground">
+									<p
+										class="truncate text-sm font-medium {!hasAccess
+											? 'text-red-400'
+											: 'text-foreground'}"
+									>
 										{file.file_name}
 									</p>
 									<p class="text-xs text-muted-foreground">
@@ -206,6 +222,7 @@
 									variant="ghost"
 									size="sm"
 									class="h-7 gap-1.5 px-2 text-xs"
+									disabled={!hasAccess}
 									onclick={(e) => {
 										e.stopPropagation();
 										handleViewFile(file);

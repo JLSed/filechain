@@ -17,7 +17,8 @@ export const UserProfileSchema = z.object({
 	created_at: z.string(),
 	contact_number: z.string().nullable(),
 	address: z.string().nullable(),
-	email: z.string().nullable()
+	email: z.string().nullable(),
+	has_secret: z.boolean().optional()
 });
 
 export type UserProfile = z.infer<typeof UserProfileSchema>;

@@ -66,11 +66,15 @@
 	<Table.Row
 		{...triggerProps}
 		class={mergeProps(triggerProps, {
-			class: `group cursor-pointer hover:bg-muted/50 ${
-				!hasAccess ? 'cursor-help bg-red-500/5 hover:bg-red-500/10' : ''
+			class: `group hover:bg-muted/50 ${
+				!hasAccess ? 'cursor-help bg-red-500/5 hover:bg-red-500/10' : 'cursor-pointer'
 			}`
 		}).class}
-		onclick={() => onfileclick(file)}
+		onclick={() => {
+			if (hasAccess) {
+				onfileclick(file);
+			}
+		}}
 	>
 		<Table.Cell class="flex items-center gap-2 py-3 pl-4">
 			{#if !hasAccess}

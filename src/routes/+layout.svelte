@@ -6,6 +6,8 @@
 	import { createBrowserClient } from '$lib/services/supabase/client';
 	import LandingNavBar from '$lib/components/landing/LandingNavBar.svelte';
 	import Toaster from '$lib/shadcn/components/ui/sonner/sonner.svelte';
+	import { dev } from '$app/environment';
+	import { inject } from '@vercel/analytics';
 
 	let { data, children } = $props();
 
@@ -18,6 +20,8 @@
 	 * layout server loader re-runs and the session stays in sync.
 	 */
 	onMount(() => {
+		inject({ mode: dev ? 'development' : 'production' });
+
 		const {
 			data: { subscription }
 		} = supabase.auth.onAuthStateChange((event, newSession) => {
