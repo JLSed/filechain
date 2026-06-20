@@ -57,10 +57,16 @@
 					{/if}
 				</Table.Cell>
 				<Table.Cell>
-					{#if user.is_active}
+					{#if !user.is_active}
+						<Badge variant="secondary">Archived</Badge>
+					{:else if user.has_secret}
 						<Badge variant="default" class="bg-emerald-600 hover:bg-emerald-700">Active</Badge>
 					{:else}
-						<Badge variant="secondary">Archived</Badge>
+						<Badge
+							variant="outline"
+							class="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+							>Invited</Badge
+						>
 					{/if}
 				</Table.Cell>
 			</Table.Row>

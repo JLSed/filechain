@@ -14,6 +14,7 @@
 	import { AlertCircle, ArrowLeft } from '@lucide/svelte';
 	import { invalidate } from '$app/navigation';
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
+	import { toast } from 'svelte-sonner';
 
 	let { data }: PageProps = $props();
 
@@ -211,6 +212,7 @@
 		sharePasswordDialogOpen = false;
 		shareFile = null;
 		shareSelectedUsers = [];
+		toast.success('File shared successfully.');
 		invalidate('db:client-files');
 	}
 
@@ -284,6 +286,7 @@
 
 <RevisionDrawer
 	files={revisionChain}
+	accessibleFileIds={data.accessibleFileIds}
 	bind:open={revisionDrawerOpen}
 	onclose={handleRevisionDrawerClose}
 />

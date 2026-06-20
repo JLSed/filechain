@@ -9,7 +9,8 @@ import {
 	ChartArea,
 	FileQuestion,
 	Receipt,
-	Settings
+	Settings,
+	Activity
 } from '@lucide/svelte';
 import {
 	canAccessRouteByPermissions,
@@ -30,7 +31,8 @@ export const pageTitles: Record<string, string> = {
 	'/users': 'User Management',
 	'/settings': 'Settings',
 	'/settings/company': 'Company Settings',
-	'/settings/permissions': 'Role Permissions'
+	'/settings/permissions': 'Role Permissions',
+	'/system-health': 'System Health'
 };
 
 // ── Route protection ──
@@ -46,7 +48,8 @@ export const protectedRoutes = [
 	'/application',
 	'/application/no-app-num',
 	'/application/timeline',
-	'/invoices'
+	'/invoices',
+	'/system-health'
 ];
 export const authRoutes = ['/login', '/register'];
 
@@ -101,6 +104,11 @@ export const analyticsGroup: Sidebar.Item[] = [
 		title: 'Invoices',
 		url: '/invoices',
 		icon: Receipt
+	},
+	{
+		title: 'System Health',
+		url: '/system-health',
+		icon: Activity
 	}
 ];
 

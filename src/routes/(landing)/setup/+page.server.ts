@@ -3,6 +3,8 @@ import { SetupAccountFormSchema } from '$lib/types/FormTypes';
 import { superValidate, message } from 'sveltekit-superforms';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import { redirect, fail } from '@sveltejs/kit';
+import { insertAuditLog } from '$lib/services/audit-log';
+import { formatName } from '$lib/utils/formatter';
 
 export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession } }) => {
 	const { session } = await safeGetSession();
@@ -31,7 +33,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, safeGetSession 
 };
 
 export const actions: Actions = {
-	setupAccount: async ({ request, locals: { supabase, safeGetSession } }) => {
+	setupAccount: async ({ request, locals: { supabase, safeGetSession }, getClientAddress }) => {
 		const form = await superValidate(request, zod(SetupAccountFormSchema));
 
 		if (!form.valid) {
@@ -80,6 +82,29 @@ export const actions: Actions = {
 				{ status: 500 }
 			);
 		}
+
+		// 3. Log audit entry for first login / setup completion
+		let ipAddress = getClientAddress();
+		if (ipAddress === '::1') ipAddress = '127.0.0.1';
+
+		const { data: profile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('first_name, middle_name, last_name')
+			.eq('user_id', session.user.id)
+			.single();
+
+		const actorName = profile
+			? formatName(profile.first_name ?? '', profile.middle_name, profile.last_name ?? '')
+			: (session.user.email ?? 'Unknown');
+
+		await insertAuditLog(supabase, {
+			actorId: session.user.id,
+			details: `${actorName} completed first-time account setup & logged in`,
+			severityLevel: 'notice',
+			ipAddress,
+			eventType: 'Logged In'
+		});
 
 		redirect(303, '/dashboard');
 	}

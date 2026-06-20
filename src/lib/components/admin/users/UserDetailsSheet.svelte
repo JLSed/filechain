@@ -23,10 +23,16 @@
 			<Sheet.Header>
 				<Sheet.Title>User Details</Sheet.Title>
 				<Sheet.Description>
-					{#if data.is_active}
+					{#if !data.is_active}
+						<Badge variant="secondary">Archived</Badge>
+					{:else if data.has_secret}
 						<Badge variant="default" class="bg-emerald-600 hover:bg-emerald-700">Active</Badge>
 					{:else}
-						<Badge variant="secondary">Archived</Badge>
+						<Badge
+							variant="outline"
+							class="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+							>Invited</Badge
+						>
 					{/if}
 				</Sheet.Description>
 			</Sheet.Header>

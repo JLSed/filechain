@@ -310,6 +310,7 @@
 		sharePasswordDialogOpen = false;
 		shareFile = null;
 		shareSelectedUsers = [];
+		toast.success('File shared successfully.');
 		invalidate('db:application-detail');
 	}
 
@@ -342,6 +343,7 @@
 
 	function handleShareAllCompleted(): void {
 		shareAllDialogOpen = false;
+		toast.success('All files shared successfully.');
 		invalidate('db:application-detail');
 	}
 
@@ -450,6 +452,7 @@
 
 <RevisionDrawer
 	files={revisionChain}
+	accessibleFileIds={data.accessibleFileIds}
 	bind:open={revisionDrawerOpen}
 	onclose={handleRevisionDrawerClose}
 />
