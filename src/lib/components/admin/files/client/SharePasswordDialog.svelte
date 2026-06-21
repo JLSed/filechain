@@ -10,6 +10,7 @@
 	import { logAuditEvent } from '$lib/services/audit-log-client';
 	import initWasm, { re_encrypt_dek_for_recipient } from '$lib/pkg/rust';
 	import { hexToBytes } from '$lib/utils/crypto';
+	import { toast } from 'svelte-sonner';
 
 	interface SelectedUser {
 		user_id: string;
@@ -173,6 +174,7 @@
 			});
 
 			reset();
+			toast.success('File shared successfully.');
 			onshared();
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'An unexpected error occurred.';

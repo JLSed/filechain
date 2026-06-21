@@ -53,6 +53,9 @@ export const protectedRoutes = [
 ];
 export const authRoutes = ['/login', '/register'];
 
+/** Routes that require a session but are exempt from MFA enforcement */
+export const mfaRoutes = ['/login/setup-2fa', '/login/verify-2fa'];
+
 // ── Permission-based route access ──
 
 /**

@@ -106,6 +106,6 @@ export const actions: Actions = {
 			eventType: 'Logged In'
 		});
 
-		redirect(303, '/dashboard');
+		redirect(303, '/login/setup-2fa');
 	}
 };

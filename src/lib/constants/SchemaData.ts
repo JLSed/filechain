@@ -75,7 +75,9 @@ export const AUDIT_EVENT_TYPES = [
 	'Cancelled Invoice',
 	'Recorded Payment',
 	'Verified Integrity',
-	'Password Reset'
+	'Password Reset',
+	'Enabled 2FA',
+	'Changed 2FA Device'
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;

@@ -1,4 +1,4 @@
-import { authRoutes, protectedRoutes } from '$lib/constants/LinkData';
+import { authRoutes, mfaRoutes, protectedRoutes } from '$lib/constants/LinkData';
 import { createServerClient } from '$lib/services/supabase/server';
 import type { UserMetadata } from '$lib/types/DatabaseTypes';
 import type { Session } from '@supabase/supabase-js';
@@ -62,6 +62,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 			cachedSession = UNAUTHENTICATED;
 			return UNAUTHENTICATED;
 		}
+		// Override the insecure user proxy inside the session with the verified user object
+		session.user = user;
+
 		const result = { session, user_metadata: user };
 		cachedSession = result;
 		event.locals.session = session;
@@ -78,6 +81,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const { pathname } = event.url;
 	const isProtected = protectedRoutes.some((route) => pathname.startsWith(route));
 	const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+	const isMfaRoute = mfaRoutes.some((route) => pathname.startsWith(route));
 
 	// Redirect unauthenticated users away from protected pages
 	if (isProtected && !localSession) {
@@ -85,8 +89,27 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	// Redirect authenticated users away from auth pages (login/register)
-	if (isAuthRoute && localSession) {
+	// but NOT away from MFA pages (setup-2fa, verify-2fa) which are sub-routes of /login
+	if (isAuthRoute && !isMfaRoute && localSession) {
 		redirect(303, '/dashboard');
+	}
+
+	// ── 3b. MFA enforcement on protected routes ──
+	// ponytail: only check MFA factors if user has a session and wants
+	// a protected route. MFA routes themselves are exempt to avoid loops.
+	if (isProtected && localSession && !isMfaRoute) {
+		const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+		if (aalData) {
+			if (aalData.nextLevel === 'aal2' && aalData.currentLevel !== 'aal2') {
+				// Has enrolled factors but session not yet elevated — verify
+				redirect(303, '/login/verify-2fa');
+			}
+			if (aalData.nextLevel === 'aal1' && aalData.currentLevel === 'aal1') {
+				// No factors enrolled — must set up 2FA
+				redirect(303, '/login/setup-2fa');
+			}
+		}
 	}
 
 	// ── 4. Resolve the request ──

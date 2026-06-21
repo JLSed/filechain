@@ -141,17 +141,26 @@
 								</Table.Cell>
 								<Table.Cell class="text-right text-xs text-muted-foreground">
 									{#if task.description}
-										<a
-											href={task.description}
-											target="_blank"
-											rel="noopener noreferrer"
-											class="inline-block max-w-48 truncate align-bottom transition-colors hover:text-primary"
-											title={task.description}
-										>
-											{task.description.length > 25
-												? `${task.description.substring(0, 25)}...`
-												: task.description}
-										</a>
+										{#if /^(https?:\/\/)/i.test(task.description)}
+											<a
+												href={task.description}
+												target="_blank"
+												rel="noopener noreferrer"
+												class="inline-block max-w-48 truncate align-bottom transition-colors hover:text-primary"
+												title={task.description}
+											>
+												{task.description.length > 25
+													? `${task.description.substring(0, 25)}...`
+													: task.description}
+											</a>
+										{:else}
+											<span
+												class="inline-block max-w-48 truncate align-bottom"
+												title={task.description}
+											>
+												{task.description}
+											</span>
+										{/if}
 									{:else}
 										—
 									{/if}

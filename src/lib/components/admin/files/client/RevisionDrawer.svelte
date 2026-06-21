@@ -1,22 +1,41 @@
 <script lang="ts">
 	import type { DecryptedFileView, FileMetadata } from '$lib/types/DatabaseTypes';
 	import * as Drawer from '$lib/shadcn/components/ui/drawer/index';
+	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import MasterPasswordDialog from './MasterPasswordDialog.svelte';
 	import VerifyChainIntegrityDialog from './VerifyChainIntegrityDialog.svelte';
 	import FileViewer from './FileViewer.svelte';
 	import { formatTimestamp, formatFileSize } from '$lib/utils/formatter';
-	import { GitBranch, File, Eye, ShieldCheck, LockKeyhole } from '@lucide/svelte';
+	import {
+		GitBranch,
+		File,
+		Eye,
+		ShieldCheck,
+		LockKeyhole,
+		EllipsisVertical,
+		Share2,
+		Users
+	} from '@lucide/svelte';
 
 	interface Props {
 		files: FileMetadata[];
 		accessibleFileIds?: string[];
 		open: boolean;
 		onclose: () => void;
+		onshare: (file: FileMetadata) => void;
+		onviewaccess: (file: FileMetadata) => void;
 	}
 
-	let { files, accessibleFileIds = [], open = $bindable(), onclose }: Props = $props();
+	let {
+		files,
+		accessibleFileIds = [],
+		open = $bindable(),
+		onclose,
+		onshare,
+		onviewaccess
+	}: Props = $props();
 
 	const accessibleSet = $derived(new Set(accessibleFileIds));
 
@@ -216,8 +235,8 @@
 								</p>
 							</div>
 
-							<!-- View button -->
-							<div class="mt-2 flex justify-end">
+							<!-- View and options buttons -->
+							<div class="mt-2 flex items-center justify-between gap-1">
 								<Button
 									variant="ghost"
 									size="sm"
@@ -231,6 +250,35 @@
 									<Eye class="size-3.5" />
 									View
 								</Button>
+
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger disabled={!hasAccess}>
+										<button
+											class="rounded-md p-1 transition-opacity hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+											aria-label="File options"
+											disabled={!hasAccess}
+											onclick={(e) => e.stopPropagation()}
+										>
+											<EllipsisVertical class="size-4" />
+										</button>
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content align="end">
+										<DropdownMenu.Item
+											disabled={!hasAccess}
+											onclick={(e: MouseEvent) => {
+												e.stopPropagation();
+												onshare(file);
+											}}><Share2 /> Share</DropdownMenu.Item
+										>
+										<DropdownMenu.Item
+											disabled={!hasAccess}
+											onclick={(e: MouseEvent) => {
+												e.stopPropagation();
+												onviewaccess(file);
+											}}><Users /> View Access</DropdownMenu.Item
+										>
+									</DropdownMenu.Content>
+								</DropdownMenu.Root>
 							</div>
 						</div>
 					</div>

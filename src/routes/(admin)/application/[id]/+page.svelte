@@ -310,7 +310,6 @@
 		sharePasswordDialogOpen = false;
 		shareFile = null;
 		shareSelectedUsers = [];
-		toast.success('File shared successfully.');
 		invalidate('db:application-detail');
 	}
 
@@ -343,7 +342,6 @@
 
 	function handleShareAllCompleted(): void {
 		shareAllDialogOpen = false;
-		toast.success('All files shared successfully.');
 		invalidate('db:application-detail');
 	}
 
@@ -455,6 +453,8 @@
 	accessibleFileIds={data.accessibleFileIds}
 	bind:open={revisionDrawerOpen}
 	onclose={handleRevisionDrawerClose}
+	onshare={handleShare}
+	onviewaccess={handleViewAccess}
 />
 
 <VerifyIntegrityDialog

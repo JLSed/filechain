@@ -21,6 +21,7 @@
 	import { logAuditEvent } from '$lib/services/audit-log-client';
 	import initWasm, { re_encrypt_dek_for_recipient } from '$lib/pkg/rust';
 	import { hexToBytes } from '$lib/utils/crypto';
+	import { toast } from 'svelte-sonner';
 
 	interface ShareableUser {
 		user_id: string;
@@ -349,6 +350,7 @@
 			});
 
 			reset();
+			toast.success('All files shared successfully.');
 			onshared();
 		} catch (err) {
 			errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred.';
