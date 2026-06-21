@@ -161,5 +161,99 @@ export const actions = {
 		}
 
 		return { recoveryResult: { success: true } };
+	},
+
+	enrollNewFactor: async ({ locals: { supabase, safeGetSession } }) => {
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Session expired.' });
+
+		// Clean up any unverified TOTP factors to avoid name conflicts (ponytail: delete stale unverified factors)
+		const { data: factorsData } = await supabase.auth.mfa.listFactors();
+		const unverifiedTotps =
+			factorsData?.all?.filter((f) => f.factor_type === 'totp' && f.status === 'unverified') ?? [];
+		for (const factor of unverifiedTotps) {
+			await supabase.auth.mfa.unenroll({ factorId: factor.id });
+		}
+
+		const { data: enrollData, error: enrollError } = await supabase.auth.mfa.enroll({
+			factorType: 'totp',
+			friendlyName: 'Authenticator App'
+		});
+
+		if (enrollError || !enrollData) {
+			console.error('MFA re-enroll error:', enrollError);
+			return fail(500, { error: 'Failed to start re-enrollment.' });
+		}
+
+		return {
+			enrollData: {
+				factorId: enrollData.id,
+				qrCodeUri: enrollData.totp.uri,
+				secret: enrollData.totp.secret
+			}
+		};
+	},
+
+	verifyNewFactor: async ({ request, locals: { supabase, safeGetSession }, getClientAddress }) => {
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Session expired.' });
+
+		const formData = await request.formData();
+		const code = formData.get('code')?.toString().trim() ?? '';
+		const factorId = formData.get('factorId')?.toString() ?? '';
+
+		if (!code || code.length !== 6) {
+			return fail(400, { error: 'Please enter a valid 6-digit code.' });
+		}
+
+		const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({
+			factorId
+		});
+
+		if (challengeError || !challengeData) {
+			return fail(500, { error: 'Failed to create MFA challenge.' });
+		}
+
+		const { error: verifyError } = await supabase.auth.mfa.verify({
+			factorId,
+			challengeId: challengeData.id,
+			code
+		});
+
+		if (verifyError) {
+			return fail(400, { error: 'Invalid code. Please check and try again.' });
+		}
+
+		// Unenroll old factors (keep only the new one)
+		const { data: factorsData } = await supabase.auth.mfa.listFactors();
+		const oldFactors = factorsData?.totp?.filter((f) => f.id !== factorId) ?? [];
+		for (const old of oldFactors) {
+			await supabase.auth.mfa.unenroll({ factorId: old.id });
+		}
+
+		// Audit log
+		let ipAddress = getClientAddress();
+		if (ipAddress === '::1') ipAddress = '127.0.0.1';
+
+		const { data: profile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('first_name, middle_name, last_name')
+			.eq('user_id', session.user.id)
+			.single();
+
+		const actorName = profile
+			? formatName(profile.first_name ?? '', profile.middle_name, profile.last_name ?? '')
+			: (session.user.email ?? 'Unknown');
+
+		await insertAuditLog(supabase, {
+			actorId: session.user.id,
+			details: `${actorName} changed 2FA authenticator device`,
+			severityLevel: 'warning',
+			ipAddress,
+			eventType: 'Changed 2FA Device'
+		});
+
+		return { success: true };
 	}
 } satisfies Actions;

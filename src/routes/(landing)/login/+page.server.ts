@@ -3,8 +3,6 @@ import { message, superValidate } from 'sveltekit-superforms';
 import { zod4 as zod } from 'sveltekit-superforms/adapters';
 import type { PageServerLoad } from './$types';
 import { redirect, fail } from '@sveltejs/kit';
-import { insertAuditLog } from '$lib/services/audit-log';
-import { formatName } from '$lib/utils/formatter';
 
 export const load = (async () => {
 	return { form: superValidate(zod(LoginFormSchema)) };
@@ -22,7 +20,7 @@ export const actions = {
 		let ipAddress = getClientAddress();
 		if (ipAddress === '::1') ipAddress = '127.0.0.1';
 
-		const { data, error } = await supabase.auth.signInWithPassword({
+		const { error } = await supabase.auth.signInWithPassword({
 			email,
 			password: form.data.password
 		});
@@ -51,28 +49,15 @@ export const actions = {
 		// Reset failed attempts on successful login
 		failedAttempts.delete(email);
 
-		// Log successful login
-		if (data.user) {
-			const { data: profile } = await supabase
-				.schema('api')
-				.from('user_profiles')
-				.select('first_name, middle_name, last_name')
-				.eq('user_id', data.user.id)
-				.single();
+		// Check MFA assurance level to decide where to redirect
+		const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
-			const actorName = profile
-				? formatName(profile.first_name ?? '', profile.middle_name, profile.last_name ?? '')
-				: email;
-
-			await insertAuditLog(supabase, {
-				actorId: data.user.id,
-				details: `${actorName} Logged In`,
-				severityLevel: 'notice',
-				ipAddress,
-				eventType: 'Logged In'
-			});
+		if (aalData?.nextLevel === 'aal2') {
+			// User has enrolled factors — needs to verify
+			redirect(303, '/login/verify-2fa');
 		}
 
-		redirect(303, '/dashboard');
+		// No factors enrolled — needs to set up 2FA
+		redirect(303, '/login/setup-2fa');
 	}
 };

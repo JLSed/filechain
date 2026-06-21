@@ -56,6 +56,7 @@
 	}: Props = $props();
 
 	const accessibleSet = $derived(new Set(accessibleFileIds));
+	const hasInaccessibleFile = $derived(files.some((f) => !accessibleSet.has(f.file_id)));
 
 	function getVersion(file: FileMetadata): string | null {
 		return file.file_ledger && file.file_ledger.length > 0
@@ -192,16 +193,42 @@
 			Application Files
 		</h3>
 		<div class="flex items-center gap-2">
-			<Button
-				variant="outline"
-				size="sm"
-				class="gap-1.5 text-xs"
-				onclick={onshareall}
-				disabled={files.length === 0}
-			>
-				<Share2 class="size-3.5" />
-				Share All Files
-			</Button>
+			{#if files.length > 0 && hasInaccessibleFile}
+				<Tooltip.Root>
+					<Tooltip.Trigger>
+						{#snippet child({ props })}
+							<div {...props} class="inline-block">
+								<Button
+									variant="outline"
+									size="sm"
+									class="pointer-events-none gap-1.5 text-xs"
+									disabled
+								>
+									<Share2 class="size-3.5" />
+									Share All Files
+								</Button>
+							</div>
+						{/snippet}
+					</Tooltip.Trigger>
+					<Tooltip.Content side="top">
+						<p class="max-w-56 text-xs text-balance">
+							You cannot share all files because you don't have access to one or more files in this
+							application.
+						</p>
+					</Tooltip.Content>
+				</Tooltip.Root>
+			{:else}
+				<Button
+					variant="outline"
+					size="sm"
+					class="gap-1.5 text-xs"
+					onclick={onshareall}
+					disabled={files.length === 0}
+				>
+					<Share2 class="size-3.5" />
+					Share All Files
+				</Button>
+			{/if}
 			<Button
 				variant="outline"
 				size="sm"
