@@ -149,7 +149,7 @@
 										{row.ip_address}
 									</span>
 								{:else}
-									<span class="text-muted-foreground">—</span>
+									<span class="text-muted-foreground">N/A</span>
 								{/if}
 							</Table.Cell>
 							<Table.Cell class="max-w-[400px]">

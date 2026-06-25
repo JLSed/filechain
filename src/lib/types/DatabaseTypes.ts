@@ -94,7 +94,7 @@ export const IpApplicationSchema = z.object({
 	title_of_invention: z.string(),
 	status: z.enum(APPLICATION_STATUS),
 	filling_date: z.string().nullable(),
-	paper_document_no: z.string().nullable(),
+	ipophil_link: z.string().nullable(),
 	fees: z.coerce.number().nullable(),
 	deadline: z.string().nullable(),
 	mailing_date: z.string().nullable(),
@@ -327,3 +327,12 @@ export const RolePermissionSchema = z.object({
 });
 
 export type RolePermission = z.infer<typeof RolePermissionSchema>;
+
+export const UserPermissionSchema = z.object({
+	user_id: z.uuid(),
+	permission_id: z.uuid(),
+	granted_at: z.string(),
+	granted_by: z.uuid().nullable()
+});
+
+export type UserPermission = z.infer<typeof UserPermissionSchema>;

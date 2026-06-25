@@ -49,15 +49,15 @@
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Type of Invention</dt>
-							<dd class="font-medium">{data.type_of_invention?.name ?? '—'}</dd>
+							<dd class="font-medium">{data.type_of_invention?.name ?? 'N/A'}</dd>
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Pre-Protection Status</dt>
-							<dd class="font-medium">{data.pre_protection_status?.name ?? '—'}</dd>
+							<dd class="font-medium">{data.pre_protection_status?.name ?? 'N/A'}</dd>
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Office Action</dt>
-							<dd class="font-medium">{data.type_of_office_action?.name ?? '—'}</dd>
+							<dd class="font-medium">{data.type_of_office_action?.name ?? 'N/A'}</dd>
 						</div>
 						<div class="sm:col-span-2">
 							<dt class="text-muted-foreground">Inventor(s)</dt>
@@ -65,7 +65,7 @@
 								{#if data.inventor_names && data.inventor_names.length > 0}
 									{data.inventor_names.join(', ')}
 								{:else}
-									—
+									N/A
 								{/if}
 							</dd>
 						</div>
@@ -80,11 +80,11 @@
 					<dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
 						<div>
 							<dt class="text-muted-foreground">Name</dt>
-							<dd class="font-medium">{data.client_profiles?.first_name ?? '—'}</dd>
+							<dd class="font-medium">{data.client_profiles?.first_name ?? 'N/A'}</dd>
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Email</dt>
-							<dd class="font-medium">{data.client_profiles?.email ?? '—'}</dd>
+							<dd class="font-medium">{data.client_profiles?.email ?? 'N/A'}</dd>
 						</div>
 						<div class="sm:col-span-2">
 							<dt class="text-muted-foreground">Contact Details</dt>
@@ -92,7 +92,7 @@
 								{#if data.contact_details && data.contact_details.length > 0}
 									{data.contact_details.join(', ')}
 								{:else}
-									—
+									N/A
 								{/if}
 							</dd>
 						</div>

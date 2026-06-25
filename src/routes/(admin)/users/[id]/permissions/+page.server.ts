@@ -1,20 +1,52 @@
 import { error, fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { PermissionSchema, RoleSchema } from '$lib/types/DatabaseTypes';
+import { PermissionSchema, RoleSchema, UserProfileSchema } from '$lib/types/DatabaseTypes';
 import { hasPermission } from '$lib/services/permissions';
 import { createAdminClient } from '$lib/services/supabase/admin';
 import { insertAuditLog } from '$lib/services/audit-log';
 import { formatName } from '$lib/utils/formatter';
 import z from 'zod';
 
-export const load = (async ({ locals: { supabase }, parent, depends }) => {
-	depends('db:role-permissions');
+export const load = (async ({ params, locals: { supabase }, parent, depends }) => {
+	depends('db:user-permissions-page');
 	const { profile, permissions } = await parent();
 
 	// Only System Admin or users with permissions.manage can access
 	if (profile.role !== 'System Admin' && !hasPermission(permissions, 'permissions.manage')) {
-		throw error(403, 'You do not have permission to manage role permissions.');
+		throw error(403, 'You do not have permission to manage permissions.');
 	}
+
+	const userId = params.id;
+
+	// Fetch target user profile
+	const { data: targetUserData, error: targetUserError } = await supabase
+		.schema('api')
+		.from('user_profiles')
+		.select('*')
+		.eq('user_id', userId)
+		.single();
+
+	if (targetUserError || !targetUserData) {
+		throw error(404, 'User not found.');
+	}
+
+	const targetUser = UserProfileSchema.parse(targetUserData);
+
+	// Fetch target user's current permissions
+	const { data: userPermsData, error: userPermsError } = await supabase
+		.schema('api')
+		.from('user_permissions')
+		.select('permission_id')
+		.eq('user_id', userId);
+
+	if (userPermsError) {
+		console.error('Failed to fetch target user permissions:', userPermsError);
+		throw error(500, 'Failed to load user permissions.');
+	}
+
+	const targetUserPermissionIds = (userPermsData ?? []).map(
+		(row: { permission_id: string }) => row.permission_id
+	);
 
 	// Fetch all roles
 	const { data: rolesData, error: rolesError } = await supabase
@@ -67,6 +99,8 @@ export const load = (async ({ locals: { supabase }, parent, depends }) => {
 	}
 
 	return {
+		targetUser,
+		targetUserPermissionIds,
 		roles,
 		allPermissions,
 		rolePermissionMap
@@ -74,7 +108,108 @@ export const load = (async ({ locals: { supabase }, parent, depends }) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-	updatePermissions: async ({
+	saveUserPermissions: async ({
+		params,
+		request,
+		locals: { supabase, safeGetSession },
+		getClientAddress
+	}) => {
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Unauthorized.' });
+
+		const userId = params.id;
+		const formData = await request.formData();
+		const permissionIdsJson = formData.get('permission_ids')?.toString();
+
+		if (!permissionIdsJson) {
+			return fail(400, { error: 'Permissions are required.' });
+		}
+
+		let permissionIds: string[];
+		try {
+			permissionIds = JSON.parse(permissionIdsJson);
+		} catch {
+			return fail(400, { error: 'Invalid permission data.' });
+		}
+
+		const admin = createAdminClient();
+		if (!admin) {
+			return fail(500, { error: 'Server configuration error.' });
+		}
+
+		// Delete existing permissions for this user
+		const { error: deleteError } = await admin
+			.schema('api')
+			.from('user_permissions')
+			.delete()
+			.eq('user_id', userId);
+
+		if (deleteError) {
+			console.error('Failed to delete user permissions:', deleteError);
+			return fail(500, { error: 'Failed to save permissions.' });
+		}
+
+		// Insert new permissions
+		if (permissionIds.length > 0) {
+			const inserts = permissionIds.map((pid) => ({
+				user_id: userId,
+				permission_id: pid,
+				granted_by: session.user.id
+			}));
+
+			const { error: insertError } = await admin
+				.schema('api')
+				.from('user_permissions')
+				.insert(inserts);
+
+			if (insertError) {
+				console.error('Failed to insert user permissions:', insertError);
+				return fail(500, { error: 'Failed to save permissions.' });
+			}
+		}
+
+		// Audit log
+		let ipAddress = getClientAddress();
+		if (ipAddress === '::1') ipAddress = '127.0.0.1';
+
+		const { data: actorProfile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('first_name, middle_name, last_name')
+			.eq('user_id', session.user.id)
+			.single();
+
+		const actorName = actorProfile
+			? formatName(
+					actorProfile.first_name ?? '',
+					actorProfile.middle_name,
+					actorProfile.last_name ?? ''
+				)
+			: (session.user.email ?? 'Unknown');
+
+		const { data: targetProfile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('first_name, last_name')
+			.eq('user_id', userId)
+			.single();
+
+		const targetName = targetProfile
+			? `${targetProfile.first_name} ${targetProfile.last_name}`
+			: userId;
+
+		await insertAuditLog(supabase, {
+			actorId: session.user.id,
+			details: `${actorName} updated permissions for user "${targetName}" (${permissionIds.length} permissions)`,
+			severityLevel: 'notice',
+			ipAddress,
+			eventType: 'Edited Account'
+		});
+
+		return { success: true };
+	},
+
+	updateRolePermissions: async ({
 		request,
 		locals: { supabase, safeGetSession },
 		getClientAddress
@@ -139,6 +274,33 @@ export const actions = {
 			}
 		}
 
+		// Sync to all users with this role
+		const { data: usersWithRole } = await admin
+			.schema('api')
+			.from('user_profiles')
+			.select('user_id')
+			.eq('role', targetRole);
+
+		if (usersWithRole && usersWithRole.length > 0) {
+			for (const u of usersWithRole) {
+				const uid = (u as { user_id: string }).user_id;
+				await admin.schema('api').from('user_permissions').delete().eq('user_id', uid);
+
+				if (permissionIds.length > 0) {
+					await admin
+						.schema('api')
+						.from('user_permissions')
+						.insert(
+							permissionIds.map((pid) => ({
+								user_id: uid,
+								permission_id: pid,
+								granted_by: session.user.id
+							}))
+						);
+				}
+			}
+		}
+
 		// Audit log
 		let ipAddress = getClientAddress();
 		if (ipAddress === '::1') ipAddress = '127.0.0.1';
@@ -160,7 +322,7 @@ export const actions = {
 
 		await insertAuditLog(supabase, {
 			actorId: session.user.id,
-			details: `${actorName} updated permissions for role "${targetRole}" (${permissionIds.length} permissions)`,
+			details: `${actorName} updated permissions preset for role "${targetRole}" (${permissionIds.length} permissions)`,
 			severityLevel: 'warning',
 			ipAddress,
 			eventType: 'Edited Account'

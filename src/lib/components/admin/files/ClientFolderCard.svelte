@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ClientProfile } from '$lib/types/DatabaseTypes';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
-	import { Folder, Ellipsis, User, Pencil, Archive } from '@lucide/svelte';
+	import { Folder, Ellipsis, User, Pencil, Archive, Building2 } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 
 	interface Props {
@@ -13,6 +13,9 @@
 	const fullName = $derived(
 		[client.first_name, client.middle_name, client.last_name].filter(Boolean).join(' ')
 	);
+
+	const isCompany = $derived(client.company_name && !client.is_individual);
+	const clientName = $derived(isCompany ? client.company_name : fullName);
 
 	function handleViewClient(): void {
 		goto(`/client/${client.client_id}`);
@@ -27,8 +30,14 @@
 	href="/files/{client.client_id}"
 	class="group flex w-full items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:bg-accent"
 >
-	<Folder class="size-5 shrink-0 fill-current text-foreground" />
-	<span class="min-w-0 flex-1 truncate text-sm font-medium">{fullName}</span>
+	{#if isCompany}
+		<Building2
+			class="size-5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground"
+		/>
+	{:else}
+		<Folder class="size-5 shrink-0 fill-current text-foreground" />
+	{/if}
+	<span class="min-w-0 flex-1 truncate text-sm font-medium">{clientName}</span>
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
 		<DropdownMenu.Root>

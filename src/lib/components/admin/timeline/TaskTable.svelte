@@ -162,7 +162,7 @@
 											</span>
 										{/if}
 									{:else}
-										—
+										N/A
 									{/if}
 								</Table.Cell>
 							</Table.Row>

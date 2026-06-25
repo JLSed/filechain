@@ -13,15 +13,25 @@ export const load = (async ({ depends }) => {
 		active_connections?: number;
 		cache_hit_ratio?: number;
 	} | null = null;
+	let storageMetrics: {
+		storage_size_bytes?: number;
+		total_files_count?: number;
+	} | null = null;
 	let dbError: string | null = null;
 
 	try {
 		const adminClient = createAdminClient();
-		const { data, error } = await adminClient.schema('api').rpc('get_system_metrics');
+		const [metricsResult, storageResult] = await Promise.all([
+			adminClient.schema('api').rpc('get_system_metrics'),
+			adminClient.schema('api').rpc('get_storage_metrics')
+		]);
 		dbLatencyMs = Math.round(performance.now() - startDb);
 
-		if (error) {
-			dbError = error.message;
+		const { data, error } = metricsResult;
+		const { data: storageData, error: storageError } = storageResult;
+
+		if (error || storageError) {
+			dbError = error?.message || storageError?.message || 'Failed to fetch metrics';
 			// Fallback: if rpc fails, at least check connectivity
 			const { error: pingError } = await adminClient
 				.schema('api')
@@ -32,6 +42,7 @@ export const load = (async ({ depends }) => {
 		} else {
 			dbStatus = 'online';
 			dbMetrics = data;
+			storageMetrics = storageData;
 		}
 	} catch (err: unknown) {
 		dbStatus = 'offline';
@@ -71,6 +82,7 @@ export const load = (async ({ depends }) => {
 				status: dbStatus,
 				latencyMs: dbLatencyMs,
 				metrics: dbMetrics,
+				storage: storageMetrics,
 				error: dbError
 			},
 			platforms: {

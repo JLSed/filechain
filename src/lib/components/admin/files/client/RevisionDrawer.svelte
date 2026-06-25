@@ -83,7 +83,7 @@
 	 * Truncate a hash string to first N characters with ellipsis.
 	 */
 	function truncateHash(hash: string | undefined, length: number = 24): string {
-		if (!hash) return '—';
+		if (!hash) return 'N/A';
 		if (hash.length <= length) return hash;
 		return `${hash.slice(0, length)}…`;
 	}
@@ -93,8 +93,8 @@
 	 */
 	function getUploaderName(file: FileMetadata): string {
 		const profile = file.user_profiles;
-		if (!profile) return '—';
-		return [profile.first_name, profile.last_name].filter(Boolean).join(' ') || '—';
+		if (!profile) return 'N/A';
+		return [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'N/A';
 	}
 
 	function handleViewFile(file: FileMetadata): void {

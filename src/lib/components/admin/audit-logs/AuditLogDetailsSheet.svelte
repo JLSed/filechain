@@ -154,7 +154,7 @@
 															: ''
 												: ''}"
 										>
-											{String(change.old ?? '—')}
+											{String(change.old ?? 'N/A')}
 										</span>
 										<span
 											class="inline-flex items-center rounded-md bg-secondary/20 px-1.5 py-0.5 text-xs font-medium text-secondary"
@@ -162,7 +162,7 @@
 											{data.event_type === 'Verified Integrity' ? 'Data' : 'New'}
 										</span>
 										<span class="font-mono text-sm break-all text-secondary">
-											{String(change.new ?? '—')}
+											{String(change.new ?? 'N/A')}
 										</span>
 									</div>
 								</div>
@@ -187,7 +187,7 @@
 									{#if data.user_profiles}
 										{[data.user_profiles.first_name, data.user_profiles.last_name]
 											.filter(Boolean)
-											.join(' ') || '—'}
+											.join(' ') || 'N/A'}
 									{:else}
 										<span class="text-muted-foreground italic">System</span>
 									{/if}
@@ -199,7 +199,7 @@
 									{#if data.user_profiles?.role}
 										<Badge variant="outline" class="text-xs">{data.user_profiles.role}</Badge>
 									{:else}
-										<span class="text-muted-foreground">—</span>
+										<span class="text-muted-foreground">N/A</span>
 									{/if}
 								</dd>
 							</div>

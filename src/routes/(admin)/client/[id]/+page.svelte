@@ -7,12 +7,12 @@
 	import { invalidate } from '$app/navigation';
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { hasPermission } from '$lib/services/permissions';
 
 	let { data }: PageProps = $props();
 
-	const permissions = $derived($page.data.permissions as string[]);
+	const permissions = $derived(page.data.permissions as string[]);
 	const canEditClient = $derived(hasPermission(permissions, 'clients.edit'));
 
 	const client = $derived(data.client);
@@ -20,12 +20,14 @@
 		[client.first_name, client.middle_name, client.last_name].filter(Boolean).join(' ')
 	);
 	const displayName = $derived(
-		client.is_individual ? personalName || '—' : client.company_name?.trim() || personalName || '—'
+		client.is_individual
+			? personalName || 'N/A'
+			: client.company_name?.trim() || personalName || 'N/A'
 	);
 	const clientTypeLabel = $derived(client.is_individual ? 'Individual' : 'Company / Organization');
 
 	// Edit state — initialise from ?edit=true query param
-	let isEditing = $state($page.url.searchParams.get('edit') === 'true');
+	let isEditing = $state(page.url.searchParams.get('edit') === 'true');
 	let saving = $state(false);
 
 	/** Build a fresh editData snapshot from the current client. */
@@ -140,7 +142,7 @@
 				</span>
 			</div>
 			<div class="mt-0.5 flex items-center gap-2">
-				<span class="text-sm text-muted-foreground">{client.email ?? '—'}</span>
+				<span class="text-sm text-muted-foreground">{client.email ?? 'N/A'}</span>
 				{#if !client.is_individual && personalName}
 					<span class="text-muted-foreground/40">·</span>
 					<span class="text-sm text-muted-foreground">Contact: {personalName}</span>

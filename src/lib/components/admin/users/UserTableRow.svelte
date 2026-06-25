@@ -32,7 +32,7 @@
 
 	function formatName(profile: UserProfile): string {
 		const parts = [profile.first_name, profile.last_name].filter(Boolean);
-		return parts.length > 0 ? parts.join(' ') : '—';
+		return parts.length > 0 ? parts.join(' ') : 'N/A';
 	}
 </script>
 
@@ -48,7 +48,7 @@
 						{/if}
 					</div>
 				</Table.Cell>
-				<Table.Cell class="text-muted-foreground">{user.email ?? '—'}</Table.Cell>
+				<Table.Cell class="text-muted-foreground">{user.email ?? 'N/A'}</Table.Cell>
 				<Table.Cell>
 					{#if user.role}
 						<Badge variant="outline">{user.role}</Badge>
@@ -85,7 +85,7 @@
 		>
 			<Shield /> Edit Role
 		</DropdownMenu.Item>
-		<DropdownMenu.Item onclick={() => goto('/settings/permissions')}>
+		<DropdownMenu.Item onclick={() => goto(`/users/${user.user_id}/permissions`)}>
 			<KeyRound /> Edit Access
 		</DropdownMenu.Item>
 		{#if canResetPassword && openResetPassword}

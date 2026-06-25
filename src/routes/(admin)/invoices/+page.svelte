@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { invalidate, goto } from '$app/navigation';
 	import { RefreshCw, Plus, Receipt, TrendingUp, Send, AlertTriangle } from '@lucide/svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
@@ -11,7 +11,7 @@
 
 	let { data }: PageProps = $props();
 
-	const permissions = $derived($page.data.permissions as string[]);
+	const permissions = $derived(page.data.permissions as string[]);
 	const canCreateInvoice = $derived(hasPermission(permissions, 'invoices.create'));
 	let isRefreshing = $state(false);
 	let searchQuery = $state('');
@@ -28,7 +28,7 @@
 
 	function getClientName(inv: (typeof data.invoices)[0]): string {
 		const cp = inv.client_profiles;
-		if (!cp) return '—';
+		if (!cp) return 'N/A';
 		if (cp.is_individual) {
 			return [cp.first_name, cp.last_name].filter(Boolean).join(' ');
 		}
@@ -193,7 +193,7 @@
 							<td class="px-4 py-3 font-mono text-xs font-medium">{inv.invoice_number}</td>
 							<td class="px-4 py-3">{getClientName(inv)}</td>
 							<td class="max-w-[200px] truncate px-4 py-3 text-muted-foreground">
-								{inv.ip_applications?.title_of_invention ?? '—'}
+								{inv.ip_applications?.title_of_invention ?? 'N/A'}
 							</td>
 							<td class="px-4 py-3 text-muted-foreground">
 								{new Date(inv.issue_date).toLocaleDateString('en-US', {

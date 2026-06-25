@@ -116,8 +116,8 @@
 
 	function getClientDisplayName(client: ClientProfileRow): string {
 		const fullName = `${client.first_name} ${client.middle_name ?? ''} ${client.last_name}`.trim();
-		if (client.is_individual) return fullName || '—';
-		return client.company_name?.trim() || fullName || '—';
+		if (client.is_individual) return fullName || 'N/A';
+		return client.company_name?.trim() || fullName || 'N/A';
 	}
 
 	function selectClient(client: ClientProfileRow) {
@@ -596,9 +596,9 @@
 										{client.is_individual ? 'Individual' : 'Company'}
 									</span>
 								</Table.Cell>
-								<Table.Cell>{client.email ?? '—'}</Table.Cell>
-								<Table.Cell>{client.company_name ?? '—'}</Table.Cell>
-								<Table.Cell>{client.nationality ?? '—'}</Table.Cell>
+								<Table.Cell>{client.email ?? 'N/A'}</Table.Cell>
+								<Table.Cell>{client.company_name ?? 'N/A'}</Table.Cell>
+								<Table.Cell>{client.nationality ?? 'N/A'}</Table.Cell>
 							</Table.Row>
 						{/each}
 					{/if}

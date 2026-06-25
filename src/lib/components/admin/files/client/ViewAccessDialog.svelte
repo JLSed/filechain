@@ -106,7 +106,7 @@
 	}
 
 	function formatGrantedDate(dateStr: string): string {
-		if (!dateStr) return '—';
+		if (!dateStr) return 'N/A';
 		try {
 			return new Intl.DateTimeFormat('en-US', {
 				month: 'short',
@@ -114,7 +114,7 @@
 				year: 'numeric'
 			}).format(new Date(dateStr));
 		} catch {
-			return '—';
+			return 'N/A';
 		}
 	}
 

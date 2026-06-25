@@ -3,13 +3,14 @@ import type { PageServerLoad, Actions } from './$types';
 import { UserProfileSchema } from '$lib/types/DatabaseTypes';
 import { insertAuditLog } from '$lib/services/audit-log';
 import { formatName } from '$lib/utils/formatter';
-import { fetchRolePermissions, hasPermission } from '$lib/services/permissions';
+import { createAdminClient } from '$lib/services/supabase/admin';
+import { fetchUserPermissions, hasPermission } from '$lib/services/permissions';
 
 export const load = (async ({ params, locals: { supabase, safeGetSession }, depends }) => {
 	depends('db:user-detail');
 
-	const session = await safeGetSession();
-	if (!session.session) throw error(401, 'Unauthorized');
+	const { session } = await safeGetSession();
+	if (!session) throw error(401, 'Unauthorized');
 
 	const userId = params.id;
 
@@ -46,8 +47,8 @@ export const load = (async ({ params, locals: { supabase, safeGetSession }, depe
 
 export const actions = {
 	saveUser: async ({ request, locals: { supabase, safeGetSession }, getClientAddress }) => {
-		const session = await safeGetSession();
-		if (!session.session) return fail(401, { message: 'Unauthorized' });
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { message: 'Unauthorized' });
 
 		const formData = await request.formData();
 		const userId = formData.get('user_id') as string;
@@ -65,6 +66,23 @@ export const actions = {
 			return fail(400, { message: 'Invalid payload.' });
 		}
 
+		// Check if role is changing
+		let roleChanged = false;
+		let newRole: string | null = null;
+		if ('role' in updatePayload) {
+			newRole = updatePayload.role as string | null;
+			// Get current role
+			const { data: currentProfile } = await supabase
+				.schema('api')
+				.from('user_profiles')
+				.select('role')
+				.eq('user_id', userId)
+				.single();
+			if (currentProfile && currentProfile.role !== newRole) {
+				roleChanged = true;
+			}
+		}
+
 		// Perform the database update
 		const { error: updateError } = await supabase
 			.schema('api')
@@ -76,6 +94,32 @@ export const actions = {
 			return fail(500, { message: `Failed to save: ${updateError.message}` });
 		}
 
+		// Sync permissions if role changed
+		if (roleChanged && newRole) {
+			const admin = createAdminClient();
+			if (admin) {
+				// Delete existing user permissions
+				await admin.schema('api').from('user_permissions').delete().eq('user_id', userId);
+
+				// Fetch new role permissions
+				const { data: rolePerms } = await supabase
+					.schema('api')
+					.from('role_permissions')
+					.select('permission_id')
+					.eq('role', newRole);
+
+				if (rolePerms && rolePerms.length > 0) {
+					const inserts = rolePerms.map((rp) => ({
+						user_id: userId,
+						permission_id: rp.permission_id,
+						granted_by: session.user.id
+					}));
+
+					await admin.schema('api').from('user_permissions').insert(inserts);
+				}
+			}
+		}
+
 		// Log audit entry with IP address
 		let ipAddress = getClientAddress();
 		if (ipAddress === '::1') ipAddress = '127.0.0.1';
@@ -84,12 +128,12 @@ export const actions = {
 			.schema('api')
 			.from('user_profiles')
 			.select('first_name, middle_name, last_name')
-			.eq('user_id', session.session.user.id)
+			.eq('user_id', session.user.id)
 			.single();
 
 		const actorName = profile
 			? formatName(profile.first_name ?? '', profile.middle_name, profile.last_name ?? '')
-			: (session.session.user.email ?? 'Unknown');
+			: (session.user.email ?? 'Unknown');
 
 		// Get the target user's name for the log
 		const { data: targetProfile } = await supabase
@@ -117,7 +161,7 @@ export const actions = {
 		}
 
 		await insertAuditLog(supabase, {
-			actorId: session.session.user.id,
+			actorId: session.user.id,
 			details: `${actorName} Edited Account ${targetName}`,
 			changes: parsedChanges,
 			severityLevel: 'notice',
@@ -142,7 +186,7 @@ export const actions = {
 			.eq('user_id', session.user.id)
 			.single();
 
-		const perms = await fetchRolePermissions(supabase, currentProfile?.role);
+		const perms = await fetchUserPermissions(supabase, session.user.id, currentProfile?.role);
 		if (!hasPermission(perms, 'users.archive')) {
 			return fail(403, { error: 'You do not have permission to archive users.' });
 		}

@@ -22,12 +22,13 @@
 	import { SvelteSet, SvelteMap } from 'svelte/reactivity';
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { hasPermission } from '$lib/services/permissions';
+	import * as Tooltip from '$lib/shadcn/components/ui/tooltip/index.js';
 
 	let { data }: PageProps = $props();
 
-	const permissions = $derived($page.data.permissions as string[]);
+	const permissions = $derived(page.data.permissions as string[]);
 	const canEditApp = $derived(hasPermission(permissions, 'applications.edit'));
 	const canUpload = $derived(hasPermission(permissions, 'files.upload'));
 	const canDownload = $derived(hasPermission(permissions, 'files.download'));
@@ -36,11 +37,11 @@
 	const app = $derived(data.application);
 	const clientName = $derived(
 		[app.client_profiles?.first_name, app.client_profiles?.last_name].filter(Boolean).join(' ') ||
-			'—'
+			'N/A'
 	);
 
 	// Edit state
-	let isEditing = $state($page.url.searchParams.get('edit') === 'true');
+	let isEditing = $state(page.url.searchParams.get('edit') === 'true');
 	let saving = $state(false);
 
 	/** Build a fresh editData snapshot from the current application. */
@@ -58,7 +59,7 @@
 			deadline: app.deadline ?? null,
 			mailing_date: app.mailing_date ?? null,
 			publication_date: app.publication_date ?? null,
-			paper_document_no: app.paper_document_no ?? '',
+			ipophil_link: app.ipophil_link ?? '',
 			fees: app.fees ?? null,
 			remarks: app.remarks ?? ''
 		};
@@ -98,7 +99,7 @@
 				deadline: editData.deadline || null,
 				mailing_date: editData.mailing_date || null,
 				publication_date: editData.publication_date || null,
-				paper_document_no: editData.paper_document_no || null,
+				ipophil_link: editData.ipophil_link || null,
 				fees: editData.fees,
 				remarks: editData.remarks || null
 			};
@@ -369,7 +370,24 @@
 					{#if app.application_number}
 						<Badge variant="outline" class="font-mono text-xs">{app.application_number}</Badge>
 					{:else}
-						<span class="text-xs text-muted-foreground italic">No app number</span>
+						<Tooltip.Root>
+							<Tooltip.Trigger>
+								{#snippet child({ props })}
+									<span
+										{...props}
+										class="cursor-help text-xs text-muted-foreground italic underline decoration-muted-foreground/50 decoration-dotted"
+									>
+										No Application Number
+									</span>
+								{/snippet}
+							</Tooltip.Trigger>
+							<Tooltip.Content
+								side="bottom"
+								class="border bg-popover p-2 text-xs text-popover-foreground shadow-md"
+							>
+								<p>Check the IPOPHL for application update</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
 					{/if}
 				</div>
 			</div>

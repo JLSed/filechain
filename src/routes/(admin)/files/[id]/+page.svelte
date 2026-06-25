@@ -17,10 +17,10 @@
 
 	let { data }: PageProps = $props();
 
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { hasPermission } from '$lib/services/permissions';
 
-	const permissions = $derived($page.data.permissions as string[]);
+	const permissions = $derived(page.data.permissions as string[]);
 	const canDownload = $derived(hasPermission(permissions, 'files.download'));
 	const canRevision = $derived(hasPermission(permissions, 'files.revision'));
 
@@ -31,8 +31,8 @@
 	);
 	const clientName = $derived(
 		data.client.is_individual
-			? personalName || '—'
-			: data.client.company_name?.trim() || personalName || '—'
+			? personalName || 'N/A'
+			: data.client.company_name?.trim() || personalName || 'N/A'
 	);
 
 	const currentUserId = $derived(data.profile.user_id);
