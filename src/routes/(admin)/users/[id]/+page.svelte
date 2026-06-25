@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import UserDetails from '$lib/components/admin/users/full-view/UserDetails.svelte';
 	import UserActionPanel from '$lib/components/admin/users/full-view/UserActionPanel.svelte';
 	import ArchiveUserDialog from '$lib/components/admin/users/ArchiveUserDialog.svelte';
@@ -14,12 +14,14 @@
 
 	let { data }: PageProps = $props();
 
-	const permissions = $derived($page.data.permissions as string[]);
+	const permissions = $derived(page.data.permissions as string[]);
 	const canEditUser = $derived(hasPermission(permissions, 'users.edit'));
 	const canArchiveUser = $derived(hasPermission(permissions, 'users.archive'));
 
 	const user = $derived(data.user);
-	const displayName = $derived([user.first_name, user.last_name].filter(Boolean).join(' ') || '—');
+	const displayName = $derived(
+		[user.first_name, user.last_name].filter(Boolean).join(' ') || 'N/A'
+	);
 
 	// Edit state
 	let isEditing = $state(false);
@@ -124,7 +126,7 @@
 		<div class="flex-1">
 			<h1 class="text-lg font-semibold">{displayName}</h1>
 			<div class="mt-0.5 flex items-center gap-2">
-				<span class="text-sm text-muted-foreground">{user.email ?? '—'}</span>
+				<span class="text-sm text-muted-foreground">{user.email ?? 'N/A'}</span>
 				<span class="text-muted-foreground/40">·</span>
 				{#if user.role}
 					<Badge variant="outline" class="text-xs">{user.role}</Badge>

@@ -183,6 +183,20 @@
 	const db = $derived(data.systemHealth.database);
 	const platforms = $derived(data.systemHealth.platforms);
 	const runtime = $derived(data.systemHealth.runtime);
+
+	const DB_LIMIT_BYTES = 500 * 1024 * 1024; // 500 MB DB Limit
+	const STORAGE_LIMIT_BYTES = 1 * 1024 * 1024 * 1024; // 1 GB Storage Limit
+	const COMBINED_LIMIT_BYTES = DB_LIMIT_BYTES + STORAGE_LIMIT_BYTES; // 1.5 GB Combined Limit
+
+	const usedDbBytes = $derived(db?.metrics?.db_size_bytes ?? 0);
+	const usedStorageBytes = $derived(db?.storage?.storage_size_bytes ?? 0);
+	const totalUsedBytes = $derived(usedDbBytes + usedStorageBytes);
+
+	const storageUtilizationPercentage = $derived(
+		totalUsedBytes > 0
+			? Math.max(0.1, Number(((totalUsedBytes / COMBINED_LIMIT_BYTES) * 100).toFixed(1)))
+			: 0
+	);
 </script>
 
 <div class="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6">
@@ -235,12 +249,44 @@
 
 		{#if db.metrics}
 			<Card.Content>
-				<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					<!-- DB Size -->
 					<div class="flex flex-col gap-1.5 rounded-lg border p-3">
 						<span class="text-xs font-medium text-muted-foreground">Database Size</span>
 						<span class="text-xl font-semibold tabular-nums">
 							{formatBytes(db.metrics.db_size_bytes ?? 0)}
+						</span>
+					</div>
+
+					<!-- Storage Size -->
+					<div class="flex flex-col gap-1.5 rounded-lg border p-3">
+						<span class="text-xs font-medium text-muted-foreground">Storage Size</span>
+						<span class="text-xl font-semibold tabular-nums">
+							{formatBytes(db.storage?.storage_size_bytes ?? 0)} / {formatBytes(
+								STORAGE_LIMIT_BYTES
+							)}
+						</span>
+					</div>
+
+					<!-- Storage Utilization -->
+					<div class="flex flex-col gap-1.5 rounded-lg border p-3">
+						<span class="text-xs font-medium text-muted-foreground">Storage Utilization</span>
+						<div class="flex items-end justify-between">
+							<span class="text-xl font-semibold tabular-nums">
+								{storageUtilizationPercentage}%
+							</span>
+							<span class="mb-0.5 text-[10px] text-muted-foreground tabular-nums">
+								{formatBytes(totalUsedBytes)} / {formatBytes(COMBINED_LIMIT_BYTES)}
+							</span>
+						</div>
+						<Progress value={storageUtilizationPercentage} max={100} class="h-1.5" />
+					</div>
+
+					<!-- Total Files Stored -->
+					<div class="flex flex-col gap-1.5 rounded-lg border p-3">
+						<span class="text-xs font-medium text-muted-foreground">Total Files Stored</span>
+						<span class="text-xl font-semibold tabular-nums">
+							{db.storage?.total_files_count ?? 0}
 						</span>
 					</div>
 

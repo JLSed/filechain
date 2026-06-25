@@ -195,7 +195,7 @@
 	<!-- Action Bar -->
 	<div class="flex flex-wrap items-center gap-2 px-5 py-2.5">
 		<Badge variant="outline" class="font-mono text-xs">
-			{application.application_number ?? '—'}
+			{application.application_number ?? 'N/A'}
 		</Badge>
 		<Button
 			variant="outline"

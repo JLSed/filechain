@@ -2,7 +2,7 @@
 	import * as Table from '$lib/shadcn/components/ui/table/index.js';
 	import type { ClientProfile } from '$lib/types/DatabaseTypes';
 	import { Building2, User } from '@lucide/svelte';
-	import { formatName } from '$lib/utils/formatter';
+	import { formatName, formatDate } from '$lib/utils/formatter';
 
 	interface ComponentProps {
 		client: ClientProfile;
@@ -47,6 +47,11 @@
 	<Table.Cell>
 		<a href={`/client/${client.client_id}`} class="block h-full w-full py-2">
 			{client.mobile_number || 'N/A'}
+		</a>
+	</Table.Cell>
+	<Table.Cell>
+		<a href={`/client/${client.client_id}`} class="block h-full w-full py-2">
+			{formatDate(client.created_at)}
 		</a>
 	</Table.Cell>
 </Table.Row>

@@ -2,7 +2,7 @@
 	import * as Table from '$lib/shadcn/components/ui/table/index.js';
 	import * as DropdownMenu from '$lib/shadcn/components/ui/dropdown-menu/index.js';
 	import type { IpApplication } from '$lib/types/DatabaseTypes';
-	import { getClientName } from '$lib/utils/formatter';
+	import { getClientName, formatDate } from '$lib/utils/formatter';
 	import { Archive, Edit, Eye, FolderOpen } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 
@@ -19,7 +19,7 @@
 	<DropdownMenu.Trigger>
 		{#snippet child({ props })}
 			<Table.Row {...props} class="cursor-pointer even:bg-muted"
-				><Table.Cell>{app.application_number ?? '—'}</Table.Cell>
+				><Table.Cell>{app.application_number ?? 'N/A'}</Table.Cell>
 				<Table.Cell class="max-w-lg min-w-md">
 					<div class="flex flex-col">
 						<span class="font-medium">
@@ -30,6 +30,7 @@
 				</Table.Cell>
 				<Table.Cell>{getClientName(app)}</Table.Cell>
 				<Table.Cell class="whitespace-nowrap">{app.status}</Table.Cell>
+				<Table.Cell class="whitespace-nowrap">{formatDate(app.created_at)}</Table.Cell>
 			</Table.Row>
 		{/snippet}
 	</DropdownMenu.Trigger>

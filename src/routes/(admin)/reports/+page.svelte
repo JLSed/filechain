@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import ReportSelector from '$lib/components/admin/reports/ReportSelector.svelte';
@@ -15,7 +15,7 @@
 
 	let { data }: PageProps = $props();
 
-	const permissions = $derived($page.data.permissions as string[]);
+	const permissions = $derived(page.data.permissions as string[]);
 	const canGenerateReport = $derived(hasPermission(permissions, 'reports.generate'));
 
 	type ReportType = 'monthly' | 'client' | 'integrity';
@@ -577,7 +577,7 @@
 						severity: SEVERITY_LABELS[e.severity_level] ?? e.severity_level,
 						event: e.event_type,
 						details: e.details,
-						ip: e.ip_address ?? '—'
+						ip: e.ip_address ?? 'N/A'
 					})
 				)
 			});

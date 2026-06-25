@@ -71,7 +71,7 @@
 		if (file.user_profiles) {
 			return `${file.user_profiles.first_name} ${file.user_profiles.last_name}`;
 		}
-		return '—';
+		return 'N/A';
 	}
 </script>
 

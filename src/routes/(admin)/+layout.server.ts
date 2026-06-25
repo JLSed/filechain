@@ -2,7 +2,7 @@ import type { LayoutServerLoad } from './$types';
 import { UserProfileSchema } from '$lib/types/DatabaseTypes';
 import { redirect, error } from '@sveltejs/kit';
 import { canAccessRoute, getDefaultRouteForRole } from '$lib/constants/LinkData';
-import { fetchRolePermissions } from '$lib/services/permissions';
+import { fetchUserPermissions } from '$lib/services/permissions';
 
 export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSession }, url }) => {
 	const { session } = await safeGetSession();
@@ -32,9 +32,9 @@ export const load: LayoutServerLoad = async ({ locals: { supabase, safeGetSessio
 		throw error(500, 'Unable to retrieve user profile');
 	}
 
-	// ── Fetch role permissions from database ──
+	// ── Fetch user permissions from database ──
 	const role = user_profile.data.role;
-	const permissions = await fetchRolePermissions(supabase, role);
+	const permissions = await fetchUserPermissions(supabase, session.user.id, role);
 
 	// ── Permission-based route guard ──
 	if (!canAccessRoute(role, url.pathname, permissions)) {

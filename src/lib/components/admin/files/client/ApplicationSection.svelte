@@ -44,7 +44,7 @@
 			<ChevronDown class="size-4 shrink-0 transition-transform {open ? '' : '-rotate-90'}" />
 			<span class="text-sm font-semibold">{app.title_of_invention}</span>
 			<div class="rounded-md border-2 px-2">
-				<span class="text-xs text-muted-foreground">{app.application_number ?? '—'}</span>
+				<span class="text-xs text-muted-foreground">{app.application_number ?? 'N/A'}</span>
 			</div>
 
 			<span class="hidden text-xs text-muted-foreground sm:inline">{app.status}</span>

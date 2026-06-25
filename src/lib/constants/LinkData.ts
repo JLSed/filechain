@@ -7,7 +7,6 @@ import {
 	FileUser,
 	FolderOpen,
 	ChartArea,
-	FileQuestion,
 	Receipt,
 	Settings,
 	Activity
@@ -23,7 +22,6 @@ export const pageTitles: Record<string, string> = {
 	'/reports': 'Reports',
 	'/audit-logs': 'Audit Logs',
 	'/application': 'Client Applications',
-	'/application/no-app-num': 'No Application Number',
 	'/application/timeline': 'Application Timeline',
 	'/invoices': 'Invoices',
 	'/files': 'File Storage',
@@ -31,7 +29,6 @@ export const pageTitles: Record<string, string> = {
 	'/users': 'User Management',
 	'/settings': 'Settings',
 	'/settings/company': 'Company Settings',
-	'/settings/permissions': 'Role Permissions',
 	'/system-health': 'System Health'
 };
 
@@ -46,7 +43,6 @@ export const protectedRoutes = [
 	'/reports',
 	'/audit-logs',
 	'/application',
-	'/application/no-app-num',
 	'/application/timeline',
 	'/invoices',
 	'/system-health'
@@ -119,11 +115,7 @@ export const patentingGroups: Sidebar.Item[] = [
 	{
 		title: 'Client Applications',
 		url: '/application',
-		icon: FileUser,
-		children: [
-			{ title: 'All Applications', url: '/application' },
-			{ title: 'Missing Application No.', url: '/application/no-app-num', icon: FileQuestion }
-		]
+		icon: FileUser
 	},
 	{
 		title: 'Application Timeline',

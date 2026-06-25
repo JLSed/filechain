@@ -14,6 +14,7 @@
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import { CalendarIcon } from '@lucide/svelte';
 	import { formatDate } from '$lib/utils/formatter';
+	import * as Tooltip from '$lib/shadcn/components/ui/tooltip/index.js';
 	import {
 		type DateValue,
 		CalendarDate,
@@ -34,7 +35,7 @@
 		deadline: string | null;
 		mailing_date: string | null;
 		publication_date: string | null;
-		paper_document_no: string;
+		ipophil_link: string;
 		fees: number | null;
 		remarks: string;
 	}
@@ -94,7 +95,7 @@
 			'deadline',
 			'mailing_date',
 			'publication_date',
-			'paper_document_no',
+			'ipophil_link',
 			'fees',
 			'remarks'
 		];
@@ -200,7 +201,24 @@
 						{#if data.application_number}
 							<Badge variant="outline" class="font-mono text-xs">{data.application_number}</Badge>
 						{:else}
-							<span class="text-muted-foreground italic">Not assigned</span>
+							<Tooltip.Root>
+								<Tooltip.Trigger>
+									{#snippet child({ props })}
+										<span
+											{...props}
+											class="cursor-help text-muted-foreground italic underline decoration-muted-foreground/50 decoration-dotted"
+										>
+											Not assigned
+										</span>
+									{/snippet}
+								</Tooltip.Trigger>
+								<Tooltip.Content
+									side="bottom"
+									class="border bg-popover p-2 text-xs text-popover-foreground shadow-md"
+								>
+									<p>Check the IPOPHL for application update</p>
+								</Tooltip.Content>
+							</Tooltip.Root>
 						{/if}
 					</dd>
 				{/if}
@@ -230,7 +248,7 @@
 						{/each}
 					</select>
 				{:else}
-					<dd class="font-medium">{data.type_of_invention?.name ?? '—'}</dd>
+					<dd class="font-medium">{data.type_of_invention?.name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 
@@ -252,7 +270,7 @@
 						{/each}
 					</select>
 				{:else}
-					<dd class="font-medium">{data.pre_protection_status?.name ?? '—'}</dd>
+					<dd class="font-medium">{data.pre_protection_status?.name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 
@@ -274,7 +292,7 @@
 						{/each}
 					</select>
 				{:else}
-					<dd class="font-medium">{data.type_of_office_action?.name ?? '—'}</dd>
+					<dd class="font-medium">{data.type_of_office_action?.name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 
@@ -296,7 +314,7 @@
 						{/each}
 					</select>
 				{:else}
-					<dd class="font-medium">{data.team_assigned ?? '—'}</dd>
+					<dd class="font-medium">{data.team_assigned ?? 'N/A'}</dd>
 				{/if}
 			</div>
 
@@ -313,7 +331,7 @@
 						{#if data.inventor_names && data.inventor_names.length > 0}
 							{data.inventor_names.join(', ')}
 						{:else}
-							—
+							N/A
 						{/if}
 					</dd>
 				{/if}
@@ -332,13 +350,13 @@
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Name</dt>
 				<dd class="font-medium">
-					{data.client_profiles?.first_name ?? '—'}
+					{data.client_profiles?.first_name ?? 'N/A'}
 					{data.client_profiles?.last_name ?? ''}
 				</dd>
 			</div>
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Email</dt>
-				<dd class="font-medium">{data.client_profiles?.email ?? '—'}</dd>
+				<dd class="font-medium">{data.client_profiles?.email ?? 'N/A'}</dd>
 			</div>
 			<div class="sm:col-span-2">
 				<dt class="mb-1 text-xs text-muted-foreground">Contact Details</dt>
@@ -359,7 +377,7 @@
 						{#if data.contact_details && data.contact_details.length > 0}
 							{data.contact_details.join(', ')}
 						{:else}
-							—
+							N/A
 						{/if}
 					</dd>
 				{/if}
@@ -530,11 +548,42 @@
 		</h3>
 		<dl class="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
 			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">Paper Document No.</dt>
+				<dt class="mb-1 text-xs text-muted-foreground">IPOPHL Reference Link</dt>
 				{#if isEditing}
-					<Input bind:value={editData.paper_document_no} class="text-sm" />
+					<Input
+						bind:value={editData.ipophil_link}
+						placeholder="https://ipophil.gov.ph/..."
+						class="font-mono text-sm"
+					/>
 				{:else}
-					<dd class="font-medium">{data.paper_document_no ?? '—'}</dd>
+					<dd class="font-medium">
+						{#if data.ipophil_link}
+							<a
+								href={data.ipophil_link}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+							>
+								Open IPOPHL Link
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									class="size-3.5"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+									<polyline points="15 3 21 3 21 9"></polyline>
+									<line x1="10" y1="14" x2="21" y2="3"></line>
+								</svg>
+							</a>
+						{:else}
+							<span class="text-muted-foreground italic">N/A</span>
+						{/if}
+					</dd>
 				{/if}
 			</div>
 			<div>
@@ -550,7 +599,9 @@
 						class="text-sm"
 					/>
 				{:else}
-					<dd class="font-medium">{data.fees != null ? `₱${data.fees.toLocaleString()}` : '—'}</dd>
+					<dd class="font-medium">
+						{data.fees != null ? `₱${data.fees.toLocaleString()}` : 'N/A'}
+					</dd>
 				{/if}
 			</div>
 			<div class="sm:col-span-2">
@@ -562,7 +613,7 @@
 						bind:value={editData.remarks}
 					></textarea>
 				{:else}
-					<dd class="font-medium whitespace-pre-wrap">{data.remarks ?? '—'}</dd>
+					<dd class="font-medium whitespace-pre-wrap">{data.remarks ?? 'N/A'}</dd>
 				{/if}
 			</div>
 		</dl>

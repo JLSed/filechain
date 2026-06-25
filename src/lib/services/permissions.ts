@@ -34,12 +34,58 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
 	'audit_logs.view': ['/audit-logs'],
 	'settings.view': ['/settings'],
 	'settings.company': ['/settings/company'],
-	'permissions.manage': ['/settings/permissions']
+	'permissions.manage': ['/users']
 };
 
 // ──────────────────────────────────────────────────────────
 // Fetching permissions
 // ──────────────────────────────────────────────────────────
+
+/**
+ * Fetches the granted permission keys for a given user from the database.
+ * System Admin is a superuser — returns ALL permission keys.
+ */
+export async function fetchUserPermissions(
+	supabase: SupabaseClient,
+	userId: string | undefined,
+	role: string | null
+): Promise<string[]> {
+	if (!userId) return [];
+
+	// System Admin bypasses — return all known keys
+	if (role === 'System Admin') {
+		return [...PERMISSION_KEYS];
+	}
+
+	// Step 1: get permission_ids for this user
+	const { data: upData, error: upError } = await supabase
+		.schema('api')
+		.from('user_permissions')
+		.select('permission_id')
+		.eq('user_id', userId);
+
+	if (upError || !upData) {
+		console.error('Failed to fetch user permissions:', upError);
+		return [];
+	}
+
+	const permissionIds = upData.map((row: { permission_id: string }) => row.permission_id);
+	if (permissionIds.length === 0) return [];
+
+	// Step 2: look up keys from the permissions table
+	const { data: permData, error: permError } = await supabase
+		.schema('api')
+		.from('permissions')
+		.select('key')
+		.in('permission_id', permissionIds);
+
+	if (permError || !permData) {
+		console.error('Failed to fetch permission keys:', permError);
+		return [];
+	}
+
+	return permData.map((row: { key: string }) => row.key);
+}
 
 /**
  * Fetches the granted permission keys for a given role from the database.
@@ -131,8 +177,8 @@ export function canAccessRouteByPermissions(
 		return permissions.includes('settings.company');
 	}
 
-	// Special: /settings/permissions requires permissions.manage permission
-	if (pathname === '/settings/permissions' || pathname.startsWith('/settings/permissions/')) {
+	// Special: /users/[id]/permissions requires permissions.manage permission
+	if (pathname.includes('/permissions') && pathname.startsWith('/users/')) {
 		return permissions.includes('permissions.manage');
 	}
 

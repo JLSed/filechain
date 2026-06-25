@@ -60,6 +60,7 @@
 		}
 	});
 
+	// Group permissions by category
 	/**
 	 * Computes a JSON diff of changes between originalData and editData.
 	 * Returns null if nothing changed.
@@ -101,7 +102,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.first_name} class="text-sm" />
 				{:else}
-					<dd class="font-medium">{data.first_name ?? '—'}</dd>
+					<dd class="font-medium">{data.first_name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div>
@@ -109,7 +110,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.last_name} class="text-sm" />
 				{:else}
-					<dd class="font-medium">{data.last_name ?? '—'}</dd>
+					<dd class="font-medium">{data.last_name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div>
@@ -117,7 +118,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.middle_name} class="text-sm" />
 				{:else}
-					<dd class="font-medium">{data.middle_name ?? '—'}</dd>
+					<dd class="font-medium">{data.middle_name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div>
@@ -182,14 +183,14 @@
 		<dl class="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Email</dt>
-				<dd class="font-medium">{data.email ?? '—'}</dd>
+				<dd class="font-medium">{data.email ?? 'N/A'}</dd>
 			</div>
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Contact Number</dt>
 				{#if isEditing}
 					<PhoneInput bind:value={phoneLocalNumber} bind:dialCode={phoneDialCode} />
 				{:else}
-					<dd class="font-medium">{data.contact_number ?? '—'}</dd>
+					<dd class="font-medium">{data.contact_number ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div class="sm:col-span-2">
@@ -201,7 +202,7 @@
 						bind:value={editData.address}
 					></textarea>
 				{:else}
-					<dd class="font-medium">{data.address ?? '—'}</dd>
+					<dd class="font-medium">{data.address ?? 'N/A'}</dd>
 				{/if}
 			</div>
 		</dl>

@@ -29,7 +29,12 @@
 	<div class="flex flex-1 items-center px-4">
 		<div>
 			<h6 class="font-medium">
-				{pageTitles[page.url.pathname]}
+				{pageTitles[page.url.pathname] ||
+					(page.url.pathname.includes('/permissions') && page.url.pathname.startsWith('/users/')
+						? 'Edit User Access'
+						: page.url.pathname.startsWith('/users/') && page.url.pathname !== '/users'
+							? 'User Profile Details'
+							: '')}
 			</h6>
 		</div>
 		<div class="flex flex-1 items-center justify-end gap-4 md:flex">

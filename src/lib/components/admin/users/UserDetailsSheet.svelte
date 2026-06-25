@@ -44,15 +44,15 @@
 					<dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
 						<div>
 							<dt class="text-muted-foreground">First Name</dt>
-							<dd class="font-medium">{data.first_name ?? '—'}</dd>
+							<dd class="font-medium">{data.first_name ?? 'N/A'}</dd>
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Last Name</dt>
-							<dd class="font-medium">{data.last_name ?? '—'}</dd>
+							<dd class="font-medium">{data.last_name ?? 'N/A'}</dd>
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Middle Name</dt>
-							<dd class="font-medium">{data.middle_name ?? '—'}</dd>
+							<dd class="font-medium">{data.middle_name ?? 'N/A'}</dd>
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Role</dt>
@@ -76,15 +76,15 @@
 					<dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
 						<div>
 							<dt class="text-muted-foreground">Email</dt>
-							<dd class="font-medium">{data.email ?? '—'}</dd>
+							<dd class="font-medium">{data.email ?? 'N/A'}</dd>
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Contact Number</dt>
-							<dd class="font-medium">{data.contact_number ?? '—'}</dd>
+							<dd class="font-medium">{data.contact_number ?? 'N/A'}</dd>
 						</div>
 						<div class="sm:col-span-2">
 							<dt class="text-muted-foreground">Address</dt>
-							<dd class="font-medium">{data.address ?? '—'}</dd>
+							<dd class="font-medium">{data.address ?? 'N/A'}</dd>
 						</div>
 					</dl>
 				</section>

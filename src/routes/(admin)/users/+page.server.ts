@@ -8,7 +8,7 @@ import z from 'zod';
 import { createAdminClient } from '$lib/services/supabase/admin';
 import { insertAuditLog } from '$lib/services/audit-log';
 import { formatName } from '$lib/utils/formatter';
-import { fetchRolePermissions, hasPermission } from '$lib/services/permissions';
+import { fetchUserPermissions, hasPermission } from '$lib/services/permissions';
 
 // TODO: refresh button on page does not fetch data in database
 
@@ -75,7 +75,7 @@ export const actions = {
 			.eq('user_id', session.user.id)
 			.single();
 
-		const perms = await fetchRolePermissions(supabase, currentProfile?.role);
+		const perms = await fetchUserPermissions(supabase, session.user.id, currentProfile?.role);
 		if (!hasPermission(perms, 'users.reset_password')) {
 			return fail(403, { error: 'You do not have permission to reset user passwords.' });
 		}
@@ -181,7 +181,7 @@ export const actions = {
 			.eq('user_id', session.user.id)
 			.single();
 
-		const perms = await fetchRolePermissions(supabase, currentProfile?.role);
+		const perms = await fetchUserPermissions(supabase, session.user.id, currentProfile?.role);
 		if (!hasPermission(perms, 'users.archive')) {
 			return fail(403, { error: 'You do not have permission to archive users.' });
 		}
@@ -227,7 +227,7 @@ export const actions = {
 			.single();
 
 		// Permission check
-		const perms = await fetchRolePermissions(supabase, currentUserData?.role);
+		const perms = await fetchUserPermissions(supabase, session.user.id, currentUserData?.role);
 		if (!hasPermission(perms, 'users.edit')) {
 			return fail(403, { error: 'You do not have permission to edit user roles.' });
 		}
@@ -257,6 +257,38 @@ export const actions = {
 		if (dbError) {
 			console.error('Edit role error:', dbError);
 			return fail(500, { error: 'Failed to update role.' });
+		}
+
+		// Reset user's individual permissions to match the new role's defaults
+		const admin = createAdminClient();
+		if (admin) {
+			const { data: rpData } = await admin
+				.schema('api')
+				.from('role_permissions')
+				.select('permission_id')
+				.eq('role', role);
+
+			await admin.schema('api').from('user_permissions').delete().eq('user_id', userId);
+
+			if (rpData && rpData.length > 0) {
+				const userPermInserts = rpData.map((row: { permission_id: string }) => ({
+					user_id: userId,
+					permission_id: row.permission_id,
+					granted_by: session.user.id
+				}));
+
+				const { error: permInsertError } = await admin
+					.schema('api')
+					.from('user_permissions')
+					.insert(userPermInserts);
+
+				if (permInsertError) {
+					console.error(
+						'Failed to insert user permissions on role preset change:',
+						permInsertError
+					);
+				}
+			}
 		}
 
 		return { success: true };
@@ -309,8 +341,32 @@ export const actions = {
 			});
 		}
 
-		// Audit log for adding a new account
+		// Initialize user's individual permissions from role presets
 		const { session } = await safeGetSession();
+		const { data: rpData } = await admin
+			.schema('api')
+			.from('role_permissions')
+			.select('permission_id')
+			.eq('role', form.data.role);
+
+		if (rpData && rpData.length > 0) {
+			const userPermInserts = rpData.map((row: { permission_id: string }) => ({
+				user_id: authData.user.id,
+				permission_id: row.permission_id,
+				granted_by: session?.user?.id || null
+			}));
+
+			const { error: permInsertError } = await admin
+				.schema('api')
+				.from('user_permissions')
+				.insert(userPermInserts);
+
+			if (permInsertError) {
+				console.error('Failed to initialize user permissions on invite:', permInsertError);
+			}
+		}
+
+		// Audit log for adding a new account
 		if (session) {
 			let ipAddress = getClientAddress();
 			if (ipAddress === '::1') ipAddress = '127.0.0.1';

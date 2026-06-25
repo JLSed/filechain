@@ -13,7 +13,7 @@
 	} = $props();
 
 	function getInventionTypeName(id: number): string {
-		return inventionTypes.find((t) => t != null && t.id === id)?.name ?? '—';
+		return inventionTypes.find((t) => t != null && t.id === id)?.name ?? 'N/A';
 	}
 
 	const isIndividual = $derived(form.client_profiles.is_individual);
@@ -85,31 +85,31 @@
 			{#if isIndividual || clientName}
 				<div>
 					<span class="text-muted-foreground">{isIndividual ? 'Name' : 'Contact Person'}:</span>
-					<span class="ml-1 font-medium">{clientName || '—'}</span>
+					<span class="ml-1 font-medium">{clientName || 'N/A'}</span>
 				</div>
 			{/if}
 			<div>
 				<span class="text-muted-foreground">Email:</span>
-				<span class="ml-1 font-medium">{form.client_profiles.email || '—'}</span>
+				<span class="ml-1 font-medium">{form.client_profiles.email || 'N/A'}</span>
 			</div>
 			<div>
 				<span class="text-muted-foreground">Mobile:</span>
-				<span class="ml-1 font-medium">{form.client_profiles.mobile_number || '—'}</span>
+				<span class="ml-1 font-medium">{form.client_profiles.mobile_number || 'N/A'}</span>
 			</div>
 			{#if isIndividual}
 				<div>
 					<span class="text-muted-foreground">Nationality:</span>
-					<span class="ml-1 font-medium">{form.client_profiles.nationality || '—'}</span>
+					<span class="ml-1 font-medium">{form.client_profiles.nationality || 'N/A'}</span>
 				</div>
 			{/if}
 			{#if !isIndividual}
 				<div class="md:col-span-2">
 					<span class="text-muted-foreground">Company Name:</span>
-					<span class="ml-1 font-medium">{form.client_profiles.company_name || '—'}</span>
+					<span class="ml-1 font-medium">{form.client_profiles.company_name || 'N/A'}</span>
 				</div>
 				<div class="md:col-span-2 lg:col-span-3">
 					<span class="text-muted-foreground">Company Address:</span>
-					<span class="ml-1 font-medium">{form.client_profiles.company_address || '—'}</span>
+					<span class="ml-1 font-medium">{form.client_profiles.company_address || 'N/A'}</span>
 				</div>
 			{/if}
 		</div>
@@ -121,7 +121,7 @@
 		<div class="grid grid-cols-1 gap-x-6 gap-y-2 text-sm md:grid-cols-2 lg:grid-cols-3">
 			<div class="md:col-span-2 lg:col-span-3">
 				<span class="text-muted-foreground">Title:</span>
-				<span class="ml-1 font-medium">{form.application.title_of_invention || '—'}</span>
+				<span class="ml-1 font-medium">{form.application.title_of_invention || 'N/A'}</span>
 			</div>
 			<div>
 				<span class="text-muted-foreground">Status:</span>
@@ -137,7 +137,7 @@
 				<div class="md:col-span-2 lg:col-span-3">
 					<span class="text-muted-foreground">Inventors:</span>
 					<span class="ml-1 font-medium"
-						>{form.application.inventor_names.filter(Boolean).join(', ') || '—'}</span
+						>{form.application.inventor_names.filter(Boolean).join(', ') || 'N/A'}</span
 					>
 				</div>
 			{/if}
@@ -157,7 +157,7 @@
 			{/if}
 			<div>
 				<span class="text-muted-foreground">Assigned Team:</span>
-				<span class="ml-1 font-medium">{form.application.team_assigned || '—'}</span>
+				<span class="ml-1 font-medium">{form.application.team_assigned || 'N/A'}</span>
 			</div>
 		</div>
 	</div>

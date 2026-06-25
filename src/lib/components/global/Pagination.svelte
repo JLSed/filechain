@@ -31,14 +31,15 @@
 					{#each table.pageNumbers as number, i (i)}
 						{#if number === '...'}
 							<span class="px-2 text-sm text-muted-foreground">...</span>
+						{:else}
+							<Button
+								size="sm"
+								variant={number === table.currentPage ? 'default' : 'outline'}
+								onclick={() => table.goToPage(number as number)}
+							>
+								{number}
+							</Button>
 						{/if}
-						<Button
-							size="sm"
-							variant={number === table.currentPage ? 'default' : 'outline'}
-							onclick={() => table.goToPage(number as number)}
-						>
-							{number}
-						</Button>
 					{/each}
 				</div>
 				<Button

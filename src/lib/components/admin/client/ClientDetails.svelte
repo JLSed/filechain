@@ -128,7 +128,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.first_name} class="text-sm" />
 				{:else}
-					<dd class="font-medium">{data.first_name ?? '—'}</dd>
+					<dd class="font-medium">{data.first_name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div>
@@ -138,7 +138,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.last_name} class="text-sm" />
 				{:else}
-					<dd class="font-medium">{data.last_name ?? '—'}</dd>
+					<dd class="font-medium">{data.last_name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div>
@@ -148,7 +148,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.middle_name} class="text-sm" />
 				{:else}
-					<dd class="font-medium">{data.middle_name ?? '—'}</dd>
+					<dd class="font-medium">{data.middle_name ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			{#if data.is_individual}
@@ -157,7 +157,7 @@
 					{#if isEditing}
 						<Input bind:value={editData.nationality} class="text-sm" />
 					{:else}
-						<dd class="font-medium">{data.nationality ?? '—'}</dd>
+						<dd class="font-medium">{data.nationality ?? 'N/A'}</dd>
 					{/if}
 				</div>
 			{/if}
@@ -177,7 +177,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.email} type="email" class="text-sm" />
 				{:else}
-					<dd class="font-medium">{data.email ?? '—'}</dd>
+					<dd class="font-medium">{data.email ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div>
@@ -185,7 +185,7 @@
 				{#if isEditing}
 					<PhoneInput bind:value={phoneLocalNumber} bind:dialCode={phoneDialCode} />
 				{:else}
-					<dd class="font-medium">{data.mobile_number ?? '—'}</dd>
+					<dd class="font-medium">{data.mobile_number ?? 'N/A'}</dd>
 				{/if}
 			</div>
 		</dl>
@@ -205,7 +205,7 @@
 					{#if isEditing}
 						<Input bind:value={editData.company_name} class="text-sm" />
 					{:else}
-						<dd class="font-medium">{data.company_name ?? '—'}</dd>
+						<dd class="font-medium">{data.company_name ?? 'N/A'}</dd>
 					{/if}
 				</div>
 				<div class="sm:col-span-2">
@@ -217,7 +217,7 @@
 							bind:value={editData.company_address}
 						></textarea>
 					{:else}
-						<dd class="font-medium">{data.company_address ?? '—'}</dd>
+						<dd class="font-medium">{data.company_address ?? 'N/A'}</dd>
 					{/if}
 				</div>
 			</dl>
@@ -237,7 +237,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.tin} class="text-sm" placeholder="e.g. 123-456-789-000" />
 				{:else}
-					<dd class="font-medium">{data.tin ?? '—'}</dd>
+					<dd class="font-medium">{data.tin ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div>
@@ -245,7 +245,7 @@
 				{#if isEditing}
 					<Input bind:value={editData.business_style} class="text-sm" />
 				{:else}
-					<dd class="font-medium">{data.business_style ?? '—'}</dd>
+					<dd class="font-medium">{data.business_style ?? 'N/A'}</dd>
 				{/if}
 			</div>
 			<div class="sm:col-span-2">
@@ -257,7 +257,7 @@
 						bind:value={editData.registered_address}
 					></textarea>
 				{:else}
-					<dd class="font-medium">{data.registered_address ?? '—'}</dd>
+					<dd class="font-medium">{data.registered_address ?? 'N/A'}</dd>
 				{/if}
 			</div>
 		</dl>
@@ -278,10 +278,6 @@
 			<div>
 				<dt class="mb-1 text-xs text-muted-foreground">Last Updated</dt>
 				<dd class="font-medium">{formatDate(data.updated_at)}</dd>
-			</div>
-			<div>
-				<dt class="mb-1 text-xs text-muted-foreground">Client ID</dt>
-				<dd class="font-mono text-xs font-medium break-all">{data.client_id}</dd>
 			</div>
 		</dl>
 	</section>

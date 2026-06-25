@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { invalidate, goto } from '$app/navigation';
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
@@ -16,7 +16,7 @@
 
 	let { data }: PageProps = $props();
 
-	const permissions = $derived($page.data.permissions as string[]);
+	const permissions = $derived(page.data.permissions as string[]);
 	const canEditInvoice = $derived(hasPermission(permissions, 'invoices.edit'));
 	let actionLoading = $state(false);
 
@@ -51,7 +51,7 @@
 
 	function getClientName(): string {
 		const cp = inv.client_profiles;
-		if (!cp) return '—';
+		if (!cp) return 'N/A';
 		if (cp.is_individual) {
 			return [cp.first_name, cp.middle_name, cp.last_name].filter(Boolean).join(' ');
 		}
@@ -64,7 +64,7 @@
 	}
 
 	function formatDate(d: string | null): string {
-		if (!d) return '—';
+		if (!d) return 'N/A';
 		return new Date(d).toLocaleDateString('en-US', {
 			month: 'short',
 			day: 'numeric',
