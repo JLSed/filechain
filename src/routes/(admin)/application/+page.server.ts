@@ -1,6 +1,11 @@
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad, Actions } from './$types';
 import { IpApplicationSchema } from '$lib/types/DatabaseTypes';
 import z from 'zod';
+import { error, fail } from '@sveltejs/kit';
+import { createAdminClient } from '$lib/services/supabase/admin';
+import { fetchUserPermissions, hasPermission } from '$lib/services/permissions';
+import { insertAuditLog } from '$lib/services/audit-log';
+import { formatName } from '$lib/utils/formatter';
 
 export const load = (async ({ locals: { supabase }, depends, parent }) => {
 	depends('db:ip-applications');
@@ -39,3 +44,74 @@ export const load = (async ({ locals: { supabase }, depends, parent }) => {
 
 	return { applications: cleanData.data, error: null };
 }) satisfies PageServerLoad;
+
+export const actions = {
+	archiveApplication: async ({
+		request,
+		locals: { supabase, safeGetSession },
+		getClientAddress
+	}) => {
+		if (!supabase) throw error(500, 'Unable to connect to the database.');
+
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Unauthorized.' });
+
+		const { data: currentProfile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('role, first_name, middle_name, last_name')
+			.eq('user_id', session.user.id)
+			.single();
+
+		const perms = await fetchUserPermissions(supabase, session.user.id, currentProfile?.role);
+		if (!hasPermission(perms, 'applications.archive')) {
+			return fail(403, { error: 'You do not have permission to archive applications.' });
+		}
+
+		const formData = await request.formData();
+		const applicationId = formData.get('application_id')?.toString();
+		if (!applicationId) return fail(400, { error: 'Application ID is required.' });
+
+		const now = new Date().toISOString();
+		const admin = createAdminClient();
+
+		const { error: appErr } = await admin
+			.schema('api')
+			.from('ip_applications')
+			.update({ is_archived: true, archived_at: now })
+			.eq('application_id', applicationId);
+
+		if (appErr) {
+			console.error('Archive application error:', appErr);
+			return fail(500, { error: 'Failed to archive application.' });
+		}
+
+		// Cascade: archive all files under this application
+		await admin
+			.schema('api')
+			.from('file_metadata')
+			.update({ is_archived: true, archived_at: now })
+			.eq('application_id', applicationId);
+
+		let ipAddress = getClientAddress();
+		if (ipAddress === '::1') ipAddress = '127.0.0.1';
+
+		const actorName = currentProfile
+			? formatName(
+					currentProfile.first_name ?? '',
+					currentProfile.middle_name,
+					currentProfile.last_name ?? ''
+				)
+			: (session.user.email ?? 'Unknown');
+
+		await insertAuditLog(supabase, {
+			actorId: session.user.id,
+			details: `${actorName} archived application ${applicationId}`,
+			severityLevel: 'warning',
+			ipAddress,
+			eventType: 'Archived Application'
+		});
+
+		return { success: true };
+	}
+} satisfies Actions;

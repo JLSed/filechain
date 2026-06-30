@@ -50,7 +50,9 @@ export const ClientProfileSchema = z.object({
 	updated_at: z.string(),
 	tin: z.string().nullable().optional(),
 	business_style: z.string().nullable().optional(),
-	registered_address: z.string().nullable().optional()
+	registered_address: z.string().nullable().optional(),
+	is_archived: z.boolean().optional(),
+	archived_at: z.string().nullable().optional()
 });
 
 export type ClientProfile = z.infer<typeof ClientProfileSchema>;
@@ -115,7 +117,9 @@ export const IpApplicationSchema = z.object({
 			last_name: z.string(),
 			email: z.string()
 		})
-		.optional()
+		.optional(),
+	is_archived: z.boolean().optional(),
+	archived_at: z.string().nullable().optional()
 });
 
 export type IpApplication = z.infer<typeof IpApplicationSchema>;
@@ -147,7 +151,9 @@ export const FileMetadataSchema = z.object({
 			last_name: z.string()
 		})
 		.nullable()
-		.optional()
+		.optional(),
+	is_archived: z.boolean().optional(),
+	archived_at: z.string().nullable().optional()
 });
 
 export type FileMetadata = z.infer<typeof FileMetadataSchema>;

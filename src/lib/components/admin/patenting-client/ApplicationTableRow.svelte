@@ -9,10 +9,12 @@
 	interface PageProps {
 		app: IpApplication;
 		canEdit?: boolean;
+		canArchive?: boolean;
 		openDetails: (app: IpApplication) => void;
+		onarchive?: (app: IpApplication) => void;
 	}
 
-	let { app, canEdit = true, openDetails }: PageProps = $props();
+	let { app, canEdit = true, canArchive = false, openDetails, onarchive }: PageProps = $props();
 </script>
 
 <DropdownMenu.Root>
@@ -45,6 +47,8 @@
 			><Edit /> Edit Application</DropdownMenu.Item
 		>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item variant="destructive"><Archive /> Archive Application</DropdownMenu.Item>
+		<DropdownMenu.Item variant="destructive" disabled={!canArchive} onclick={() => onarchive?.(app)}
+			><Archive /> Archive Application</DropdownMenu.Item
+		>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>

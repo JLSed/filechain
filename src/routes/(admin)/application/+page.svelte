@@ -23,10 +23,63 @@
 	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import { hasPermission } from '$lib/services/permissions';
+	import ArchiveConfirmDialog from '$lib/components/admin/ArchiveConfirmDialog.svelte';
 	let { data }: PageProps = $props();
 
 	const permissions = $derived(page.data.permissions as string[]);
 	const canEditApp = $derived(hasPermission(permissions, 'applications.edit'));
+	const canArchiveApp = $derived(hasPermission(permissions, 'applications.archive'));
+
+	let archiveOpen = $state(false);
+	let selectedApp = $state<(typeof data.applications)[number] | null>(null);
+	let submittingArchive = $state(false);
+	let archiveError = $state<string | null>(null);
+
+	function handleOpenArchive(app: (typeof data.applications)[number]): void {
+		selectedApp = app;
+		archiveOpen = true;
+	}
+
+	function handleConfirmArchive(): void {
+		if (!selectedApp) return;
+		submittingArchive = true;
+		archiveError = null;
+
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '?/archiveApplication';
+		form.style.display = 'none';
+
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'application_id';
+		input.value = selectedApp.application_id;
+		form.appendChild(input);
+
+		document.body.appendChild(form);
+
+		const formData = new FormData(form);
+		fetch('?/archiveApplication', {
+			method: 'POST',
+			body: formData
+		})
+			.then(async (res) => {
+				if (res.ok) {
+					archiveOpen = false;
+					selectedApp = null;
+					await table.handleRefresh('db:ip-applications');
+				} else {
+					archiveError = 'Failed to archive application.';
+				}
+			})
+			.catch(() => {
+				archiveError = 'Network error.';
+			})
+			.finally(() => {
+				submittingArchive = false;
+				document.body.removeChild(form);
+			});
+	}
 
 	const table = new ApplicationTableState(untrack(() => data.applications));
 
@@ -388,7 +441,13 @@
 					</Table.Row>
 				{:else}
 					{#each table.paginatedRows as row (row.application_id)}
-						<ApplicationTableRow app={row} canEdit={canEditApp} openDetails={table.openDetails} />
+						<ApplicationTableRow
+							app={row}
+							canEdit={canEditApp}
+							canArchive={canArchiveApp}
+							openDetails={table.openDetails}
+							onarchive={handleOpenArchive}
+						/>
 					{/each}
 				{/if}
 			</Table.Body>
@@ -398,3 +457,20 @@
 </main>
 
 <ApplicationSheet data={table.seletecApplication} bind:sheetOpen={table.sheetOpen} />
+
+{#if selectedApp}
+	<ArchiveConfirmDialog
+		bind:open={archiveOpen}
+		itemName={selectedApp.title_of_invention}
+		itemType="Application"
+		requireTypedConfirmation={true}
+		submitting={submittingArchive}
+		errorMessage={archiveError}
+		onconfirm={handleConfirmArchive}
+		oncancel={() => {
+			archiveOpen = false;
+			selectedApp = null;
+			archiveError = null;
+		}}
+	/>
+{/if}

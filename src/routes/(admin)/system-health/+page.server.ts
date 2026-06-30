@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
 import { createAdminClient } from '$lib/services/supabase/admin';
-import { dev } from '$app/environment';
 
 export const load = (async ({ depends }) => {
 	depends('db:system-health');
@@ -88,12 +87,6 @@ export const load = (async ({ depends }) => {
 			platforms: {
 				vercel: vercelStatus,
 				supabase: supabaseStatus
-			},
-			runtime: {
-				nodeVersion: process.version,
-				env: dev ? 'development' : process.env.VERCEL_ENV || 'production',
-				region: process.env.VERCEL_REGION || 'local',
-				commitSha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'local-dev'
 			}
 		}
 	};

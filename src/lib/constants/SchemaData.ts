@@ -77,7 +77,14 @@ export const AUDIT_EVENT_TYPES = [
 	'Verified Integrity',
 	'Password Reset',
 	'Enabled 2FA',
-	'Changed 2FA Device'
+	'Changed 2FA Device',
+	'Archived Client',
+	'Archived Application',
+	'Archived File',
+	'Restored Client',
+	'Restored Application',
+	'Restored File',
+	'Purged Archived Items'
 ] as const;
 
 export const SEVERITY_LEVELS = ['warning', 'danger', 'neutral', 'notice'] as const;
@@ -95,12 +102,15 @@ export const PERMISSION_KEYS = [
 	'dashboard.view',
 	'applications.view',
 	'applications.edit',
+	'applications.archive',
 	'files.view',
 	'files.upload',
 	'files.download',
 	'files.revision',
+	'files.archive',
 	'clients.view',
 	'clients.edit',
+	'clients.archive',
 	'invoices.view',
 	'invoices.create',
 	'invoices.edit',

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import type { DecryptedFileView, FileMetadata } from '$lib/types/DatabaseTypes';
+	import type { DecryptedFileView, FileMetadata, IpApplication } from '$lib/types/DatabaseTypes';
 	import ApplicationSection from '$lib/components/admin/files/client/ApplicationSection.svelte';
+	import ApplicationSheet from '$lib/components/admin/patenting-client/ApplicationSheet.svelte';
 	import MasterPasswordDialog from '$lib/components/admin/files/client/MasterPasswordDialog.svelte';
 	import AddRevisionDialog from '$lib/components/admin/files/client/AddRevisionDialog.svelte';
 	import RevisionDrawer from '$lib/components/admin/files/client/RevisionDrawer.svelte';
@@ -19,10 +20,63 @@
 
 	import { page } from '$app/state';
 	import { hasPermission } from '$lib/services/permissions';
+	import ArchiveConfirmDialog from '$lib/components/admin/ArchiveConfirmDialog.svelte';
 
 	const permissions = $derived(page.data.permissions as string[]);
 	const canDownload = $derived(hasPermission(permissions, 'files.download'));
 	const canRevision = $derived(hasPermission(permissions, 'files.revision'));
+	const canArchiveFile = $derived(hasPermission(permissions, 'files.archive'));
+
+	let archiveFileOpen = $state(false);
+	let selectedFileToArchive = $state<FileMetadata | null>(null);
+	let submittingFileArchive = $state(false);
+	let fileArchiveError = $state<string | null>(null);
+
+	function handleOpenArchiveFile(file: FileMetadata): void {
+		selectedFileToArchive = file;
+		archiveFileOpen = true;
+	}
+
+	function handleConfirmArchiveFile(): void {
+		if (!selectedFileToArchive) return;
+		submittingFileArchive = true;
+		fileArchiveError = null;
+
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '?/archiveFile';
+		form.style.display = 'none';
+
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'file_id';
+		input.value = selectedFileToArchive.file_id;
+		form.appendChild(input);
+
+		document.body.appendChild(form);
+
+		const formData = new FormData(form);
+		fetch('?/archiveFile', {
+			method: 'POST',
+			body: formData
+		})
+			.then(async (res) => {
+				if (res.ok) {
+					archiveFileOpen = false;
+					selectedFileToArchive = null;
+					await invalidate('db:client-files');
+				} else {
+					fileArchiveError = 'Failed to archive file.';
+				}
+			})
+			.catch(() => {
+				fileArchiveError = 'Network error.';
+			})
+			.finally(() => {
+				submittingFileArchive = false;
+				document.body.removeChild(form);
+			});
+	}
 
 	const personalName = $derived(
 		[data.client.first_name, data.client.middle_name, data.client.last_name]
@@ -67,6 +121,14 @@
 			public_key: string;
 		}>
 	>([]);
+
+	let selectedAppForSheet = $state<IpApplication | null>(null);
+	let sheetOpen = $state(false);
+
+	function handleOpenAppDetails(app: IpApplication) {
+		selectedAppForSheet = app;
+		sheetOpen = true;
+	}
 
 	/**
 	 * Returns only the newest file (highest sequence) per revision chain.
@@ -254,12 +316,15 @@
 						{currentUserId}
 						accessibleFileIds={data.accessibleFileIds}
 						{canRevision}
+						canArchive={canArchiveFile}
+						onarchive={handleOpenArchiveFile}
 						onfileclick={handleFileClick}
 						onshare={handleShare}
 						onaddrevision={handleAddRevision}
 						onviewrevisions={handleViewRevisions}
 						onverifyintegrity={handleVerifyIntegrity}
 						onviewaccess={handleViewAccess}
+						onviewdetails={handleOpenAppDetails}
 					/>
 				{/each}
 			</div>
@@ -317,3 +382,22 @@
 	onshared={handleShareCompleted}
 	onclose={handleSharePasswordDialogClose}
 />
+
+<ApplicationSheet data={selectedAppForSheet} bind:sheetOpen />
+
+{#if selectedFileToArchive}
+	<ArchiveConfirmDialog
+		bind:open={archiveFileOpen}
+		itemName={selectedFileToArchive.file_name}
+		itemType="File"
+		requireTypedConfirmation={false}
+		submitting={submittingFileArchive}
+		errorMessage={fileArchiveError}
+		onconfirm={handleConfirmArchiveFile}
+		oncancel={() => {
+			archiveFileOpen = false;
+			selectedFileToArchive = null;
+			fileArchiveError = null;
+		}}
+	/>
+{/if}

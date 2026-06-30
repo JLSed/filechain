@@ -10,6 +10,8 @@ import {
 import z from 'zod';
 import { insertAuditLog } from '$lib/services/audit-log';
 import { formatName } from '$lib/utils/formatter';
+import { createAdminClient } from '$lib/services/supabase/admin';
+import { fetchUserPermissions, hasPermission } from '$lib/services/permissions';
 
 export const load = (async ({ params, locals: { supabase, safeGetSession }, depends, parent }) => {
 	depends('db:application-detail');
@@ -207,6 +209,64 @@ export const actions = {
 			severityLevel: 'notice',
 			ipAddress,
 			eventType: 'Edited Application'
+		});
+
+		return { success: true };
+	},
+
+	archiveFile: async ({ request, locals: { supabase, safeGetSession }, getClientAddress }) => {
+		if (!supabase) throw error(500, 'Unable to connect to the database.');
+
+		const { session } = await safeGetSession();
+		if (!session) return fail(401, { error: 'Unauthorized.' });
+
+		const { data: currentProfile } = await supabase
+			.schema('api')
+			.from('user_profiles')
+			.select('role, first_name, middle_name, last_name')
+			.eq('user_id', session.user.id)
+			.single();
+
+		const perms = await fetchUserPermissions(supabase, session.user.id, currentProfile?.role);
+		if (!hasPermission(perms, 'files.archive')) {
+			return fail(403, { error: 'You do not have permission to archive files.' });
+		}
+
+		const formData = await request.formData();
+		const fileId = formData.get('file_id')?.toString();
+		if (!fileId) return fail(400, { error: 'File ID is required.' });
+
+		const now = new Date().toISOString();
+		const admin = createAdminClient();
+
+		const { error: fileErr } = await admin
+			.schema('api')
+			.from('file_metadata')
+			.update({ is_archived: true, archived_at: now })
+			.eq('file_id', fileId);
+
+		if (fileErr) {
+			console.error('Archive file error:', fileErr);
+			return fail(500, { error: 'Failed to archive file.' });
+		}
+
+		let ipAddress = getClientAddress();
+		if (ipAddress === '::1') ipAddress = '127.0.0.1';
+
+		const actorName = currentProfile
+			? formatName(
+					currentProfile.first_name ?? '',
+					currentProfile.middle_name,
+					currentProfile.last_name ?? ''
+				)
+			: (session.user.email ?? 'Unknown');
+
+		await insertAuditLog(supabase, {
+			actorId: session.user.id,
+			details: `${actorName} archived file ${fileId}`,
+			severityLevel: 'warning',
+			ipAddress,
+			eventType: 'Archived File'
 		});
 
 		return { success: true };

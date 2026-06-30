@@ -30,6 +30,8 @@
 		onviewrevisions: (file: FileMetadata) => void;
 		onverifyintegrity: (file: FileMetadata) => void;
 		onviewaccess: (file: FileMetadata) => void;
+		canArchive?: boolean;
+		onarchive?: (file: FileMetadata) => void;
 	}
 
 	let {
@@ -42,7 +44,9 @@
 		onaddrevision,
 		onviewrevisions,
 		onverifyintegrity,
-		onviewaccess
+		onviewaccess,
+		canArchive = false,
+		onarchive
 	}: Props = $props();
 
 	const version = $derived(
@@ -148,7 +152,13 @@
 						}}><Users /> View Access</DropdownMenu.Item
 					>
 					<DropdownMenu.Separator />
-					<DropdownMenu.Item disabled={!hasAccess}><Archive /> Archive File</DropdownMenu.Item>
+					<DropdownMenu.Item
+						disabled={!canArchive}
+						onclick={(e: MouseEvent) => {
+							e.stopPropagation();
+							onarchive?.(file);
+						}}><Archive /> Archive File</DropdownMenu.Item
+					>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		</Table.Cell>

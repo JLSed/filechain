@@ -99,22 +99,6 @@
 </script>
 
 <div class="flex flex-col gap-8">
-	<section>
-		<h3 class="mb-2 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-			Client Type
-		</h3>
-		<span
-			class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium
-				{data.is_individual
-				? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-				: 'bg-blue-500/10 text-blue-700 dark:text-blue-300'}"
-		>
-			{data.is_individual ? 'Individual' : 'Company / Organization'}
-		</span>
-	</section>
-
-	<Separator />
-
 	<!-- Personal Information -->
 	<section>
 		<h3 class="mb-4 text-xs font-semibold tracking-widest text-muted-foreground uppercase">
