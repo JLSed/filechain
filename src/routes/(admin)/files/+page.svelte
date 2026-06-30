@@ -58,11 +58,11 @@
 
 	const selectedClientName = $derived(
 		selectedClient
-			? (selectedClient.company_name && !selectedClient.is_individual
+			? selectedClient.company_name && !selectedClient.is_individual
 				? selectedClient.company_name
 				: [selectedClient.first_name, selectedClient.middle_name, selectedClient.last_name]
 						.filter(Boolean)
-						.join(' '))
+						.join(' ')
 			: ''
 	);
 

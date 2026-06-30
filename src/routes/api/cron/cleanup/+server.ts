@@ -1,6 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { CRON_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { createAdminClient } from '$lib/services/supabase/admin';
 import { insertAuditLog } from '$lib/services/audit-log';
 
@@ -12,7 +12,7 @@ import { insertAuditLog } from '$lib/services/audit-log';
  */
 export const POST: RequestHandler = async ({ request }) => {
 	const authHeader = request.headers.get('authorization');
-	if (!CRON_SECRET || authHeader !== `Bearer ${CRON_SECRET}`) {
+	if (!env.CRON_SECRET || authHeader !== `Bearer ${env.CRON_SECRET}`) {
 		throw error(401, 'Unauthorized');
 	}
 
