@@ -18,6 +18,9 @@
 		onviewrevisions: (file: FileMetadata) => void;
 		onverifyintegrity: (file: FileMetadata) => void;
 		onviewaccess: (file: FileMetadata) => void;
+		onviewdetails: (app: IpApplication) => void;
+		canArchive?: boolean;
+		onarchive?: (file: FileMetadata) => void;
 	}
 
 	let {
@@ -31,7 +34,10 @@
 		onaddrevision,
 		onviewrevisions,
 		onverifyintegrity,
-		onviewaccess
+		onviewaccess,
+		onviewdetails,
+		canArchive = false,
+		onarchive
 	}: Props = $props();
 
 	const accessibleSet = $derived(new Set(accessibleFileIds));
@@ -50,7 +56,18 @@
 			<span class="hidden text-xs text-muted-foreground sm:inline">{app.status}</span>
 
 			<div class="flex items-center gap-4 text-xs font-medium text-muted-foreground">
-				<Button variant="outline" size="sm" class="text-xs">View Details</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					class="text-xs"
+					onclick={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						onviewdetails(app);
+					}}
+				>
+					View Details
+				</Button>
 			</div>
 		</Collapsible.Trigger>
 	</div>
@@ -88,6 +105,8 @@
 							{onviewrevisions}
 							{onverifyintegrity}
 							{onviewaccess}
+							{canArchive}
+							{onarchive}
 						/>
 					{/each}
 				</Table.Body>

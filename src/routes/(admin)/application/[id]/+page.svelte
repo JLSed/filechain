@@ -25,6 +25,7 @@
 	import { page } from '$app/state';
 	import { hasPermission } from '$lib/services/permissions';
 	import * as Tooltip from '$lib/shadcn/components/ui/tooltip/index.js';
+	import ArchiveConfirmDialog from '$lib/components/admin/ArchiveConfirmDialog.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -33,6 +34,58 @@
 	const canUpload = $derived(hasPermission(permissions, 'files.upload'));
 	const canDownload = $derived(hasPermission(permissions, 'files.download'));
 	const canRevision = $derived(hasPermission(permissions, 'files.revision'));
+	const canArchiveFile = $derived(hasPermission(permissions, 'files.archive'));
+
+	let archiveFileOpen = $state(false);
+	let selectedFileToArchive = $state<FileMetadata | null>(null);
+	let submittingFileArchive = $state(false);
+	let fileArchiveError = $state<string | null>(null);
+
+	function handleOpenArchiveFile(file: FileMetadata): void {
+		selectedFileToArchive = file;
+		archiveFileOpen = true;
+	}
+
+	function handleConfirmArchiveFile(): void {
+		if (!selectedFileToArchive) return;
+		submittingFileArchive = true;
+		fileArchiveError = null;
+
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '?/archiveFile';
+		form.style.display = 'none';
+
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'file_id';
+		input.value = selectedFileToArchive.file_id;
+		form.appendChild(input);
+
+		document.body.appendChild(form);
+
+		const formData = new FormData(form);
+		fetch('?/archiveFile', {
+			method: 'POST',
+			body: formData
+		})
+			.then(async (res) => {
+				if (res.ok) {
+					archiveFileOpen = false;
+					selectedFileToArchive = null;
+					await invalidate('db:application-detail');
+				} else {
+					fileArchiveError = 'Failed to archive file.';
+				}
+			})
+			.catch(() => {
+				fileArchiveError = 'Network error.';
+			})
+			.finally(() => {
+				submittingFileArchive = false;
+				document.body.removeChild(form);
+			});
+	}
 
 	const app = $derived(data.application);
 	const clientName = $derived(
@@ -418,6 +471,8 @@
 						{isEditing}
 						{canUpload}
 						{canRevision}
+						canArchive={canArchiveFile}
+						onarchive={handleOpenArchiveFile}
 						onfileclick={handleFileClick}
 						onshare={handleShare}
 						onaddrevision={handleAddRevision}
@@ -508,3 +563,20 @@
 	onshared={handleShareAllCompleted}
 	onclose={handleShareAllDialogClose}
 />
+
+{#if selectedFileToArchive}
+	<ArchiveConfirmDialog
+		bind:open={archiveFileOpen}
+		itemName={selectedFileToArchive.file_name}
+		itemType="File"
+		requireTypedConfirmation={false}
+		submitting={submittingFileArchive}
+		errorMessage={fileArchiveError}
+		onconfirm={handleConfirmArchiveFile}
+		oncancel={() => {
+			archiveFileOpen = false;
+			selectedFileToArchive = null;
+			fileArchiveError = null;
+		}}
+	/>
+{/if}

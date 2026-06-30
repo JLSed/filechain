@@ -6,9 +6,11 @@
 
 	interface Props {
 		client: ClientProfile;
+		canArchive?: boolean;
+		onarchive?: (client: ClientProfile) => void;
 	}
 
-	let { client }: Props = $props();
+	let { client, canArchive = false, onarchive }: Props = $props();
 
 	const fullName = $derived(
 		[client.first_name, client.middle_name, client.last_name].filter(Boolean).join(' ')
@@ -50,7 +52,11 @@
 				<DropdownMenu.Item onclick={handleViewClient}><User /> View Client</DropdownMenu.Item>
 				<DropdownMenu.Item onclick={handleEditDetails}><Pencil /> Edit Details</DropdownMenu.Item>
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item class="text-destructive"><Archive /> Archive</DropdownMenu.Item>
+				<DropdownMenu.Item
+					class="text-destructive"
+					disabled={!canArchive}
+					onclick={() => onarchive?.(client)}><Archive /> Archive</DropdownMenu.Item
+				>
 			</DropdownMenu.Content>
 		</DropdownMenu.Root>
 	</div>

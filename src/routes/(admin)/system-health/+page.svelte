@@ -5,7 +5,6 @@
 		Database,
 		Activity,
 		Globe,
-		Server,
 		Wifi,
 		CircleCheck,
 		CircleAlert,
@@ -182,7 +181,6 @@
 
 	const db = $derived(data.systemHealth.database);
 	const platforms = $derived(data.systemHealth.platforms);
-	const runtime = $derived(data.systemHealth.runtime);
 
 	const DB_LIMIT_BYTES = 500 * 1024 * 1024; // 500 MB DB Limit
 	const STORAGE_LIMIT_BYTES = 1 * 1024 * 1024 * 1024; // 1 GB Storage Limit
@@ -496,36 +494,5 @@
 				{/if}
 			</Card.Content>
 		{/if}
-	</Card.Root>
-
-	<!-- Runtime Info -->
-	<Card.Root class="transition-shadow duration-300 hover:shadow-lg">
-		<Card.Header>
-			<div class="flex items-center gap-2">
-				<Server class="size-5! text-muted-foreground" />
-				<Card.Title class="text-base">Runtime</Card.Title>
-			</div>
-			<Card.Description>SvelteKit server environment details</Card.Description>
-		</Card.Header>
-		<Card.Content>
-			<div class="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
-				<div class="flex flex-col gap-0.5">
-					<span class="text-xs font-medium text-muted-foreground">Environment</span>
-					<Badge variant="outline" class="w-fit capitalize">{runtime.env}</Badge>
-				</div>
-				<div class="flex flex-col gap-0.5">
-					<span class="text-xs font-medium text-muted-foreground">Region</span>
-					<span class="text-sm font-medium">{runtime.region}</span>
-				</div>
-				<div class="flex flex-col gap-0.5">
-					<span class="text-xs font-medium text-muted-foreground">Node.js</span>
-					<span class="font-mono text-sm">{runtime.nodeVersion}</span>
-				</div>
-				<div class="flex flex-col gap-0.5">
-					<span class="text-xs font-medium text-muted-foreground">Git Commit</span>
-					<span class="font-mono text-sm">{runtime.commitSha}</span>
-				</div>
-			</div>
-		</Card.Content>
 	</Card.Root>
 </div>

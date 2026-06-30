@@ -36,6 +36,8 @@
 		onviewaccess: (file: FileMetadata) => void;
 		onaddfile: () => void;
 		onshareall: () => void;
+		canArchive?: boolean;
+		onarchive?: (file: FileMetadata) => void;
 	}
 
 	let {
@@ -52,7 +54,9 @@
 		onverifyintegrity,
 		onviewaccess,
 		onaddfile,
-		onshareall
+		onshareall,
+		canArchive = false,
+		onarchive
 	}: Props = $props();
 
 	const accessibleSet = $derived(new Set(accessibleFileIds));
@@ -179,7 +183,13 @@
 							}}><Users /> View Access</DropdownMenu.Item
 						>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item disabled={!hasAccess}><Archive /> Archive File</DropdownMenu.Item>
+						<DropdownMenu.Item
+							disabled={!canArchive}
+							onclick={(e: MouseEvent) => {
+								e.stopPropagation();
+								onarchive?.(file);
+							}}><Archive /> Archive File</DropdownMenu.Item
+						>
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
 			</div>

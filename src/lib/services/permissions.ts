@@ -20,6 +20,7 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
 	'files.revision': ['/files'],
 	'clients.view': ['/client'],
 	'clients.edit': ['/client'],
+	'clients.archive': ['/client', '/settings'],
 	'invoices.view': ['/invoices'],
 	'invoices.create': ['/invoices'],
 	'invoices.edit': ['/invoices'],
@@ -34,7 +35,9 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
 	'audit_logs.view': ['/audit-logs'],
 	'settings.view': ['/settings'],
 	'settings.company': ['/settings/company'],
-	'permissions.manage': ['/users']
+	'permissions.manage': ['/users'],
+	'applications.archive': ['/application', '/settings'],
+	'files.archive': ['/files', '/settings']
 };
 
 // ──────────────────────────────────────────────────────────

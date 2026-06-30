@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ClientFolderState } from '$lib/classes/TableClass.svelte';
 	import type { PageProps } from './$types';
+	import type { ClientProfile } from '$lib/types/DatabaseTypes';
 	import ClientFolderCard from '$lib/components/admin/files/ClientFolderCard.svelte';
 	import FilesToolbar from '$lib/components/admin/files/FilesToolbar.svelte';
 	import Pagination from '$lib/components/global/Pagination.svelte';
@@ -9,6 +10,8 @@
 	import { AlertCircle, FileText, HardDrive, RefreshCcw, Search, X } from '@lucide/svelte';
 	import { untrack } from 'svelte';
 	import * as Card from '$lib/shadcn/components/ui/card/index.js';
+	import { hasPermission } from '$lib/services/permissions';
+	import ArchiveConfirmDialog from '$lib/components/admin/ArchiveConfirmDialog.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -45,6 +48,69 @@
 	const profile = $derived(data.profile);
 	const isSystemAdmin = $derived(profile?.role === 'System Admin');
 	const userRole = $derived(profile?.role ?? null);
+	const permissions = $derived(data.permissions ?? []);
+	const canArchiveClient = $derived(hasPermission(permissions, 'clients.archive'));
+
+	let archiveOpen = $state(false);
+	let selectedClient = $state<ClientProfile | null>(null);
+	let submittingArchive = $state(false);
+	let archiveError = $state<string | null>(null);
+
+	const selectedClientName = $derived(
+		selectedClient
+			? (selectedClient.company_name && !selectedClient.is_individual
+				? selectedClient.company_name
+				: [selectedClient.first_name, selectedClient.middle_name, selectedClient.last_name]
+						.filter(Boolean)
+						.join(' '))
+			: ''
+	);
+
+	function handleOpenArchive(client: ClientProfile): void {
+		selectedClient = client;
+		archiveOpen = true;
+	}
+
+	function handleConfirmArchive(): void {
+		if (!selectedClient) return;
+		submittingArchive = true;
+		archiveError = null;
+
+		const form = document.createElement('form');
+		form.method = 'POST';
+		form.action = '?/archiveClient';
+		form.style.display = 'none';
+
+		const input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'client_id';
+		input.value = selectedClient.client_id;
+		form.appendChild(input);
+
+		document.body.appendChild(form);
+
+		const formData = new FormData(form);
+		fetch('?/archiveClient', {
+			method: 'POST',
+			body: formData
+		})
+			.then(async (res) => {
+				if (res.ok) {
+					archiveOpen = false;
+					selectedClient = null;
+					await table.handleRefresh('db:client-profiles');
+				} else {
+					archiveError = 'Failed to archive client.';
+				}
+			})
+			.catch(() => {
+				archiveError = 'Network error.';
+			})
+			.finally(() => {
+				submittingArchive = false;
+				document.body.removeChild(form);
+			});
+	}
 
 	const table = new ClientFolderState(untrack(() => clientsWithDisplayName));
 
@@ -199,7 +265,7 @@
 		{:else}
 			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
 				{#each table.paginatedRows as client (client.client_id)}
-					<ClientFolderCard {client} />
+					<ClientFolderCard {client} canArchive={canArchiveClient} onarchive={handleOpenArchive} />
 				{/each}
 			</div>
 		{/if}
@@ -207,3 +273,20 @@
 
 	<Pagination {table} />
 </main>
+
+{#if selectedClient}
+	<ArchiveConfirmDialog
+		bind:open={archiveOpen}
+		itemName={selectedClientName}
+		itemType="Client"
+		requireTypedConfirmation={true}
+		submitting={submittingArchive}
+		errorMessage={archiveError}
+		onconfirm={handleConfirmArchive}
+		oncancel={() => {
+			archiveOpen = false;
+			selectedClient = null;
+			archiveError = null;
+		}}
+	/>
+{/if}

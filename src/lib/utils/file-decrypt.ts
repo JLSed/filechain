@@ -26,6 +26,11 @@ export async function decryptAndViewFile({
 	file,
 	password
 }: DecryptFileParams): Promise<DecryptedFileView> {
+	// ponytail: deny decryption for archived files (defense-in-depth, views already filter)
+	if (file.is_archived) {
+		throw new Error('This file has been archived and cannot be decrypted.');
+	}
+
 	await initWasm();
 
 	const {
