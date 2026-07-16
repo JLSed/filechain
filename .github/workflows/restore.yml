@@ -1,0 +1,85 @@
+name: System Recovery Restore (Cloudflare R2 to Supabase)
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_folder:
+        description: 'The backup snapshot folder to restore (e.g., 2026-07-16)'
+        required: true
+        type: string
+
+jobs:
+  run-restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install DB Client & Rclone
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client rclone
+
+      - name: Execute Restore Pipeline
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          BACKUP_FOLDER="${{ github.event.inputs.backup_folder }}"
+          echo "Initiating recovery action using snapshot folder: $BACKUP_FOLDER"
+
+          # 1. Download Database Backup File
+          echo "Downloading database dump from Cloudflare R2..."
+          export AWS_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}
+          
+          if ! aws s3 cp "s3://${{ secrets.R2_DB_BUCKET }}/$BACKUP_FOLDER/db_backup.dump" ./db_backup.dump \
+            --endpoint-url "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com" \
+            --region auto; then
+            echo "Error: Failed to download database dump from R2."
+            exit 1
+          fi
+
+          # 2. Database Reversion
+          echo "Reverting database schema and table rows..."
+          # Note: --clean drops database objects before recreating them, returning them to the backup state
+          if ! pg_restore \
+            -h db.jmssaxzzkiinggkburfc.supabase.co \
+            -U postgres \
+            -d postgres \
+            -p 5432 \
+            --clean \
+            --no-owner \
+            --no-privileges \
+            ./db_backup.dump; then
+            echo "Error: pg_restore failed."
+            exit 1
+          fi
+          echo "Database successfully restored."
+
+          # 3. Storage Reversion
+          echo "Configuring rclone..."
+          mkdir -p ~/.config/rclone
+          cat <<EOF > ~/.config/rclone/rclone.conf
+          [supabase]
+          type = s3
+          provider = Other
+          access_key_id = ${{ secrets.SUPABASE_S3_ACCESS_KEY }}
+          secret_access_key = ${{ secrets.SUPABASE_S3_SECRET_KEY }}
+          endpoint = https://jmssaxzzkiinggkburfc.supabase.co/storage/v1/s3
+          region = ap-southeast-1
+          acl = private
+
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          endpoint = https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          region = auto
+          acl = private
+          EOF
+
+          echo "Syncing storage objects from R2 backup back to Supabase..."
+          if ! rclone sync "r2:${{ secrets.R2_STORAGE_BUCKET }}/$BACKUP_FOLDER/" supabase:storage --verbose; then
+            echo "Error: rclone storage sync failed."
+            exit 1
+          fi
+          echo "Storage objects successfully restored."
+          echo "System recovery completed successfully."

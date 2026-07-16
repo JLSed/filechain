@@ -1,0 +1,119 @@
+name: Automated & Manual Backup (Supabase to Cloudflare R2)
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Daily at 02:00 AM UTC
+  workflow_dispatch:
+    inputs:
+      log_id:
+        description: 'Database log record ID for manual tracking'
+        required: false
+        type: string
+
+jobs:
+  run-backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install DB Client & Rclone
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client rclone jq
+
+      - name: Execute Backup Pipeline
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          START_TIME=$(date +%s)
+          DATE_STR=$(date +%Y-%m-%d)
+          FOLDER_NAME=$DATE_STR
+
+          # 1. Initialize Log ID
+          LOG_ID="${{ github.event.inputs.log_id }}"
+          if [ -z "$LOG_ID" ]; then
+            # Scheduled run - create the database log
+            echo "No log_id provided. Creating scheduled log entry..."
+            LOG_ID=$(psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -t -A -c "INSERT INTO public.backup_logs (backup_type, status) VALUES ('scheduled', 'running') RETURNING id;")
+          else
+            # Manual run - update log to running
+            echo "Manual log_id provided: $LOG_ID. Updating status to running..."
+            psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'running' WHERE id = '$LOG_ID';"
+          fi
+
+          echo "Initialized LOG_ID: $LOG_ID"
+
+          # 2. Database Backup
+          echo "Dumping database..."
+          if ! pg_dump -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -F c -b -v -f db_backup.dump; then
+            ERROR_MSG="pg_dump failed"
+            echo "Error: $ERROR_MSG"
+            psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
+            exit 1
+          fi
+
+          DB_SIZE=$(stat -c%s "db_backup.dump")
+          DB_FILE_NAME="$FOLDER_NAME/db_backup.dump"
+
+          echo "Uploading database dump to R2..."
+          # Configure aws credentials for R2 upload
+          export AWS_ACCESS_KEY_ID=${{ secrets.R2_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.R2_SECRET_ACCESS_KEY }}
+          if ! aws s3 cp db_backup.dump "s3://${{ secrets.R2_DB_BUCKET }}/$DB_FILE_NAME" \
+            --endpoint-url "https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com" \
+            --region auto; then
+            ERROR_MSG="R2 database upload failed"
+            echo "Error: $ERROR_MSG"
+            psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
+            exit 1
+          fi
+
+          # 3. Storage Sync
+          echo "Configuring rclone..."
+          mkdir -p ~/.config/rclone
+          cat <<EOF > ~/.config/rclone/rclone.conf
+          [supabase]
+          type = s3
+          provider = Other
+          access_key_id = ${{ secrets.SUPABASE_S3_ACCESS_KEY }}
+          secret_access_key = ${{ secrets.SUPABASE_S3_SECRET_KEY }}
+          endpoint = https://jmssaxzzkiinggkburfc.supabase.co/storage/v1/s3
+          region = ap-southeast-1
+          acl = private
+
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          endpoint = https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          region = auto
+          acl = private
+          EOF
+
+          echo "Running rclone sync from Supabase to R2..."
+          if ! rclone sync supabase:storage "r2:${{ secrets.R2_STORAGE_BUCKET }}/$FOLDER_NAME/" --verbose; then
+            ERROR_MSG="rclone storage sync failed"
+            echo "Error: $ERROR_MSG"
+            psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
+            exit 1
+          fi
+
+          # Get total size of files synced inside this folder in R2
+          STORAGE_SIZE=$(rclone size "r2:${{ secrets.R2_STORAGE_BUCKET }}/$FOLDER_NAME/" --json | jq '.bytes')
+
+          # 4. Finalize log entry
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+
+          echo "Updating database log status to completed..."
+          psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "
+            UPDATE public.backup_logs 
+            SET 
+              status = 'completed', 
+              db_file_name = '$DB_FILE_NAME', 
+              db_file_size = $DB_SIZE, 
+              storage_size = $STORAGE_SIZE, 
+              duration_seconds = $DURATION, 
+              completed_at = now() 
+            WHERE id = '$LOG_ID';
+          "
+          echo "Backup pipeline successfully executed."

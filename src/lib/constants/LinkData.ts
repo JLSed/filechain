@@ -10,7 +10,8 @@ import {
 	Receipt,
 	Settings,
 	Activity,
-	Archive
+	Archive,
+	Database
 } from '@lucide/svelte';
 import {
 	canAccessRouteByPermissions,
@@ -31,6 +32,7 @@ export const pageTitles: Record<string, string> = {
 	'/settings': 'Settings',
 	'/settings/company': 'Company Settings',
 	'/settings/archived': 'Archived Items',
+	'/settings/backups': 'Backups & Recovery',
 	'/system-health': 'System Health'
 };
 
@@ -49,7 +51,8 @@ export const protectedRoutes = [
 	'/application',
 	'/application/timeline',
 	'/invoices',
-	'/system-health'
+	'/system-health',
+	'/settings/backups'
 ];
 export const authRoutes = ['/login', '/register'];
 
@@ -160,6 +163,11 @@ export const settingsGroup: Sidebar.Item[] = [
 		title: 'Archived Items',
 		url: '/settings/archived',
 		icon: Archive
+	},
+	{
+		title: 'Backups & Recovery',
+		url: '/settings/backups',
+		icon: Database
 	}
 ];
 
