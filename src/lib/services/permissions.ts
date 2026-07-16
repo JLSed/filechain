@@ -180,6 +180,11 @@ export function canAccessRouteByPermissions(
 		return permissions.includes('settings.company');
 	}
 
+	// Special: /settings/backups requires System Admin role
+	if (pathname === '/settings/backups' || pathname.startsWith('/settings/backups/')) {
+		return role === 'System Admin';
+	}
+
 	// Special: /users/[id]/permissions requires permissions.manage permission
 	if (pathname.includes('/permissions') && pathname.startsWith('/users/')) {
 		return permissions.includes('permissions.manage');
