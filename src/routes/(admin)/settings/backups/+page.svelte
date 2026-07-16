@@ -32,12 +32,13 @@
 	};
 </script>
 
-<div class="flex flex-col gap-6 p-6 max-w-6xl mx-auto">
+<div class="mx-auto flex max-w-6xl flex-col gap-6 p-6">
 	<!-- Header -->
 	<div>
 		<h1 class="text-2xl font-bold tracking-tight">Backup & Recovery Center</h1>
-		<p class="text-sm text-muted-foreground mt-1">
-			Monitor backup health, run manual database and storage snapshots, or recover files and tables to a prior state.
+		<p class="mt-1 text-sm text-muted-foreground">
+			Monitor backup health, run manual database and storage snapshots, or recover files and tables
+			to a prior state.
 		</p>
 	</div>
 
@@ -51,19 +52,22 @@
 				: 'border-destructive/30 bg-destructive/5 text-destructive dark:border-destructive/50 dark:bg-destructive/10'}"
 		>
 			{#if lastLog.status === 'completed'}
-				<ShieldCheck class="h-5 w-5 shrink-0 mt-0.5" />
+				<ShieldCheck class="mt-0.5 h-5 w-5 shrink-0" />
 			{:else}
-				<AlertTriangle class="h-5 w-5 shrink-0 mt-0.5" />
+				<AlertTriangle class="mt-0.5 h-5 w-5 shrink-0" />
 			{/if}
 			<div>
 				<h4 class="font-semibold">
 					System Backup Status: {lastLog.status.toUpperCase()}
 				</h4>
 				<p class="mt-1">
-					Last backup executed: <span class="font-medium">{formatDate(lastLog.created_at)}</span> ({lastLog.backup_type} run).
+					Last backup executed: <span class="font-medium">{formatDate(lastLog.created_at)}</span>
+					({lastLog.backup_type} run).
 				</p>
 				{#if lastLog.error_message}
-					<p class="mt-2 text-xs font-mono bg-destructive/15 p-2 rounded text-destructive dark:bg-destructive/20">
+					<p
+						class="mt-2 rounded bg-destructive/15 p-2 font-mono text-xs text-destructive dark:bg-destructive/20"
+					>
 						Error details: {lastLog.error_message}
 					</p>
 				{/if}
@@ -72,13 +76,14 @@
 	{/if}
 
 	<!-- Controls Grid -->
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+	<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
 		<!-- Manual Backup Card -->
 		<Card.Root>
 			<Card.Header>
 				<Card.Title>Trigger Manual Backup</Card.Title>
 				<Card.Description>
-					Create an immediate database snapshot and sync all objects to Cloudflare R2 bucket storage.
+					Create an immediate database snapshot and sync all objects to Cloudflare R2 bucket
+					storage.
 				</Card.Description>
 			</Card.Header>
 			<Card.Content>
@@ -101,7 +106,11 @@
 						};
 					}}
 				>
-					<Button type="submit" disabled={isBackingUp} class="w-full flex items-center justify-center gap-2">
+					<Button
+						type="submit"
+						disabled={isBackingUp}
+						class="flex w-full items-center justify-center gap-2"
+					>
 						<Play class="h-4 w-4" />
 						{isBackingUp ? 'Initiating Backup...' : 'Run Backup Now'}
 					</Button>
@@ -114,7 +123,8 @@
 			<Card.Header>
 				<Card.Title>Execute Disaster Recovery</Card.Title>
 				<Card.Description>
-					Revert the live database schemas, user permissions, and storage files to a completed backup set.
+					Revert the live database schemas, user permissions, and storage files to a completed
+					backup set.
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col gap-4">
@@ -123,14 +133,16 @@
 					<select
 						id="backup-select"
 						bind:value={selectedBackupForRestore}
-						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						<option value="" disabled>-- Select a completed backup --</option>
 						{#if data.logs}
-							{#each data.logs.filter((log) => log.status === 'completed' && log.db_file_name) as log}
+							{#each data.logs.filter((log) => log.status === 'completed' && log.db_file_name) as log (log.id)}
 								{@const folderDate = log.db_file_name ? log.db_file_name.split('/')[0] : ''}
 								<option value={folderDate}>
-									{formatDate(log.created_at)} (DB: {formatBytes(log.db_file_size)} | Storage: {formatBytes(log.storage_size)})
+									{formatDate(log.created_at)} (DB: {formatBytes(log.db_file_size)} | Storage: {formatBytes(
+										log.storage_size
+									)})
 								</option>
 							{/each}
 						{/if}
@@ -158,24 +170,24 @@
 				Showing execution history of the last 50 backup operations performed on the platform.
 			</Card.Description>
 		</Card.Header>
-		<Card.Content class="p-0 overflow-x-auto">
-			<table class="w-full text-sm text-left border-collapse">
+		<Card.Content class="overflow-x-auto p-0">
+			<table class="w-full border-collapse text-left text-sm">
 				<thead>
-					<tr class="border-b font-medium text-muted-foreground bg-muted/30">
-						<th class="py-3 px-6">Trigger Time</th>
-						<th class="py-3 px-6">Execution Type</th>
-						<th class="py-3 px-6">Status</th>
-						<th class="py-3 px-6">Database Size</th>
-						<th class="py-3 px-6">Storage Volume</th>
-						<th class="py-3 px-6">Duration</th>
+					<tr class="border-b bg-muted/30 font-medium text-muted-foreground">
+						<th class="px-6 py-3">Trigger Time</th>
+						<th class="px-6 py-3">Execution Type</th>
+						<th class="px-6 py-3">Status</th>
+						<th class="px-6 py-3">Database Size</th>
+						<th class="px-6 py-3">Storage Volume</th>
+						<th class="px-6 py-3">Duration</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#if data.logs && data.logs.length > 0}
-						{#each data.logs as log}
-							<tr class="border-b hover:bg-muted/30 transition-colors">
-								<td class="py-4 px-6 font-mono text-xs">{formatDate(log.created_at)}</td>
-								<td class="py-4 px-6 capitalize">
+						{#each data.logs as log (log.id)}
+							<tr class="border-b transition-colors hover:bg-muted/30">
+								<td class="px-6 py-4 font-mono text-xs">{formatDate(log.created_at)}</td>
+								<td class="px-6 py-4 capitalize">
 									<span class="inline-flex items-center gap-1.5">
 										{#if log.backup_type === 'manual'}
 											<Badge variant="outline">Manual</Badge>
@@ -184,7 +196,7 @@
 										{/if}
 									</span>
 								</td>
-								<td class="py-4 px-6">
+								<td class="px-6 py-4">
 									<Badge
 										variant={log.status === 'completed'
 											? 'default'
@@ -195,26 +207,26 @@
 										{log.status}
 									</Badge>
 								</td>
-								<td class="py-4 px-6">
+								<td class="px-6 py-4">
 									<span class="inline-flex items-center gap-1 text-muted-foreground">
 										<Database class="h-3.5 w-3.5" />
 										{formatBytes(log.db_file_size)}
 									</span>
 								</td>
-								<td class="py-4 px-6">
+								<td class="px-6 py-4">
 									<span class="inline-flex items-center gap-1 text-muted-foreground">
 										<FileText class="h-3.5 w-3.5" />
 										{formatBytes(log.storage_size)}
 									</span>
 								</td>
-								<td class="py-4 px-6 text-muted-foreground">
+								<td class="px-6 py-4 text-muted-foreground">
 									{log.duration_seconds ? `${log.duration_seconds}s` : 'N/A'}
 								</td>
 							</tr>
 						{/each}
 					{:else}
 						<tr>
-							<td colspan="6" class="text-center py-8 text-muted-foreground">
+							<td colspan="6" class="py-8 text-center text-muted-foreground">
 								No execution logs found in system database.
 							</td>
 						</tr>
@@ -227,27 +239,29 @@
 
 <!-- Reversion Modal Dialog -->
 {#if showConfirmModal}
-	<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-		<div class="bg-background border border-destructive/30 rounded-lg shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
-			<h3 class="text-lg font-bold text-destructive flex items-center gap-2">
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+		<div
+			class="w-full max-w-md animate-in rounded-lg border border-destructive/30 bg-background p-6 shadow-2xl duration-150 zoom-in-95 fade-in"
+		>
+			<h3 class="flex items-center gap-2 text-lg font-bold text-destructive">
 				<AlertTriangle class="h-5 w-5" />
 				CRITICAL: OVERWRITE SYSTEM STATE
 			</h3>
-			<p class="text-sm mt-3 leading-relaxed text-muted-foreground">
-				You are about to execute a recovery restore. This will overwrite active database tables and revert all storage files in the Supabase bucket to the backup from:
+			<p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+				You are about to execute a recovery restore. This will overwrite active database tables and
+				revert all storage files in the Supabase bucket to the backup from:
 			</p>
-			<div class="mt-2 p-3 bg-muted rounded border text-sm font-semibold font-mono text-center">
+			<div class="mt-2 rounded border bg-muted p-3 text-center font-mono text-sm font-semibold">
 				{selectedBackupForRestore}
 			</div>
-			<p class="text-xs mt-3 font-semibold text-red-500">
-				WARNING: This operation is destructive and irreversible. All changes made since this backup point will be permanently lost.
+			<p class="mt-3 text-xs font-semibold text-red-500">
+				WARNING: This operation is destructive and irreversible. All changes made since this backup
+				point will be permanently lost.
 			</p>
-			
-			<div class="flex gap-3 justify-end mt-6">
-				<Button variant="outline" onclick={() => (showConfirmModal = false)}>
-					Cancel
-				</Button>
-				
+
+			<div class="mt-6 flex justify-end gap-3">
+				<Button variant="outline" onclick={() => (showConfirmModal = false)}>Cancel</Button>
+
 				<form
 					method="POST"
 					action="?/triggerRecovery"

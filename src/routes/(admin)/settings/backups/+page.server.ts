@@ -50,7 +50,9 @@ export const actions: Actions = {
 		}
 
 		if (activeBackups && activeBackups.length > 0) {
-			return fail(429, { message: 'A backup job is already in progress or was recently triggered. Please wait.' });
+			return fail(429, {
+				message: 'A backup job is already in progress or was recently triggered. Please wait.'
+			});
 		}
 
 		// 2. Register "pending" backup log entry in the database
@@ -78,7 +80,9 @@ export const actions: Actions = {
 			const pat = env.GITHUB_PAT;
 
 			if (!repoOwner || !repoName || !pat) {
-				throw new Error('Missing GITHUB_REPO_OWNER, GITHUB_REPO_NAME, or GITHUB_PAT env configurations.');
+				throw new Error(
+					'Missing GITHUB_REPO_OWNER, GITHUB_REPO_NAME, or GITHUB_PAT env configurations.'
+				);
 			}
 
 			const response = await fetch(
@@ -120,14 +124,16 @@ export const actions: Actions = {
 				})
 				.eq('id', logEntry.id);
 
-			return fail(500, { message: err instanceof Error ? err.message : 'Failed to initiate backup execution.' });
+			return fail(500, {
+				message: err instanceof Error ? err.message : 'Failed to initiate backup execution.'
+			});
 		}
 	},
 
 	/**
 	 * Triggers a point-in-time recovery restore by invoking the GitHub Action recovery workflow.
 	 */
-	triggerRecovery: async ({ request, locals: { supabase, safeGetSession } }) => {
+	triggerRecovery: async ({ request, locals: { safeGetSession } }) => {
 		const { session } = await safeGetSession();
 		if (!session) {
 			return fail(401, { message: 'Unauthorized' });
@@ -147,7 +153,9 @@ export const actions: Actions = {
 			const pat = env.GITHUB_PAT;
 
 			if (!repoOwner || !repoName || !pat) {
-				throw new Error('Missing GITHUB_REPO_OWNER, GITHUB_REPO_NAME, or GITHUB_PAT env configurations.');
+				throw new Error(
+					'Missing GITHUB_REPO_OWNER, GITHUB_REPO_NAME, or GITHUB_PAT env configurations.'
+				);
 			}
 
 			const response = await fetch(
@@ -177,7 +185,9 @@ export const actions: Actions = {
 			return { success: true };
 		} catch (err: unknown) {
 			console.error('Failed to trigger restore workflow:', err);
-			return fail(500, { message: err instanceof Error ? err.message : 'Failed to initiate system recovery.' });
+			return fail(500, {
+				message: err instanceof Error ? err.message : 'Failed to initiate system recovery.'
+			});
 		}
 	}
 };

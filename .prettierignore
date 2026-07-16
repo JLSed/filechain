@@ -7,6 +7,8 @@ bun.lockb
 
 # Miscellaneous
 /static/
+.agents/
+.github/
 
 # wasm
 src/lib/pkg/
