@@ -20,6 +20,9 @@ jobs:
       - name: Execute Restore Pipeline
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          # Use Supabase Session Pooler to avoid IPv6 issues on GitHub runners.
+          DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          DB_USER: postgres.jmssaxzzkiinggkburfc
         run: |
           BACKUP_FOLDER="${{ github.event.inputs.backup_folder }}"
           echo "Initiating recovery action using snapshot folder: $BACKUP_FOLDER"
@@ -40,8 +43,8 @@ jobs:
           echo "Reverting database schema and table rows..."
           # Note: --clean drops database objects before recreating them, returning them to the backup state
           if ! pg_restore \
-            -h db.jmssaxzzkiinggkburfc.supabase.co \
-            -U postgres \
+            -h "$DB_HOST" \
+            -U "$DB_USER" \
             -d postgres \
             -p 5432 \
             --clean \

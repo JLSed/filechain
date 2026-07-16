@@ -22,6 +22,11 @@ jobs:
       - name: Execute Backup Pipeline
         env:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          # Use Supabase Session Pooler to avoid IPv6 issues on GitHub runners.
+          # Set SUPABASE_DB_HOST to your pooler hostname, e.g.:
+          #   aws-0-ap-southeast-1.pooler.supabase.com
+          DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          DB_USER: postgres.jmssaxzzkiinggkburfc
         run: |
           START_TIME=$(date +%s)
           DATE_STR=$(date +%Y-%m-%d)
@@ -32,21 +37,21 @@ jobs:
           if [ -z "$LOG_ID" ]; then
             # Scheduled run - create the database log
             echo "No log_id provided. Creating scheduled log entry..."
-            LOG_ID=$(psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -t -A -c "INSERT INTO public.backup_logs (backup_type, status) VALUES ('scheduled', 'running') RETURNING id;")
+            LOG_ID=$(psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -t -A -c "INSERT INTO public.backup_logs (backup_type, status) VALUES ('scheduled', 'running') RETURNING id;")
           else
             # Manual run - update log to running
             echo "Manual log_id provided: $LOG_ID. Updating status to running..."
-            psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'running' WHERE id = '$LOG_ID';"
+            psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'running' WHERE id = '$LOG_ID';"
           fi
 
           echo "Initialized LOG_ID: $LOG_ID"
 
           # 2. Database Backup
           echo "Dumping database..."
-          if ! pg_dump -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -F c -b -v -f db_backup.dump; then
+          if ! pg_dump -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -F c -b -v -f db_backup.dump; then
             ERROR_MSG="pg_dump failed"
             echo "Error: $ERROR_MSG"
-            psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
+            psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
             exit 1
           fi
 
@@ -62,7 +67,7 @@ jobs:
             --region auto; then
             ERROR_MSG="R2 database upload failed"
             echo "Error: $ERROR_MSG"
-            psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
+            psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
             exit 1
           fi
 
@@ -93,7 +98,7 @@ jobs:
           if ! rclone sync supabase:storage "r2:${{ secrets.R2_STORAGE_BUCKET }}/$FOLDER_NAME/" --verbose; then
             ERROR_MSG="rclone storage sync failed"
             echo "Error: $ERROR_MSG"
-            psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
+            psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
             exit 1
           fi
 
@@ -105,7 +110,7 @@ jobs:
           DURATION=$((END_TIME - START_TIME))
 
           echo "Updating database log status to completed..."
-          psql -h db.jmssaxzzkiinggkburfc.supabase.co -U postgres -d postgres -p 5432 -c "
+          psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "
             UPDATE public.backup_logs 
             SET 
               status = 'completed', 
