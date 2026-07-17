@@ -14,8 +14,11 @@ jobs:
     steps:
       - name: Install DB Client & Rclone
         run: |
+          # Add PostgreSQL APT repo for v17 client (matches Supabase server)
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
           sudo apt-get update
-          sudo apt-get install -y postgresql-client rclone
+          sudo apt-get install -y postgresql-client-17 rclone
 
       - name: Execute Restore Pipeline
         env:
@@ -65,9 +68,9 @@ jobs:
           provider = Other
           access_key_id = ${{ secrets.SUPABASE_S3_ACCESS_KEY }}
           secret_access_key = ${{ secrets.SUPABASE_S3_SECRET_KEY }}
-          endpoint = https://jmssaxzzkiinggkburfc.supabase.co/storage/v1/s3
-          region = ap-southeast-1
-          acl = private
+          endpoint = https://jmssaxzzkiinggkburfc.storage.supabase.co/storage/v1/s3
+          region = ap-south-1
+          no_check_bucket = true
 
           [r2]
           type = s3
@@ -76,11 +79,15 @@ jobs:
           secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
           endpoint = https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
           region = auto
-          acl = private
+          no_check_bucket = true
           EOF
 
           echo "Syncing storage objects from R2 backup back to Supabase..."
-          if ! rclone sync "r2:${{ secrets.R2_STORAGE_BUCKET }}/$BACKUP_FOLDER/" supabase:storage --verbose; then
+          if ! rclone sync "r2:${{ secrets.R2_STORAGE_BUCKET }}/$BACKUP_FOLDER/" supabase:storage \
+            --verbose \
+            --s3-disable-checksum \
+            --s3-no-check-bucket \
+            --no-update-modtime; then
             echo "Error: rclone storage sync failed."
             exit 1
           fi
