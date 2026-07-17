@@ -83,8 +83,8 @@ jobs:
           provider = Other
           access_key_id = ${{ secrets.SUPABASE_S3_ACCESS_KEY }}
           secret_access_key = ${{ secrets.SUPABASE_S3_SECRET_KEY }}
-          endpoint = https://jmssaxzzkiinggkburfc.supabase.co/storage/v1/s3
-          region = ap-southeast-1
+          endpoint = https://jmssaxzzkiinggkburfc.storage.supabase.co/storage/v1/s3
+          region = ap-south-1
           acl = private
 
           [r2]
