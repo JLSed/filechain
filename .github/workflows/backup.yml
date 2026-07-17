@@ -85,7 +85,7 @@ jobs:
           secret_access_key = ${{ secrets.SUPABASE_S3_SECRET_KEY }}
           endpoint = https://jmssaxzzkiinggkburfc.storage.supabase.co/storage/v1/s3
           region = ap-south-1
-          acl = private
+          no_check_bucket = true
 
           [r2]
           type = s3
@@ -94,11 +94,15 @@ jobs:
           secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
           endpoint = https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
           region = auto
-          acl = private
+          no_check_bucket = true
           EOF
 
           echo "Running rclone sync from Supabase to R2..."
-          if ! rclone sync supabase:storage "r2:${{ secrets.R2_STORAGE_BUCKET }}/$FOLDER_NAME/" --verbose; then
+          if ! rclone sync supabase:storage "r2:${{ secrets.R2_STORAGE_BUCKET }}/$FOLDER_NAME/" \
+            --verbose \
+            --s3-disable-checksum \
+            --s3-no-check-bucket \
+            --no-update-modtime; then
             ERROR_MSG="rclone storage sync failed"
             echo "Error: $ERROR_MSG"
             psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
