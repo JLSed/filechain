@@ -49,16 +49,20 @@ jobs:
           echo "Dropping dependent system triggers..."
           psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;"
           
-          if ! pg_restore \
+          RESTORE_EXIT_CODE=0
+          pg_restore \
             -h "$DB_HOST" \
             -U "$DB_USER" \
             -d postgres \
             -p 5432 \
             --clean \
             --no-owner \
-            ./db_backup.dump; then
-            echo "Error: pg_restore failed."
-            # Attempt to restore the trigger even if pg_restore failed
+            ./db_backup.dump || RESTORE_EXIT_CODE=$?
+          
+          echo "pg_restore completed with exit code: $RESTORE_EXIT_CODE"
+          if [ "$RESTORE_EXIT_CODE" -ge 2 ]; then
+            echo "Error: pg_restore failed with a fatal error."
+            # Attempt to restore the trigger even on failure
             psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();"
             exit 1
           fi
