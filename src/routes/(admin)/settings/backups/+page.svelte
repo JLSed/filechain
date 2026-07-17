@@ -26,9 +26,12 @@
 	$effect(() => {
 		if (!hasActiveJob) return;
 
-		const interval = setInterval(() => {
-			invalidateAll();
-		}, 5 * 60 * 1000);
+		const interval = setInterval(
+			() => {
+				invalidateAll();
+			},
+			5 * 60 * 1000
+		);
 
 		return () => clearInterval(interval);
 	});
