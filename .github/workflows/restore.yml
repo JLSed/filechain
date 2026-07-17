@@ -56,7 +56,6 @@ jobs:
             -p 5432 \
             --clean \
             --no-owner \
-            --no-privileges \
             ./db_backup.dump; then
             echo "Error: pg_restore failed."
             # Attempt to restore the trigger even if pg_restore failed
@@ -67,8 +66,14 @@ jobs:
           echo "Recreating system triggers..."
           psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();"
           
-          echo "Re-granting API schema permissions..."
+          echo "Re-granting Database schema & table permissions..."
           psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "
+            -- Grant access to public schema tables & sequences
+            GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+            GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+            GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated, service_role;
+
+            -- Grant access to api schema views
             GRANT USAGE ON SCHEMA api TO anon, authenticated, service_role;
             GRANT ALL ON ALL TABLES IN SCHEMA api TO anon, authenticated, service_role;
             GRANT ALL ON ALL SEQUENCES IN SCHEMA api TO anon, authenticated, service_role;
