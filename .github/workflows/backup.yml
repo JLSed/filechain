@@ -16,8 +16,11 @@ jobs:
     steps:
       - name: Install DB Client & Rclone
         run: |
+          # Add PostgreSQL APT repo for v17 client (matches Supabase server)
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
           sudo apt-get update
-          sudo apt-get install -y postgresql-client rclone jq
+          sudo apt-get install -y postgresql-client-17 rclone jq
 
       - name: Execute Backup Pipeline
         env:
@@ -37,7 +40,7 @@ jobs:
           if [ -z "$LOG_ID" ]; then
             # Scheduled run - create the database log
             echo "No log_id provided. Creating scheduled log entry..."
-            LOG_ID=$(psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -t -A -c "INSERT INTO public.backup_logs (backup_type, status) VALUES ('scheduled', 'running') RETURNING id;")
+            LOG_ID=$(psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -t -A -c "INSERT INTO public.backup_logs (backup_type, status) VALUES ('scheduled', 'running') RETURNING id;" | head -n1)
           else
             # Manual run - update log to running
             echo "Manual log_id provided: $LOG_ID. Updating status to running..."

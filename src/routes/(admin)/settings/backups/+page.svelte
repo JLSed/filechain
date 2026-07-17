@@ -7,6 +7,8 @@
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import * as Card from '$lib/shadcn/components/ui/card/index.js';
 
+	import { invalidateAll } from '$app/navigation';
+
 	let { data }: PageProps = $props();
 
 	// Reactive state variables using Svelte 5 runes
@@ -14,6 +16,25 @@
 	let isRestoring = $state(false);
 	let selectedBackupForRestore = $state('');
 	let showConfirmModal = $state(false);
+
+	// Auto-polling: true when any log is pending or running
+	const hasActiveJob = $derived(
+		data.logs?.some((log) => log.status === 'pending' || log.status === 'running') ?? false
+	);
+
+	// Poll every 5 minutes while a job is active, stop when resolved
+	$effect(() => {
+		if (!hasActiveJob) return;
+
+		const interval = setInterval(
+			() => {
+				invalidateAll();
+			},
+			5 * 60 * 1000
+		);
+
+		return () => clearInterval(interval);
+	});
 
 	// Sizing helper
 	const formatBytes = (bytes: number | null): string => {
