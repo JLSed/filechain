@@ -51,7 +51,7 @@ jobs:
 
           # 2. Database Backup
           echo "Dumping database..."
-          if ! pg_dump -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -F c -b -v -f db_backup.dump; then
+          if ! pg_dump -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -F c -b -v -n public -n api -f db_backup.dump; then
             ERROR_MSG="pg_dump failed"
             echo "Error: $ERROR_MSG"
             psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
