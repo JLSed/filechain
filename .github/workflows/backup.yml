@@ -102,7 +102,8 @@ jobs:
             --verbose \
             --s3-disable-checksum \
             --s3-no-check-bucket \
-            --no-update-modtime; then
+            --no-update-modtime \
+            --exclude "public/**"; then
             ERROR_MSG="rclone storage sync failed"
             echo "Error: $ERROR_MSG"
             psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "UPDATE public.backup_logs SET status = 'failed', error_message = '$ERROR_MSG', completed_at = now() WHERE id = '$LOG_ID';"
