@@ -44,7 +44,11 @@ jobs:
 
           # 2. Database Reversion
           echo "Reverting database schema and table rows..."
-          # Note: --clean drops database objects before recreating them, returning them to the backup state
+          
+          # Temporarily drop trigger dependent on public.handle_new_user() to avoid dependency block
+          echo "Dropping dependent system triggers..."
+          psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;"
+          
           if ! pg_restore \
             -h "$DB_HOST" \
             -U "$DB_USER" \
@@ -55,8 +59,22 @@ jobs:
             --no-privileges \
             ./db_backup.dump; then
             echo "Error: pg_restore failed."
+            # Attempt to restore the trigger even if pg_restore failed
+            psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();"
             exit 1
           fi
+          
+          echo "Recreating system triggers..."
+          psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();"
+          
+          echo "Re-granting API schema permissions..."
+          psql -h "$DB_HOST" -U "$DB_USER" -d postgres -p 5432 -c "
+            GRANT USAGE ON SCHEMA api TO anon, authenticated, service_role;
+            GRANT ALL ON ALL TABLES IN SCHEMA api TO anon, authenticated, service_role;
+            GRANT ALL ON ALL SEQUENCES IN SCHEMA api TO anon, authenticated, service_role;
+            GRANT ALL ON ALL FUNCTIONS IN SCHEMA api TO anon, authenticated, service_role;
+          "
+          
           echo "Database successfully restored."
 
           # 3. Storage Reversion
