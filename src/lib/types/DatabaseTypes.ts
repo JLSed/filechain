@@ -273,6 +273,7 @@ export const InvoicePaymentSchema = z.object({
 	notes: z.string().nullable(),
 	recorded_by: z.uuid(),
 	created_at: z.string(),
+	proof_image_path: z.string().nullable().optional(),
 	// Joined relation (optional)
 	user_profiles: z
 		.object({

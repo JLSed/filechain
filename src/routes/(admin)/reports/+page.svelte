@@ -10,8 +10,9 @@
 	import DataIntegrityReport from '$lib/components/admin/reports/DataIntegrityReport.svelte';
 	import ExportPdfButton from '$lib/components/admin/reports/ExportPdfButton.svelte';
 	import { hasPermission } from '$lib/services/permissions';
-	import { PdfReportBuilder, svgToImageDataUrl } from '$lib/services/pdf-export';
+	import { PdfReportBuilder } from '$lib/services/pdf-export';
 	import type { PdfHighlight } from '$lib/services/pdf-export';
+	import { DMV_LOGO_BASE64 } from '$lib/assets/dmv-logo-base64';
 
 	let { data }: PageProps = $props();
 
@@ -65,41 +66,28 @@
 		isGenerated = false;
 	}
 
-	// ── PDF Helper: capture SVG charts from the rendered report ─────
-
-	async function captureChartImages(containerId: string): Promise<string[]> {
-		const container = document.getElementById(containerId);
-		if (!container) return [];
-		const svgs = container.querySelectorAll<SVGSVGElement>('svg.layerchart-chart, svg');
-		const results: string[] = [];
-		for (const svg of svgs) {
-			// Skip tiny icons (lucide icons are typically 24x24 or smaller)
-			const bbox = svg.getBoundingClientRect();
-			if (bbox.width < 80 || bbox.height < 80) continue;
-			try {
-				const dataUrl = await svgToImageDataUrl(
-					svg,
-					Math.round(bbox.width),
-					Math.round(bbox.height)
-				);
-				results.push(dataUrl);
-			} catch {
-				// Skip charts that fail to render
-			}
-		}
-		return results;
-	}
-
 	// ── Currency/number formatting (mirrors report components) ──────
 
 	function formatCurrency(val: number): string {
 		return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(val);
 	}
 
-	function formatCompact(val: number): string {
-		if (val >= 1000000) return `₱${(val / 1000000).toFixed(1)}M`;
-		if (val >= 1000) return `₱${(val / 1000).toFixed(0)}K`;
-		return formatCurrency(val);
+	function formatPdfCurrency(val: number): string {
+		const formatted = formatCurrency(val)
+			.replace(/₱/g, 'PHP')
+			.replace(/\u00a0/g, ' ')
+			.replace(/\u202f/g, ' ')
+			.trim();
+		if (formatted.startsWith('PHP') && !formatted.startsWith('PHP ')) {
+			return 'PHP ' + formatted.slice(3);
+		}
+		return formatted;
+	}
+
+	function formatPdfCompact(val: number): string {
+		if (val >= 1000000) return `PHP ${(val / 1000000).toFixed(1)}M`;
+		if (val >= 1000) return `PHP ${(val / 1000).toFixed(0)}K`;
+		return formatPdfCurrency(val);
 	}
 
 	function pctChange(current: number, prev: number): string {
@@ -158,7 +146,8 @@
 			companyName: companySettings.company_name,
 			subtitle: 'Monthly Filing Report',
 			periodLabel,
-			generatedAt
+			generatedAt,
+			logoBase64: DMV_LOGO_BASE64
 		});
 
 		builder.addSummaryCards([
@@ -169,26 +158,106 @@
 			},
 			{
 				label: 'Total Revenue',
-				value: formatCompact(totalRevenue),
+				value: formatPdfCompact(totalRevenue),
 				subtitle: `${pctChange(totalRevenue, prevRevenueVal)} vs prev month`
 			},
 			{
 				label: 'Avg Revenue/Filing',
-				value: formatCurrency(avgRevenue),
+				value: formatPdfCurrency(avgRevenue),
 				subtitle: 'Per application'
 			}
 		]);
 
-		// Chart images
-		const charts = await captureChartImages('monthly-filing-report');
-		for (let i = 0; i < charts.length; i++) {
-			const titles = [
-				'Filing Breakdown by IP Type',
-				'Revenue Distribution',
-				'6-Month Filing Trend'
-			];
-			builder.addChartImage(charts[i], { title: titles[i] ?? `Chart ${i + 1}` });
+		// Narrative Analysis: Filing Breakdown by IP Type
+		builder.addSectionTitle('Filing Analysis');
+		if (totalFilings > 0) {
+			const topType = [...entries].sort((a, b) => b.count - a.count)[0];
+			const breakdownText = entries
+				.map(
+					(e) =>
+						`${e.name} (${e.count} filing${e.count !== 1 ? 's' : ''}, ${(totalFilings > 0 ? (e.count / totalFilings) * 100 : 0).toFixed(1)}%)`
+				)
+				.join(', ');
+
+			builder.addText(
+				`During the period of ${periodLabel}, a total of ${totalFilings} applications were filed. This represents a ${pctChange(totalFilings, prevFilings)} change compared to the previous month's total of ${prevFilings} filings. The applications were distributed across the following intellectual property types: ${breakdownText}.`
+			);
+			if (topType) {
+				builder.addText(
+					`The leading category for this period was ${topType.name}, accounting for ${topType.count} filings, or ${(totalFilings > 0 ? (topType.count / totalFilings) * 100 : 0).toFixed(1)}% of the total volume.`
+				);
+			}
+		} else {
+			builder.addText('No filing activity was recorded during this period.');
 		}
+		builder.addSpacing(4);
+
+		// Narrative Analysis: Revenue Distribution
+		builder.addSectionTitle('Revenue Analysis');
+		if (totalRevenue > 0) {
+			const sortedEntriesByRev = [...entries].sort((a, b) => b.revenue - a.revenue);
+			const topRevType = sortedEntriesByRev[0];
+			const revenueBreakdownText = entries
+				.map(
+					(e) =>
+						`${e.name} (${formatPdfCurrency(e.revenue)}, ${(totalRevenue > 0 ? (e.revenue / totalRevenue) * 100 : 0).toFixed(1)}%)`
+				)
+				.join(', ');
+
+			builder.addText(
+				`Total revenue generated for this period was ${formatPdfCurrency(totalRevenue)}, which is a ${pctChange(totalRevenue, prevRevenueVal)} change compared to ${formatPdfCurrency(prevRevenueVal)} in the previous month. The average revenue generated per filing was ${formatPdfCurrency(avgRevenue)}.`
+			);
+			builder.addText(
+				`The estimated distribution of revenue by IP type, allocated proportionally based on filing volumes, is as follows: ${revenueBreakdownText}.`
+			);
+			if (topRevType && topRevType.revenue > 0) {
+				builder.addText(
+					`The primary source of revenue is estimated to be ${topRevType.name}, contributing ${formatPdfCurrency(topRevType.revenue)} (${(totalRevenue > 0 ? (topRevType.revenue / totalRevenue) * 100 : 0).toFixed(1)}% of the total).`
+				);
+			}
+		} else {
+			builder.addText(
+				`Total revenue generated for this period was ${formatPdfCurrency(0)}, representing no financial transactions during the selected period.`
+			);
+		}
+		builder.addSpacing(4);
+
+		// Narrative Analysis: 6-Month Filing Trend
+		builder.addSectionTitle('Historical Trend Analysis');
+		const trendList = data.trendData;
+		if (trendList && trendList.length > 0) {
+			const counts = trendList.map((t: { count: number }) => t.count);
+			const totalTrendCount = counts.reduce((sum: number, c: number) => sum + c, 0);
+			const avgTrendCount = totalTrendCount / trendList.length;
+			const maxVal = Math.max(...counts);
+			const minVal = Math.min(...counts);
+
+			const maxMonths = trendList
+				.filter((t: { count: number }) => t.count === maxVal)
+				.map((t: { month: string }) => t.month)
+				.join(', ');
+			const minMonths = trendList
+				.filter((t: { count: number }) => t.count === minVal)
+				.map((t: { month: string }) => t.month)
+				.join(', ');
+
+			const chronologicalTrend = trendList
+				.map(
+					(t: { month: string; count: number }) =>
+						`${t.month}: ${t.count} filing${t.count !== 1 ? 's' : ''}`
+				)
+				.join(', ');
+
+			builder.addText(
+				`An analysis of the six-month filing history provides a broader context for the current period's activity. Over this timeframe, system activity logged a total of ${totalTrendCount} filings, representing a monthly average of ${avgTrendCount.toFixed(1)} filings.`
+			);
+			builder.addText(
+				`Filing volume fluctuated from a minimum of ${minVal} in ${minMonths} to a maximum of ${maxVal} in ${maxMonths}. The recorded monthly filings were: ${chronologicalTrend}.`
+			);
+		} else {
+			builder.addText('Insufficient historical data is available to generate a trend analysis.');
+		}
+		builder.addSpacing(4);
 
 		// Detailed statistics table
 		builder.addTable({
@@ -204,15 +273,15 @@
 				...entries.map((e) => ({
 					name: e.name,
 					count: String(e.count),
-					revenue: formatCurrency(e.revenue),
-					avg: formatCurrency(e.count > 0 ? e.revenue / e.count : 0),
+					revenue: formatPdfCurrency(e.revenue),
+					avg: formatPdfCurrency(e.count > 0 ? e.revenue / e.count : 0),
 					pct: totalFilings > 0 ? `${((e.count / totalFilings) * 100).toFixed(1)}%` : '0.0%'
 				})),
 				{
 					name: 'Total',
 					count: String(totalFilings),
-					revenue: formatCurrency(totalRevenue),
-					avg: formatCurrency(avgRevenue),
+					revenue: formatPdfCurrency(totalRevenue),
+					avg: formatPdfCurrency(avgRevenue),
 					pct: '100%'
 				}
 			]
@@ -275,7 +344,8 @@
 			companyName: companySettings.company_name,
 			subtitle: 'Client Statistics Report',
 			periodLabel,
-			generatedAt
+			generatedAt,
+			logoBase64: DMV_LOGO_BASE64
 		});
 
 		builder.addSummaryCards([
@@ -298,12 +368,28 @@
 			}
 		]);
 
-		// Charts
-		const charts = await captureChartImages('client-statistics-report');
-		for (let i = 0; i < charts.length; i++) {
-			const titles = ['Client Type Distribution', 'Top Nationalities'];
-			builder.addChartImage(charts[i], { title: titles[i] ?? `Chart ${i + 1}` });
+		// Narrative Analysis: Client Type Distribution
+		builder.addSectionTitle('Client Type Distribution Analysis');
+		if (totalClients > 0) {
+			const indPct = ((individualClients / totalClients) * 100).toFixed(1);
+			const compPct = ((companyClients / totalClients) * 100).toFixed(1);
+			const compositionDesc =
+				individualClients > companyClients
+					? 'predominantly individual-based'
+					: individualClients < companyClients
+						? 'predominantly corporate-based'
+						: 'balanced between individual and corporate clients';
+
+			builder.addText(
+				`As of the selected period, the client database has a total of ${totalClients} registered clients. This client base is comprised of ${individualClients} individual clients (${indPct}%) and ${companyClients} company clients (${compPct}%).`
+			);
+			builder.addText(
+				`This distribution indicates that the firm's client portfolio is ${compositionDesc}, which influences the types of intellectual property filings and the corresponding service engagements.`
+			);
+		} else {
+			builder.addText('No client data is currently registered in the database for analysis.');
 		}
+		builder.addSpacing(4);
 
 		// Nationality ranking
 		const natCounts: Record<string, number> = {};
@@ -314,6 +400,30 @@
 		const natRanking = Object.entries(natCounts)
 			.map(([n, count]) => ({ nationality: n, count }))
 			.sort((a, b) => b.count - a.count);
+
+		// Narrative Analysis: Nationality Ranking
+		builder.addSectionTitle('Nationality Distribution Analysis');
+		if (totalClients > 0 && natRanking.length > 0) {
+			const topNat = natRanking[0];
+			const topNatPct = ((topNat.count / totalClients) * 100).toFixed(1);
+			const rankingText = natRanking
+				.slice(0, 3)
+				.map(
+					(n) =>
+						`${n.nationality} (${n.count} client${n.count !== 1 ? 's' : ''}, ${((n.count / totalClients) * 100).toFixed(1)}%)`
+				)
+				.join(', ');
+
+			builder.addText(
+				`The geographical and national diversity of the client base is represented across various registered nationalities. The top nationalities of registered clients include: ${rankingText}.`
+			);
+			builder.addText(
+				`Clients holding ${topNat.nationality} nationality represent the largest segment, accounting for ${topNat.count} registered client profiles, or ${topNatPct}% of the overall client base.`
+			);
+		} else {
+			builder.addText('No nationality information is available for registered clients.');
+		}
+		builder.addSpacing(4);
 
 		builder.addTable({
 			title: 'Nationality Ranking',
@@ -361,6 +471,30 @@
 		const topClients = Object.values(filingCounts)
 			.sort((a, b) => b.count - a.count)
 			.slice(0, 10);
+
+		// Narrative Analysis: Client Filing Ranking
+		builder.addSectionTitle('Client Filing Ranking Analysis');
+		if (totalFilingsCount > 0 && topClients.length > 0) {
+			const topClient = topClients[0];
+			const topClientPct = ((topClient.count / totalFilingsCount) * 100).toFixed(1);
+			const topThreeText = topClients
+				.slice(0, 3)
+				.map(
+					(c) =>
+						`${c.name} (${c.count} filing${c.count !== 1 ? 's' : ''}, ${((c.count / totalFilingsCount) * 100).toFixed(1)}%)`
+				)
+				.join(', ');
+
+			builder.addText(
+				`An analysis of filing activity per client shows that ${topClient.name} is the most active client during this period, leading with ${topClient.count} filings, representing ${topClientPct}% of all applications. The top contributors are: ${topThreeText}.`
+			);
+			builder.addText(
+				`These primary contributors account for a significant portion of the total volume, demonstrating their pivotal role in the firm's overall intellectual property filing pipeline.`
+			);
+		} else {
+			builder.addText('No client filing activity was recorded during this period.');
+		}
+		builder.addSpacing(4);
 
 		builder.addTable({
 			title: 'Client Filing Ranking',
@@ -441,7 +575,8 @@
 			companyName: companySettings.company_name,
 			subtitle: 'Data Integrity & Security Report',
 			periodLabel,
-			generatedAt
+			generatedAt,
+			logoBase64: DMV_LOGO_BASE64
 		});
 
 		builder.addSummaryCards([
@@ -465,12 +600,35 @@
 			{ label: 'Active Users', value: String(uniqueUsers), subtitle: 'Users with logged activity' }
 		]);
 
-		// Charts
-		const charts = await captureChartImages('data-integrity-report');
-		for (let i = 0; i < charts.length; i++) {
-			const titles = ['Severity Distribution', 'Event Types', '6-Month Audit Trail Trend'];
-			builder.addChartImage(charts[i], { title: titles[i] ?? `Chart ${i + 1}` });
+		// Narrative Analysis: Severity Distribution
+		builder.addSectionTitle('Security Severity Analysis');
+		if (totalEvents > 0) {
+			const dangerPct = ((dangerEvents / totalEvents) * 100).toFixed(1);
+			const warningPct = ((warningEvents / totalEvents) * 100).toFixed(1);
+			const noticeEvents = auditLogs.filter(
+				(l: { severity_level: string }) => l.severity_level === 'notice'
+			).length;
+			const neutralEvents = auditLogs.filter(
+				(l: { severity_level: string }) => l.severity_level === 'neutral' || !l.severity_level
+			).length;
+
+			builder.addText(
+				`During the audit period, a total of ${totalEvents} security and system events were logged. The severity breakdown shows ${dangerEvents} danger-level events (${dangerPct}%) and ${warningEvents} warning-level events (${warningPct}%), with the remaining events classified as Notice (${noticeEvents}) or Neutral (${neutralEvents}).`
+			);
+
+			if (dangerEvents > 0) {
+				builder.addText(
+					`WARNING: The detection of ${dangerEvents} danger-level events indicates potential security vulnerabilities or critical system actions that require immediate administrator attention and review.`
+				);
+			} else {
+				builder.addText(
+					`The absence of danger-level events indicates a secure and stable operational state, with zero critical system threats logged during this timeframe.`
+				);
+			}
+		} else {
+			builder.addText('No audit log entries were recorded in the selected period.');
 		}
+		builder.addSpacing(4);
 
 		// Event type table
 		const evtCounts: Record<string, number> = {};
@@ -481,6 +639,30 @@
 		const evtBreakdown = Object.entries(evtCounts)
 			.map(([event, count]) => ({ event, count }))
 			.sort((a, b) => b.count - a.count);
+
+		// Narrative Analysis: Event Types
+		builder.addSectionTitle('System Activity & Operations');
+		if (totalEvents > 0 && evtBreakdown.length > 0) {
+			const topEvt = evtBreakdown[0];
+			const topEvtPct = ((topEvt.count / totalEvents) * 100).toFixed(1);
+			const eventListText = evtBreakdown
+				.slice(0, 3)
+				.map(
+					(e) =>
+						`"${e.event}" (${e.count} event${e.count !== 1 ? 's' : ''}, ${((e.count / totalEvents) * 100).toFixed(1)}%)`
+				)
+				.join(', ');
+
+			builder.addText(
+				`System event logging captured various categories of administrative and user actions. The most frequent operation types recorded were: ${eventListText}.`
+			);
+			builder.addText(
+				`Operations categorized under "${topEvt.event}" were the most prominent, accounting for ${topEvt.count} logs, or ${topEvtPct}% of the overall audit trail volume.`
+			);
+		} else {
+			builder.addText('No specific event type statistics could be generated.');
+		}
+		builder.addSpacing(4);
 
 		builder.addTable({
 			title: 'Event Type Statistics',
@@ -523,6 +705,43 @@
 		const topUsers = Object.values(userCounts)
 			.sort((a, b) => b.count - a.count)
 			.slice(0, 10);
+
+		// Narrative Analysis: 6-Month Audit Trail Trend
+		builder.addSectionTitle('Audit Trail Trend Analysis');
+		const trendList = data.auditTrendData;
+		if (trendList && trendList.length > 0) {
+			const counts = trendList.map((t: { count: number }) => t.count);
+			const totalTrendCount = counts.reduce((sum: number, c: number) => sum + c, 0);
+			const avgTrendCount = totalTrendCount / trendList.length;
+			const maxVal = Math.max(...counts);
+			const minVal = Math.min(...counts);
+
+			const maxMonths = trendList
+				.filter((t: { count: number }) => t.count === maxVal)
+				.map((t: { month: string }) => t.month)
+				.join(', ');
+			const minMonths = trendList
+				.filter((t: { count: number }) => t.count === minVal)
+				.map((t: { month: string }) => t.month)
+				.join(', ');
+
+			const chronologicalTrend = trendList
+				.map(
+					(t: { month: string; count: number }) =>
+						`${t.month}: ${t.count} event${t.count !== 1 ? 's' : ''}`
+				)
+				.join(', ');
+
+			builder.addText(
+				`Monitoring the volume of system logs over a six-month window provides baseline data for normal operations. Over this duration, the system registered a total of ${totalTrendCount} audit events, establishing a monthly average of ${avgTrendCount.toFixed(1)} operations.`
+			);
+			builder.addText(
+				`Activity fluctuated between a low of ${minVal} events in ${minMonths} and a peak of ${maxVal} events in ${maxMonths}. The chronological monthly counts are: ${chronologicalTrend}.`
+			);
+		} else {
+			builder.addText('Insufficient historical audit log trend data available.');
+		}
+		builder.addSpacing(4);
 
 		builder.addTable({
 			title: 'User Activity Ranking',
