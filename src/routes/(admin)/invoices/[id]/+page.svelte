@@ -4,7 +4,7 @@
 	import { invalidate, goto } from '$app/navigation';
 	import { deserialize } from '$app/forms';
 	import { toast } from 'svelte-sonner';
-	import { ArrowLeft, Send, XCircle, BanknoteArrowDown } from '@lucide/svelte';
+	import { ArrowLeft, Send, XCircle, BanknoteArrowDown, Eye } from '@lucide/svelte';
 	import Button from '$lib/shadcn/components/ui/button/button.svelte';
 	import Badge from '$lib/shadcn/components/ui/badge/badge.svelte';
 	import Input from '$lib/shadcn/components/ui/input/input.svelte';
@@ -13,6 +13,7 @@
 	import * as Dialog from '$lib/shadcn/components/ui/dialog/index';
 	import { PAYMENT_METHODS, EWT_RATES } from '$lib/constants/SchemaData';
 	import { hasPermission } from '$lib/services/permissions';
+	import { createBrowserClient } from '$lib/services/supabase/client';
 
 	let { data }: PageProps = $props();
 
@@ -27,6 +28,10 @@
 	let paymentMethod = $state<(typeof PAYMENT_METHODS)[number]>('Cash');
 	let paymentEwtRate = $state(0);
 	let paymentNotes = $state('');
+	let paymentProofFile = $state<File | null>(null);
+	let fileInputEl = $state<HTMLInputElement | null>(null);
+	let previewDialogOpen = $state(false);
+	let previewImageUrl = $state('');
 
 	const inv = $derived(data.invoice);
 	const lineItems = $derived(data.lineItems);
@@ -48,6 +53,14 @@
 
 	// Computed EWT for payment dialog
 	const computedEwt = $derived(Math.round(paymentAmount * paymentEwtRate * 100) / 100);
+
+	// Reset proof file when dialog closes
+	$effect(() => {
+		if (!paymentDialogOpen) {
+			paymentProofFile = null;
+			if (fileInputEl) fileInputEl.value = '';
+		}
+	});
 
 	function getClientName(): string {
 		const cp = inv.client_profiles;
@@ -115,6 +128,17 @@
 		}
 	}
 
+	async function handleViewProof(path: string) {
+		const supabase = createBrowserClient();
+		const { data, error } = await supabase.storage.from('storage').createSignedUrl(path, 300);
+		if (error || !data?.signedUrl) {
+			toast.error('Failed to view proof: ' + (error?.message ?? 'Unknown error'));
+			return;
+		}
+		previewImageUrl = data.signedUrl;
+		previewDialogOpen = true;
+	}
+
 	async function handleRecordPayment() {
 		if (paymentAmount <= 0) {
 			toast.error('Payment amount must be greater than 0.');
@@ -123,6 +147,24 @@
 
 		actionLoading = true;
 		try {
+			let proof_image_path: string | null = null;
+			if (paymentProofFile) {
+				const supabase = createBrowserClient();
+				const fileExt = paymentProofFile.name.split('.').pop();
+				const fileName = `${crypto.randomUUID()}.${fileExt}`;
+				const filePath = `receipts/${fileName}`;
+
+				const { error: uploadError } = await supabase.storage
+					.from('storage')
+					.upload(filePath, paymentProofFile);
+
+				if (uploadError) {
+					toast.error('Failed to upload proof image: ' + uploadError.message);
+					return;
+				}
+				proof_image_path = filePath;
+			}
+
 			const payload = {
 				invoice_id: inv.invoice_id,
 				amount: paymentAmount,
@@ -130,7 +172,8 @@
 				payment_method: paymentMethod,
 				ewt_rate: paymentEwtRate || null,
 				ewt_amount: computedEwt,
-				notes: paymentNotes
+				notes: paymentNotes,
+				proof_image_path
 			};
 
 			const formData = new FormData();
@@ -153,6 +196,8 @@
 			paymentAmount = 0;
 			paymentNotes = '';
 			paymentEwtRate = 0;
+			paymentProofFile = null;
+			if (fileInputEl) fileInputEl.value = '';
 			await invalidate('db:invoice-detail');
 		} finally {
 			actionLoading = false;
@@ -488,6 +533,19 @@
 									{#if payment.notes}
 										<p class="text-xs text-muted-foreground italic">{payment.notes}</p>
 									{/if}
+									{#if payment.proof_image_path}
+										<div class="mt-2 flex justify-start">
+											<Button
+												variant="outline"
+												size="sm"
+												class="h-7 gap-1 px-2 text-xs"
+												onclick={() => handleViewProof(payment.proof_image_path!)}
+											>
+												<Eye class="size-3" />
+												View Proof
+											</Button>
+										</div>
+									{/if}
 								</div>
 							{/each}
 						</Card.Content>
@@ -558,12 +616,51 @@
 					bind:value={paymentNotes}
 				></textarea>
 			</div>
+
+			<div>
+				<label for="payment-proof" class="mb-1 block text-sm font-medium"
+					>Proof of Transaction (Optional)</label
+				>
+				<Input
+					id="payment-proof"
+					type="file"
+					accept="image/*"
+					bind:ref={fileInputEl}
+					onchange={(e) => {
+						const target = e.target as HTMLInputElement;
+						paymentProofFile = target.files?.[0] || null;
+					}}
+				/>
+			</div>
 		</div>
 		<Dialog.Footer>
 			<Button variant="outline" onclick={() => (paymentDialogOpen = false)}>Cancel</Button>
 			<Button onclick={handleRecordPayment} disabled={actionLoading}>
 				{actionLoading ? 'Recording…' : 'Record Payment'}
 			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- View Proof Dialog -->
+<Dialog.Root bind:open={previewDialogOpen}>
+	<Dialog.Content class="sm:max-w-lg">
+		<Dialog.Header>
+			<Dialog.Title>Proof of Transaction</Dialog.Title>
+		</Dialog.Header>
+		<div class="flex items-center justify-center p-2">
+			{#if previewImageUrl}
+				<img
+					src={previewImageUrl}
+					alt="Proof of transaction"
+					class="max-h-[70vh] w-auto rounded-md border object-contain"
+				/>
+			{:else}
+				<p class="text-sm text-muted-foreground">Loading preview...</p>
+			{/if}
+		</div>
+		<Dialog.Footer>
+			<Button onclick={() => (previewDialogOpen = false)}>Close</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

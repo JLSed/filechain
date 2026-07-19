@@ -35,7 +35,8 @@ export const RecordPaymentFormSchema = z.object({
 	payment_method: z.enum(PAYMENT_METHODS),
 	ewt_rate: z.number().min(0).max(1).nullable().default(null),
 	ewt_amount: z.number().nonnegative().default(0),
-	notes: z.string().optional().default('')
+	notes: z.string().optional().default(''),
+	proof_image_path: z.string().optional().nullable().default(null)
 });
 
 export type RecordPaymentFormData = z.infer<typeof RecordPaymentFormSchema>;

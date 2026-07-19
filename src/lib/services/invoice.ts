@@ -199,7 +199,8 @@ export async function recordPayment(
 			ewt_amount: formData.ewt_amount,
 			ewt_rate: formData.ewt_rate,
 			notes: formData.notes || null,
-			recorded_by: recordedBy
+			recorded_by: recordedBy,
+			proof_image_path: formData.proof_image_path || null
 		})
 		.select('payment_id, receipt_number')
 		.single();

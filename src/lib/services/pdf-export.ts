@@ -65,6 +65,7 @@ export interface PdfHeaderOptions {
 	subtitle: string;
 	periodLabel: string;
 	generatedAt: string;
+	logoBase64?: string;
 }
 
 export interface PdfFooterOptions {
@@ -227,14 +228,21 @@ export class PdfReportBuilder {
 	 * Adds a report header with company name, report title, period, and generation date.
 	 */
 	addHeader(opts: PdfHeaderOptions): this {
-		const { companyName, subtitle, periodLabel, generatedAt } = opts;
+		const { companyName, subtitle, periodLabel, generatedAt, logoBase64 } = opts;
+		const startY = this.y;
 
-		// Company name
-		this.doc.setFont('helvetica', 'bold');
-		this.doc.setFontSize(16);
-		this.doc.setTextColor(...PDF_COLORS.primary);
-		this.doc.text(companyName, LAYOUT.marginX, this.y);
-		this.y += 5;
+		if (logoBase64) {
+			const heightMm = 9;
+			const widthMm = heightMm * 1.8525;
+			this.doc.addImage(logoBase64, 'PNG', LAYOUT.marginX, this.y, widthMm, heightMm);
+			this.y += heightMm + 6;
+		} else {
+			this.doc.setFont('helvetica', 'bold');
+			this.doc.setFontSize(16);
+			this.doc.setTextColor(...PDF_COLORS.primary);
+			this.doc.text(companyName, LAYOUT.marginX, this.y);
+			this.y += 5;
+		}
 
 		// Subtitle
 		this.doc.setFont('helvetica', 'normal');
@@ -248,12 +256,12 @@ export class PdfReportBuilder {
 		this.doc.setFont('helvetica', 'bold');
 		this.doc.setFontSize(11);
 		this.doc.setTextColor(...PDF_COLORS.text);
-		this.doc.text(periodLabel, rightX, this.y - 11, { align: 'right' });
+		this.doc.text(periodLabel, rightX, startY, { align: 'right' });
 
 		this.doc.setFont('helvetica', 'normal');
 		this.doc.setFontSize(8);
 		this.doc.setTextColor(...PDF_COLORS.textMuted);
-		this.doc.text(`Generated: ${generatedAt}`, rightX, this.y - 6, { align: 'right' });
+		this.doc.text(`Generated: ${generatedAt}`, rightX, startY + 5, { align: 'right' });
 
 		this.drawRule(PDF_COLORS.primary);
 		this.y += 2;
@@ -545,6 +553,14 @@ export class PdfReportBuilder {
 	 * @param filename - The filename without extension.
 	 */
 	async save(filename: string): Promise<void> {
+		const totalPages = this.doc.getNumberOfPages();
+		for (let i = 1; i <= totalPages; i++) {
+			this.doc.setPage(i);
+			this.doc.setFont('helvetica', 'normal');
+			this.doc.setFontSize(8);
+			this.doc.setTextColor(...PDF_COLORS.textMuted);
+			this.doc.text(`Page ${i} of ${totalPages}`, LAYOUT.marginX, 291);
+		}
 		this.doc.save(`${filename}.pdf`);
 	}
 }
